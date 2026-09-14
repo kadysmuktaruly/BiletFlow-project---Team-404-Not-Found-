@@ -1,0 +1,22 @@
+# Full stack for BiletFlow. `api` and `web` are added in Task 7; `db` is here first
+# because the initial migration has to be verified against a real Postgres 16.
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-biletflow}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-biletflow}
+      POSTGRES_DB: ${POSTGRES_DB:-biletflow}
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-biletflow} -d ${POSTGRES_DB:-biletflow}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  pgdata:

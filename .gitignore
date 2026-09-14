@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+
+# Node
+node_modules/
+.next/
+.expo/
+dist/
+*.tsbuildinfo
+
+# Env — never commit real secrets. See .env.example.
+.env
+.env.local
+.env.*.local
+
+# OS / editor
+.DS_Store
+*.swp
+.idea/
+.vscode/
