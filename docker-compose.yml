@@ -1,5 +1,5 @@
-# Full stack for BiletFlow. `api` and `web` are added in Task 7; `db` is here first
-# because the initial migration has to be verified against a real Postgres 16.
+# Full local stack for BiletFlow: `docker compose up` starts db, api and mailpit.
+# The web and scanner apps run on the host (npm / Expo); see README.
 services:
   db:
     image: postgres:16-alpine
@@ -16,6 +16,49 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+    restart: unless-stopped
+
+  # Dev mail catcher. Every email the API sends lands here: http://localhost:8025
+  mailpit:
+    image: axllent/mailpit:v1.27
+    ports:
+      - "${MAILPIT_SMTP_PORT:-1025}:1025"
+      - "${MAILPIT_UI_PORT:-8025}:8025"
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  api:
+    build: ./apps/api
+    # .env is optional so `docker compose up` works on a fresh clone.
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      # Container-to-container addresses override the host-facing values in .env.
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-biletflow}:${POSTGRES_PASSWORD:-biletflow}@db:5432/${POSTGRES_DB:-biletflow}
+      SMTP_HOST: mailpit
+      SMTP_PORT: "1025"
+    ports:
+      - "${API_PORT:-8000}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      mailpit:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health', timeout=4)"
+      interval: 10s
+      timeout: 5s
+      start_period: 20s
+      retries: 5
     restart: unless-stopped
 
 volumes:

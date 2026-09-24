@@ -68,7 +68,7 @@ Run from the repo root:
 
 ```bash
 cp .env.example .env              # never commit .env
-docker compose up                 # db (host port 5433), plus api and mailpit once added
+docker compose up                 # db :5433, api :8000, mailpit :8025 (UI) / :1025 (SMTP)
 ```
 
 All four API checks (ruff check, ruff format --check, mypy, pytest) must pass before a
