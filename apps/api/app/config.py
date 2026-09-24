@@ -3,7 +3,7 @@
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import model_validator
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # `.env` lives at the repo root, but the API is usually run from `apps/api`. A bare
@@ -55,6 +55,13 @@ class Settings(BaseSettings):
 
     # SRS 4.6 / 4.14: the currency for the initial Kazakhstan release.
     currency: str = "KZT"
+
+    @field_validator("jwt_secret", mode="before")
+    @classmethod
+    def _empty_secret_means_unset(cls, value: object) -> object:
+        # `.env.example` ships `JWT_SECRET=` (empty). Treat that as "not set" rather than
+        # as an empty signing key.
+        return _DEV_JWT_SECRET if value in ("", None) else value
 
     @model_validator(mode="after")
     def _require_real_secret_outside_dev(self) -> "Settings":
