@@ -1,0 +1,32 @@
+{
+  "common": {
+    "appName": "BiletFlow Scanner",
+    "loading": "Loading…",
+    "retry": "Try again",
+    "signOut": "Sign out"
+  },
+  "login": {
+    "title": "Staff sign-in",
+    "lead": "Sign in with the BiletFlow account the organizer assigned to the event.",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Sign in"
+  },
+  "home": {
+    "signedInAs": "Signed in as {{name}}",
+    "cameraTitle": "Camera access",
+    "cameraGranted": "Camera access is on. You're ready to scan tickets.",
+    "cameraNeeded": "The scanner needs the camera to read ticket QR codes.",
+    "cameraBlocked": "Camera access is turned off. Turn it on for BiletFlow Scanner in your phone's settings.",
+    "allowCamera": "Allow camera",
+    "openSettings": "Open settings"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "network": "Can't reach BiletFlow. Check the connection and try again.",
+    "invalid_credentials": "The email or password is incorrect.",
+    "account_suspended": "This account has been suspended.",
+    "unauthorized": "Please sign in again.",
+    "validation_error": "Enter a valid email and password."
+  }
+}
