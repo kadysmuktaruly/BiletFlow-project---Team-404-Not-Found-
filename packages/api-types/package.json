@@ -1,0 +1,17 @@
+{
+  "name": "@biletflow/api-types",
+  "version": "0.1.0",
+  "private": true,
+  "description": "TypeScript types generated from the BiletFlow API's OpenAPI schema. Never edit by hand: run `npm run gen:api-types` from the repo root.",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p ."
+  },
+  "devDependencies": {
+    "openapi-typescript": "^7.13.0",
+    "typescript": "^5"
+  }
+}
