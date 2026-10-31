@@ -3,8 +3,8 @@
 Every check here derives identity and authority on the server: the user comes from a
 verified access token and the database, never from a client-supplied id or role.
 
-Event-scoped checks (`require_event_owner`, `require_event_staff`) live alongside the event
-routes they protect and are added with them.
+Event-scoped checks return **404, not 403**, when the caller may not see the event, so an
+outsider cannot tell a private event from one that does not exist.
 """
 
 import uuid
@@ -13,12 +13,13 @@ from typing import Annotated
 
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db import get_session
 from app.enums import UserRole
 from app.errors import AppError
-from app.models import User
+from app.models import Event, OrganizerProfile, User
 from app.security import TokenType, decode_token
 
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
@@ -65,3 +66,29 @@ def require_role(*roles: UserRole) -> Callable[[User], Awaitable[User]]:
 
 OrganizerUser = Annotated[User, Depends(require_role(UserRole.ORGANIZER))]
 PlatformAdminUser = Annotated[User, Depends(require_role(UserRole.PLATFORM_ADMIN))]
+
+
+async def get_organizer_profile(session: SessionDep, user: OrganizerUser) -> OrganizerProfile:
+    # Imported here to keep deps free of a module-level dependency on the services layer.
+    from app.services.organizer import get_or_create_profile
+
+    return await get_or_create_profile(session, user)
+
+
+CurrentOrganizer = Annotated[OrganizerProfile, Depends(get_organizer_profile)]
+
+
+async def get_owned_event(
+    event_id: uuid.UUID, session: SessionDep, organizer: CurrentOrganizer
+) -> Event:
+    """The event, if the signed-in organizer owns it. Ownership comes from the database,
+    never from the request."""
+    event = await session.scalar(
+        select(Event).where(Event.id == event_id, Event.organizer_profile_id == organizer.id)
+    )
+    if event is None:
+        raise AppError(404, "event_not_found", "Event not found.")
+    return event
+
+
+OwnedEvent = Annotated[Event, Depends(get_owned_event)]
