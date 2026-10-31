@@ -22,6 +22,7 @@ from email.utils import make_msgid
 from typing import Any
 
 import aiosmtplib
+from fastapi import BackgroundTasks
 
 from app.config import get_settings
 from app.db import SessionLocal
@@ -135,7 +136,12 @@ def _to_mime(msg: OutgoingEmail) -> EmailMessage:
         maintype, subtype = att.mime_type.split("/", 1)
         if att.inline_cid:
             html_part.add_related(
-                att.content, maintype, subtype, cid=f"<{att.inline_cid}>", filename=att.filename
+                att.content,
+                maintype,
+                subtype,
+                cid=f"<{att.inline_cid}>",
+                filename=att.filename,
+                disposition="inline",
             )
         else:
             mime.add_attachment(att.content, maintype, subtype, filename=att.filename)
@@ -178,3 +184,9 @@ async def deliver(msg: OutgoingEmail, notification_id: uuid.UUID | None = None) 
 # committed, each with the Notification row that tracks it (None if there is no matching
 # notification type, e.g. password reset).
 Outbound = list[tuple[OutgoingEmail, uuid.UUID | None]]
+
+
+def schedule(background: BackgroundTasks, outbound: Outbound) -> None:
+    """Deliver after the response is sent, i.e. after the service has committed."""
+    for msg, notification_id in outbound:
+        background.add_task(deliver, msg, notification_id)
