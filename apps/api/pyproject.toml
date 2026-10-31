@@ -51,6 +51,15 @@ exclude = "^migrations/"
 module = "alembic.*"
 ignore_missing_imports = true
 
+# asyncpg ships no type information. Only the test harness uses it directly.
+[[tool.mypy.overrides]]
+module = "asyncpg.*"
+ignore_missing_imports = true
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+# One event loop for the whole run: the app's async engine is a module-level singleton and
+# asyncpg connections are bound to the loop that opened them. See tests/conftest.py.
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
