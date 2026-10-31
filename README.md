@@ -138,6 +138,20 @@ Role checks are reusable dependencies in `app/deps.py` (`CurrentUser`, `require_
 `OrganizerUser`, `PlatformAdminUser`). Being an Event Admin is a per-event
 `StaffAssignment`, not a platform role.
 
+### Organizers and events (SRS 4.1, 4.2)
+
+| Endpoint | Purpose |
+|---|---|
+| `GET/PUT /organizer/profile` | Contact details. The profile is created when an organizer registers. |
+| `GET/PUT /organizer/payout-account` | **DEMO** payout account. Only the last four digits are accepted and stored, and verification is simulated. |
+| `POST /organizer/events` | Create a draft. The server generates the slug and sets the owner and status. |
+| `GET /organizer/events`, `GET/PATCH /organizer/events/{id}` | List, read and edit your own events. Cancelled and completed events are read-only. |
+
+Event times can be sent with a UTC offset, or without one. A time without an offset is read as
+local time in the event's IANA `timezone` (for example `Asia/Almaty`). Responses include
+`starts_at` (UTC) and `starts_at_local` (the event's own zone). Someone else's event returns
+404, not 403.
+
 ## Data model conventions
 
 - **UUID primary keys** everywhere, generated both in Python and by the database (`gen_random_uuid()`).
