@@ -5,16 +5,16 @@
 block must be rejected by Postgres; every `PASS` line means the database refused something
 it should refuse.
 
-Run it against a freshly migrated database:
+`uv run pytest` runs it automatically: `tests/test_constraints_sql.py` executes the script
+against the freshly migrated test database and fails on any `FAIL` line, or if any expected
+`PASS` line is missing. CI therefore checks these guarantees on every pull request.
+
+To run it by hand, use a scratch database, because the script writes rows:
 
 ```bash
-docker compose up -d db
-cd apps/api && uv run alembic upgrade head
-docker compose exec -T db psql -U biletflow -d biletflow -q -f - \
+docker compose exec -T db psql -U biletflow -d biletflow_test -q -f - \
   < tests/constraints/verify_constraints.sql 2>&1 | grep -E 'PASS|FAIL'
 ```
-
-It writes rows, so run it on a scratch database — `docker compose down -v` afterwards.
 
 What it covers, and why each one matters:
 
@@ -28,6 +28,3 @@ What it covers, and why each one matters:
 | ticket oversell blocked | 4.3 | sold + reserved can never exceed the total |
 | malformed campaign discount blocked | 4.14 | a percentage campaign cannot also carry a fixed KZT amount |
 | refunded ticket frees its seat | 4.9 | the partial index releases as well as blocks |
-
-TODO(week-10): port this to pytest so CI runs it on every pull request. It is SQL today
-because the ORM layer that would express it does not exist yet.
