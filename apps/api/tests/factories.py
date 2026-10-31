@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.enums import EventStatus, UserRole
 from app.models import Event, OrganizerProfile, User
+from app.security import TokenType, create_token, hash_password
 
 _seq = itertools.count(1)
 
@@ -20,11 +21,21 @@ def _n() -> int:
     return next(_seq)
 
 
-async def make_user(session: AsyncSession, **overrides: Any) -> User:
+DEFAULT_PASSWORD = "correct-horse-battery"
+
+
+def bearer(user: User) -> dict[str, str]:
+    """Authorization header for `user`, without going through /auth/login."""
+    return {"Authorization": f"Bearer {create_token(TokenType.ACCESS, user.id)}"}
+
+
+async def make_user(
+    session: AsyncSession, password: str = DEFAULT_PASSWORD, **overrides: Any
+) -> User:
     n = _n()
     values: dict[str, Any] = {
         "email": f"user{n}@example.com",
-        "hashed_password": "not-a-real-hash",
+        "hashed_password": await hash_password(password),
         "full_name": f"Test User {n}",
         "role": UserRole.ATTENDEE,
         "is_email_verified": True,
