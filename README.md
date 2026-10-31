@@ -82,20 +82,34 @@ uv run pytest              # tests
 uv run alembic check       # confirm the models and migrations match
 ```
 
+### Tests
+
+`uv run pytest` needs the Compose database running (`docker compose up -d db`). It never
+touches the dev database: the harness (`tests/conftest.py`) drops and recreates
+`<name>_test` on the same server at the start of each run, migrates it with Alembic, and
+truncates every table before each database test. Tests talk to the app over httpx, and
+concurrency tests send real parallel requests, so Postgres sees concurrent transactions.
+
 ### Verifying database constraints
 
 The most important guarantees are enforced by Postgres itself, not by application code.
-`tests/constraints/verify_constraints.sql` checks them against a migrated database. The script
-writes rows, so use a throwaway database:
+`tests/constraints/verify_constraints.sql` checks them, and `tests/test_constraints_sql.py`
+runs that script against the test database as part of `uv run pytest`. See
+[`apps/api/tests/constraints/README.md`](apps/api/tests/constraints/README.md) for what each
+check covers.
 
-```bash
-docker compose exec -T db psql -U biletflow -d biletflow -q -f - \
-  < apps/api/tests/constraints/verify_constraints.sql 2>&1 | grep -E 'PASS|FAIL'
-docker compose down -v     # reset afterwards
-```
+### Continuous integration
 
-See [`apps/api/tests/constraints/README.md`](apps/api/tests/constraints/README.md) for what
-each check covers.
+`.github/workflows/ci.yml` runs on every pull request, whatever its base branch. The API job
+runs ruff check, ruff format --check, strict mypy, `alembic upgrade head`, `alembic check`,
+and pytest against a Postgres 16 service.
+
+### Project documents
+
+- [`docs/srs/`](docs/srs/srs.md): the SRS (v0.3 PDF, plus a searchable text copy)
+- [`docs/decisions.md`](docs/decisions.md): SRS §12 decisions and the assumptions the code
+  relies on
+- [`docs/plan-reports-3-4.md`](docs/plan-reports-3-4.md): build plan for Reports 3 and 4
 
 ## Data model conventions
 
