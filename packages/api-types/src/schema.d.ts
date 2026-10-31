@@ -187,6 +187,94 @@ export interface paths {
         patch: operations["update_me_api_v1_me_patch"];
         trace?: never;
     };
+    "/api/v1/me/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Your orders, newest first */
+        get: operations["my_orders_api_v1_me_orders_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/tickets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Your tickets (SRS 4.7) */
+        get: operations["my_tickets_api_v1_me_tickets_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/tickets/{ticket_id}/qr.svg": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The ticket's admission QR code as SVG */
+        get: operations["my_ticket_qr_api_v1_me_tickets__ticket_id__qr_svg_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reserve tickets and create an order
+         * @description Send ticket type ids and quantities only; the server computes every price. A zero-total order (free registration) is confirmed at once and its tickets issued. A paid order is `awaiting_payment` and holds its tickets until `expires_at`. `409 sold_out` when there aren't enough tickets left.
+         */
+        post: operations["create_order_api_v1_orders_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orders/{order_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One of your orders */
+        get: operations["read_order_api_v1_orders__order_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/organizer/events": {
         parameters: {
             query?: never;
@@ -224,6 +312,45 @@ export interface paths {
         head?: never;
         /** Edit an event */
         patch: operations["update_event_api_v1_organizer_events__event_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/organizer/events/{event_id}/ticket-types": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ticket types with available, reserved, sold, refunded and checked-in counts */
+        get: operations["list_ticket_types_api_v1_organizer_events__event_id__ticket_types_get"];
+        put?: never;
+        /**
+         * Add a free (price 0) or paid ticket type
+         * @description Sales-window times without a UTC offset are read in the event's time zone.
+         */
+        post: operations["create_ticket_type_api_v1_organizer_events__event_id__ticket_types_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/organizer/events/{event_id}/ticket-types/{ticket_type_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete a ticket type that has never been ordered */
+        delete: operations["delete_ticket_type_api_v1_organizer_events__event_id__ticket_types__ticket_type_id__delete"];
+        options?: never;
+        head?: never;
+        /** Edit a ticket type, or hide it with is_hidden */
+        patch: operations["update_ticket_type_api_v1_organizer_events__event_id__ticket_types__ticket_type_id__patch"];
         trace?: never;
     };
     "/api/v1/organizer/payout-account": {
@@ -281,6 +408,15 @@ export interface components {
              * @constant
              */
             status: "accepted";
+        };
+        /** AttendeeInput */
+        AttendeeInput: {
+            /** Email */
+            email?: string | null;
+            /** Full Name */
+            full_name: string;
+            /** Phone */
+            phone?: string | null;
         };
         /** EmailRequest */
         EmailRequest: {
@@ -404,6 +540,34 @@ export interface components {
          * @enum {string}
          */
         EventStatus: "draft" | "published" | "unpublished" | "cancelled" | "completed";
+        /** EventSummary */
+        EventSummary: {
+            /**
+             * Ends At
+             * Format: date-time
+             */
+            ends_at: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Slug */
+            slug: string;
+            /**
+             * Starts At
+             * Format: date-time
+             */
+            starts_at: string;
+            /** Timezone */
+            timezone: string;
+            /** Title */
+            title: string;
+            /** Venue Address */
+            venue_address: string | null;
+            /** Venue Name */
+            venue_name: string | null;
+        };
         /**
          * EventUpdate
          * @description Every field optional. Times without an offset use the event's (possibly new) zone;
@@ -464,6 +628,137 @@ export interface components {
             /** Password */
             password: string;
         };
+        /** MyTicketRead */
+        MyTicketRead: {
+            /** Attendee Email */
+            attendee_email: string | null;
+            /** Attendee Name */
+            attendee_name: string;
+            /** Checked In At */
+            checked_in_at: string | null;
+            event: components["schemas"]["EventSummary"];
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Issued At */
+            issued_at: string | null;
+            /**
+             * Order Id
+             * Format: uuid
+             */
+            order_id: string;
+            /** Order Reference */
+            order_reference: string;
+            /** Qr Payload */
+            qr_payload: string;
+            /** Seat Number */
+            seat_number?: string | null;
+            /** Seat Row */
+            seat_row?: string | null;
+            /** Seat Section */
+            seat_section?: string | null;
+            status: components["schemas"]["TicketStatus"];
+            /** Ticket Number */
+            ticket_number: string;
+            /**
+             * Ticket Type Id
+             * Format: uuid
+             */
+            ticket_type_id: string;
+            /** Ticket Type Name */
+            ticket_type_name: string;
+        };
+        /**
+         * OrderCreate
+         * @description Only ids and quantities. Every price and total is computed on the server (SRS 7).
+         */
+        OrderCreate: {
+            /** Attendees */
+            attendees?: components["schemas"]["AttendeeInput"][];
+            /**
+             * Event Id
+             * Format: uuid
+             */
+            event_id: string;
+            /** Items */
+            items: components["schemas"]["OrderItemInput"][];
+        };
+        /** OrderItemInput */
+        OrderItemInput: {
+            /** Quantity */
+            quantity: number;
+            /**
+             * Ticket Type Id
+             * Format: uuid
+             */
+            ticket_type_id: string;
+        };
+        /** OrderItemRead */
+        OrderItemRead: {
+            /** Discount Kzt */
+            discount_kzt: number;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Line Total Kzt */
+            line_total_kzt: number;
+            /** Quantity */
+            quantity: number;
+            /**
+             * Ticket Type Id
+             * Format: uuid
+             */
+            ticket_type_id: string;
+            /** Ticket Type Name */
+            ticket_type_name: string;
+            /** Unit Price Kzt */
+            unit_price_kzt: number;
+        };
+        /** OrderRead */
+        OrderRead: {
+            /** Confirmed At */
+            confirmed_at: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Currency */
+            currency: string;
+            /** Discount Kzt */
+            discount_kzt: number;
+            event: components["schemas"]["EventSummary"];
+            /** Expires At */
+            expires_at: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Items */
+            items: components["schemas"]["OrderItemRead"][];
+            /** Payment Required */
+            payment_required: boolean;
+            /** Reference */
+            reference: string;
+            status: components["schemas"]["OrderStatus"];
+            /** Subtotal Kzt */
+            subtotal_kzt: number;
+            /** Tickets */
+            tickets: components["schemas"]["TicketRead"][];
+            /** Total Kzt */
+            total_kzt: number;
+        };
+        /**
+         * OrderStatus
+         * @description SRS 4.6: failed or abandoned transactions must never yield a valid ticket.
+         * @enum {string}
+         */
+        OrderStatus: "pending" | "awaiting_payment" | "confirmed" | "cancelled" | "refunded" | "failed" | "expired";
         /** OrganizerProfileRead */
         OrganizerProfileRead: {
             /** Contact Email */
@@ -589,6 +884,144 @@ export interface components {
          * @enum {string}
          */
         SeatingMode: "general_admission" | "assigned_seating";
+        /** TicketRead */
+        TicketRead: {
+            /** Attendee Email */
+            attendee_email: string | null;
+            /** Attendee Name */
+            attendee_name: string;
+            /** Checked In At */
+            checked_in_at: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Issued At */
+            issued_at: string | null;
+            /** Qr Payload */
+            qr_payload: string;
+            /** Seat Number */
+            seat_number?: string | null;
+            /** Seat Row */
+            seat_row?: string | null;
+            /** Seat Section */
+            seat_section?: string | null;
+            status: components["schemas"]["TicketStatus"];
+            /** Ticket Number */
+            ticket_number: string;
+            /**
+             * Ticket Type Id
+             * Format: uuid
+             */
+            ticket_type_id: string;
+            /** Ticket Type Name */
+            ticket_type_name: string;
+        };
+        /**
+         * TicketStatus
+         * @description SRS 4.7 names exactly these four.
+         *
+         *     `CANCELLED` and `REFUNDED` are the two that drop a ticket out of the
+         *     `uq_ticket_active_seat` partial index, freeing the seat for resale.
+         * @enum {string}
+         */
+        TicketStatus: "valid" | "checked_in" | "cancelled" | "refunded";
+        /** TicketTypeCreate */
+        TicketTypeCreate: {
+            /** Description */
+            description?: string | null;
+            /**
+             * Is Hidden
+             * @default false
+             */
+            is_hidden: boolean;
+            /**
+             * Max Per Order
+             * @default 10
+             */
+            max_per_order: number;
+            /** Name */
+            name: string;
+            /** Price Kzt */
+            price_kzt: number;
+            /** Quantity Total */
+            quantity_total: number;
+            /** Sales End At */
+            sales_end_at?: string | null;
+            /** Sales Start At */
+            sales_start_at?: string | null;
+        };
+        /**
+         * TicketTypeRead
+         * @description The organizer's view, with the SRS 4.3 counts: available, reserved, sold, refunded,
+         *     checked in.
+         */
+        TicketTypeRead: {
+            /** Description */
+            description: string | null;
+            /**
+             * Event Id
+             * Format: uuid
+             */
+            event_id: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Free */
+            is_free: boolean;
+            /** Is Hidden */
+            is_hidden: boolean;
+            /** Max Per Order */
+            max_per_order: number;
+            /** Name */
+            name: string;
+            /** Price Kzt */
+            price_kzt: number;
+            /** Quantity Available */
+            quantity_available: number;
+            /**
+             * Quantity Checked In
+             * @default 0
+             */
+            quantity_checked_in: number;
+            /**
+             * Quantity Refunded
+             * @default 0
+             */
+            quantity_refunded: number;
+            /** Quantity Reserved */
+            quantity_reserved: number;
+            /** Quantity Sold */
+            quantity_sold: number;
+            /** Quantity Total */
+            quantity_total: number;
+            /** Sales End At */
+            sales_end_at: string | null;
+            /** Sales Start At */
+            sales_start_at: string | null;
+        };
+        /** TicketTypeUpdate */
+        TicketTypeUpdate: {
+            /** Description */
+            description?: string | null;
+            /** Is Hidden */
+            is_hidden?: boolean | null;
+            /** Max Per Order */
+            max_per_order?: number | null;
+            /** Name */
+            name?: string | null;
+            /** Price Kzt */
+            price_kzt?: number | null;
+            /** Quantity Total */
+            quantity_total?: number | null;
+            /** Sales End At */
+            sales_end_at?: string | null;
+            /** Sales Start At */
+            sales_start_at?: string | null;
+        };
         /** TokenResponse */
         TokenResponse: {
             /** Access Token */
@@ -700,17 +1133,25 @@ export interface components {
     pathItems: never;
 }
 export type SchemaAcceptedResponse = components['schemas']['AcceptedResponse'];
+export type SchemaAttendeeInput = components['schemas']['AttendeeInput'];
 export type SchemaEmailRequest = components['schemas']['EmailRequest'];
 export type SchemaErrorBody = components['schemas']['ErrorBody'];
 export type SchemaErrorResponse = components['schemas']['ErrorResponse'];
 export type SchemaEventCreate = components['schemas']['EventCreate'];
 export type SchemaEventRead = components['schemas']['EventRead'];
 export type SchemaEventStatus = components['schemas']['EventStatus'];
+export type SchemaEventSummary = components['schemas']['EventSummary'];
 export type SchemaEventUpdate = components['schemas']['EventUpdate'];
 export type SchemaEventVisibility = components['schemas']['EventVisibility'];
 export type SchemaFieldError = components['schemas']['FieldError'];
 export type SchemaHealthResponse = components['schemas']['HealthResponse'];
 export type SchemaLoginRequest = components['schemas']['LoginRequest'];
+export type SchemaMyTicketRead = components['schemas']['MyTicketRead'];
+export type SchemaOrderCreate = components['schemas']['OrderCreate'];
+export type SchemaOrderItemInput = components['schemas']['OrderItemInput'];
+export type SchemaOrderItemRead = components['schemas']['OrderItemRead'];
+export type SchemaOrderRead = components['schemas']['OrderRead'];
+export type SchemaOrderStatus = components['schemas']['OrderStatus'];
 export type SchemaOrganizerProfileRead = components['schemas']['OrganizerProfileRead'];
 export type SchemaOrganizerProfileUpdate = components['schemas']['OrganizerProfileUpdate'];
 export type SchemaPayoutAccountRead = components['schemas']['PayoutAccountRead'];
@@ -720,6 +1161,11 @@ export type SchemaRefreshRequest = components['schemas']['RefreshRequest'];
 export type SchemaRegisterRequest = components['schemas']['RegisterRequest'];
 export type SchemaResetPasswordRequest = components['schemas']['ResetPasswordRequest'];
 export type SchemaSeatingMode = components['schemas']['SeatingMode'];
+export type SchemaTicketRead = components['schemas']['TicketRead'];
+export type SchemaTicketStatus = components['schemas']['TicketStatus'];
+export type SchemaTicketTypeCreate = components['schemas']['TicketTypeCreate'];
+export type SchemaTicketTypeRead = components['schemas']['TicketTypeRead'];
+export type SchemaTicketTypeUpdate = components['schemas']['TicketTypeUpdate'];
 export type SchemaTokenResponse = components['schemas']['TokenResponse'];
 export type SchemaUserRead = components['schemas']['UserRead'];
 export type SchemaUserRole = components['schemas']['UserRole'];
@@ -1172,6 +1618,285 @@ export interface operations {
             };
         };
     };
+    my_orders_api_v1_me_orders_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderRead"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    my_tickets_api_v1_me_tickets_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyTicketRead"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    my_ticket_qr_api_v1_me_tickets__ticket_id__qr_svg_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ticket_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/svg+xml": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_order_api_v1_orders_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrderCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderRead"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    read_order_api_v1_orders__order_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderRead"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     list_events_api_v1_organizer_events_get: {
         parameters: {
             query?: never;
@@ -1350,6 +2075,273 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EventRead"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_ticket_types_api_v1_organizer_events__event_id__ticket_types_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TicketTypeRead"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_ticket_type_api_v1_organizer_events__event_id__ticket_types_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TicketTypeCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TicketTypeRead"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    delete_ticket_type_api_v1_organizer_events__event_id__ticket_types__ticket_type_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+                ticket_type_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    update_ticket_type_api_v1_organizer_events__event_id__ticket_types__ticket_type_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+                ticket_type_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TicketTypeUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TicketTypeRead"];
                 };
             };
             /** @description Unauthorized */

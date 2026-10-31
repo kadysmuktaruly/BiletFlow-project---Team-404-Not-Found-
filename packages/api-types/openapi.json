@@ -14,6 +14,45 @@
         "title": "AcceptedResponse",
         "type": "object"
       },
+      "AttendeeInput": {
+        "properties": {
+          "email": {
+            "anyOf": [
+              {
+                "format": "email",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "full_name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Full Name",
+            "type": "string"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "maxLength": 32,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          }
+        },
+        "required": [
+          "full_name"
+        ],
+        "title": "AttendeeInput",
+        "type": "object"
+      },
       "EmailRequest": {
         "properties": {
           "email": {
@@ -349,6 +388,71 @@
         "title": "EventStatus",
         "type": "string"
       },
+      "EventSummary": {
+        "properties": {
+          "ends_at": {
+            "format": "date-time",
+            "title": "Ends At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "starts_at": {
+            "format": "date-time",
+            "title": "Starts At",
+            "type": "string"
+          },
+          "timezone": {
+            "title": "Timezone",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "venue_address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Venue Address"
+          },
+          "venue_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Venue Name"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "slug",
+          "starts_at",
+          "ends_at",
+          "timezone",
+          "venue_name",
+          "venue_address"
+        ],
+        "title": "EventSummary",
+        "type": "object"
+      },
       "EventUpdate": {
         "description": "Every field optional. Times without an offset use the event's (possibly new) zone;\nthe service resolves them, because the current zone lives in the database.",
         "properties": {
@@ -536,6 +640,349 @@
         ],
         "title": "LoginRequest",
         "type": "object"
+      },
+      "MyTicketRead": {
+        "properties": {
+          "attendee_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attendee Email"
+          },
+          "attendee_name": {
+            "title": "Attendee Name",
+            "type": "string"
+          },
+          "checked_in_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Checked In At"
+          },
+          "event": {
+            "$ref": "#/components/schemas/EventSummary"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "issued_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Issued At"
+          },
+          "order_id": {
+            "format": "uuid",
+            "title": "Order Id",
+            "type": "string"
+          },
+          "order_reference": {
+            "title": "Order Reference",
+            "type": "string"
+          },
+          "qr_payload": {
+            "title": "Qr Payload",
+            "type": "string"
+          },
+          "seat_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seat Number"
+          },
+          "seat_row": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seat Row"
+          },
+          "seat_section": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seat Section"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TicketStatus"
+          },
+          "ticket_number": {
+            "title": "Ticket Number",
+            "type": "string"
+          },
+          "ticket_type_id": {
+            "format": "uuid",
+            "title": "Ticket Type Id",
+            "type": "string"
+          },
+          "ticket_type_name": {
+            "title": "Ticket Type Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "ticket_number",
+          "status",
+          "ticket_type_id",
+          "ticket_type_name",
+          "attendee_name",
+          "attendee_email",
+          "qr_payload",
+          "issued_at",
+          "checked_in_at",
+          "order_id",
+          "order_reference",
+          "event"
+        ],
+        "title": "MyTicketRead",
+        "type": "object"
+      },
+      "OrderCreate": {
+        "description": "Only ids and quantities. Every price and total is computed on the server (SRS 7).",
+        "properties": {
+          "attendees": {
+            "items": {
+              "$ref": "#/components/schemas/AttendeeInput"
+            },
+            "maxItems": 100,
+            "title": "Attendees",
+            "type": "array"
+          },
+          "event_id": {
+            "format": "uuid",
+            "title": "Event Id",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/OrderItemInput"
+            },
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "event_id",
+          "items"
+        ],
+        "title": "OrderCreate",
+        "type": "object"
+      },
+      "OrderItemInput": {
+        "properties": {
+          "quantity": {
+            "maximum": 100.0,
+            "minimum": 1.0,
+            "title": "Quantity",
+            "type": "integer"
+          },
+          "ticket_type_id": {
+            "format": "uuid",
+            "title": "Ticket Type Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticket_type_id",
+          "quantity"
+        ],
+        "title": "OrderItemInput",
+        "type": "object"
+      },
+      "OrderItemRead": {
+        "properties": {
+          "discount_kzt": {
+            "title": "Discount Kzt",
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "line_total_kzt": {
+            "title": "Line Total Kzt",
+            "type": "integer"
+          },
+          "quantity": {
+            "title": "Quantity",
+            "type": "integer"
+          },
+          "ticket_type_id": {
+            "format": "uuid",
+            "title": "Ticket Type Id",
+            "type": "string"
+          },
+          "ticket_type_name": {
+            "title": "Ticket Type Name",
+            "type": "string"
+          },
+          "unit_price_kzt": {
+            "title": "Unit Price Kzt",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "ticket_type_id",
+          "ticket_type_name",
+          "quantity",
+          "unit_price_kzt",
+          "discount_kzt",
+          "line_total_kzt"
+        ],
+        "title": "OrderItemRead",
+        "type": "object"
+      },
+      "OrderRead": {
+        "properties": {
+          "confirmed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confirmed At"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "discount_kzt": {
+            "title": "Discount Kzt",
+            "type": "integer"
+          },
+          "event": {
+            "$ref": "#/components/schemas/EventSummary"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/OrderItemRead"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "payment_required": {
+            "title": "Payment Required",
+            "type": "boolean"
+          },
+          "reference": {
+            "title": "Reference",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/OrderStatus"
+          },
+          "subtotal_kzt": {
+            "title": "Subtotal Kzt",
+            "type": "integer"
+          },
+          "tickets": {
+            "items": {
+              "$ref": "#/components/schemas/TicketRead"
+            },
+            "title": "Tickets",
+            "type": "array"
+          },
+          "total_kzt": {
+            "title": "Total Kzt",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "reference",
+          "status",
+          "event",
+          "subtotal_kzt",
+          "discount_kzt",
+          "total_kzt",
+          "currency",
+          "payment_required",
+          "expires_at",
+          "confirmed_at",
+          "created_at",
+          "items",
+          "tickets"
+        ],
+        "title": "OrderRead",
+        "type": "object"
+      },
+      "OrderStatus": {
+        "description": "SRS 4.6: failed or abandoned transactions must never yield a valid ticket.",
+        "enum": [
+          "pending",
+          "awaiting_payment",
+          "confirmed",
+          "cancelled",
+          "refunded",
+          "failed",
+          "expired"
+        ],
+        "title": "OrderStatus",
+        "type": "string"
       },
       "OrganizerProfileRead": {
         "properties": {
@@ -872,6 +1319,428 @@
         ],
         "title": "SeatingMode",
         "type": "string"
+      },
+      "TicketRead": {
+        "properties": {
+          "attendee_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attendee Email"
+          },
+          "attendee_name": {
+            "title": "Attendee Name",
+            "type": "string"
+          },
+          "checked_in_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Checked In At"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "issued_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Issued At"
+          },
+          "qr_payload": {
+            "title": "Qr Payload",
+            "type": "string"
+          },
+          "seat_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seat Number"
+          },
+          "seat_row": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seat Row"
+          },
+          "seat_section": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seat Section"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TicketStatus"
+          },
+          "ticket_number": {
+            "title": "Ticket Number",
+            "type": "string"
+          },
+          "ticket_type_id": {
+            "format": "uuid",
+            "title": "Ticket Type Id",
+            "type": "string"
+          },
+          "ticket_type_name": {
+            "title": "Ticket Type Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "ticket_number",
+          "status",
+          "ticket_type_id",
+          "ticket_type_name",
+          "attendee_name",
+          "attendee_email",
+          "qr_payload",
+          "issued_at",
+          "checked_in_at"
+        ],
+        "title": "TicketRead",
+        "type": "object"
+      },
+      "TicketStatus": {
+        "description": "SRS 4.7 names exactly these four.\n\n`CANCELLED` and `REFUNDED` are the two that drop a ticket out of the\n`uq_ticket_active_seat` partial index, freeing the seat for resale.",
+        "enum": [
+          "valid",
+          "checked_in",
+          "cancelled",
+          "refunded"
+        ],
+        "title": "TicketStatus",
+        "type": "string"
+      },
+      "TicketTypeCreate": {
+        "properties": {
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "is_hidden": {
+            "default": false,
+            "title": "Is Hidden",
+            "type": "boolean"
+          },
+          "max_per_order": {
+            "default": 10,
+            "maximum": 100.0,
+            "minimum": 1.0,
+            "title": "Max Per Order",
+            "type": "integer"
+          },
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "price_kzt": {
+            "maximum": 100000000.0,
+            "minimum": 0.0,
+            "title": "Price Kzt",
+            "type": "integer"
+          },
+          "quantity_total": {
+            "maximum": 1000000.0,
+            "minimum": 0.0,
+            "title": "Quantity Total",
+            "type": "integer"
+          },
+          "sales_end_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sales End At"
+          },
+          "sales_start_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sales Start At"
+          }
+        },
+        "required": [
+          "name",
+          "price_kzt",
+          "quantity_total"
+        ],
+        "title": "TicketTypeCreate",
+        "type": "object"
+      },
+      "TicketTypeRead": {
+        "description": "The organizer's view, with the SRS 4.3 counts: available, reserved, sold, refunded,\nchecked in.",
+        "properties": {
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "event_id": {
+            "format": "uuid",
+            "title": "Event Id",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_free": {
+            "title": "Is Free",
+            "type": "boolean"
+          },
+          "is_hidden": {
+            "title": "Is Hidden",
+            "type": "boolean"
+          },
+          "max_per_order": {
+            "title": "Max Per Order",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "price_kzt": {
+            "title": "Price Kzt",
+            "type": "integer"
+          },
+          "quantity_available": {
+            "title": "Quantity Available",
+            "type": "integer"
+          },
+          "quantity_checked_in": {
+            "default": 0,
+            "title": "Quantity Checked In",
+            "type": "integer"
+          },
+          "quantity_refunded": {
+            "default": 0,
+            "title": "Quantity Refunded",
+            "type": "integer"
+          },
+          "quantity_reserved": {
+            "title": "Quantity Reserved",
+            "type": "integer"
+          },
+          "quantity_sold": {
+            "title": "Quantity Sold",
+            "type": "integer"
+          },
+          "quantity_total": {
+            "title": "Quantity Total",
+            "type": "integer"
+          },
+          "sales_end_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sales End At"
+          },
+          "sales_start_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sales Start At"
+          }
+        },
+        "required": [
+          "id",
+          "event_id",
+          "name",
+          "description",
+          "price_kzt",
+          "is_free",
+          "quantity_total",
+          "quantity_sold",
+          "quantity_reserved",
+          "quantity_available",
+          "max_per_order",
+          "sales_start_at",
+          "sales_end_at",
+          "is_hidden"
+        ],
+        "title": "TicketTypeRead",
+        "type": "object"
+      },
+      "TicketTypeUpdate": {
+        "properties": {
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "is_hidden": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Hidden"
+          },
+          "max_per_order": {
+            "anyOf": [
+              {
+                "maximum": 100.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Per Order"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "price_kzt": {
+            "anyOf": [
+              {
+                "maximum": 100000000.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Kzt"
+          },
+          "quantity_total": {
+            "anyOf": [
+              {
+                "maximum": 1000000.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quantity Total"
+          },
+          "sales_end_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sales End At"
+          },
+          "sales_start_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sales Start At"
+          }
+        },
+        "title": "TicketTypeUpdate",
+        "type": "object"
       },
       "TokenResponse": {
         "properties": {
@@ -1780,6 +2649,365 @@
         ]
       }
     },
+    "/api/v1/me/orders": {
+      "get": {
+        "operationId": "my_orders_api_v1_me_orders_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/OrderRead"
+                  },
+                  "title": "Response My Orders Api V1 Me Orders Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Your orders, newest first",
+        "tags": [
+          "me"
+        ]
+      }
+    },
+    "/api/v1/me/tickets": {
+      "get": {
+        "operationId": "my_tickets_api_v1_me_tickets_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MyTicketRead"
+                  },
+                  "title": "Response My Tickets Api V1 Me Tickets Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Your tickets (SRS 4.7)",
+        "tags": [
+          "me"
+        ]
+      }
+    },
+    "/api/v1/me/tickets/{ticket_id}/qr.svg": {
+      "get": {
+        "operationId": "my_ticket_qr_api_v1_me_tickets__ticket_id__qr_svg_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ticket_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Ticket Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "image/svg+xml": {}
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "The ticket's admission QR code as SVG",
+        "tags": [
+          "me"
+        ]
+      }
+    },
+    "/api/v1/orders": {
+      "post": {
+        "description": "Send ticket type ids and quantities only; the server computes every price. A zero-total order (free registration) is confirmed at once and its tickets issued. A paid order is `awaiting_payment` and holds its tickets until `expires_at`. `409 sold_out` when there aren't enough tickets left.",
+        "operationId": "create_order_api_v1_orders_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Reserve tickets and create an order",
+        "tags": [
+          "orders"
+        ]
+      }
+    },
+    "/api/v1/orders/{order_id}": {
+      "get": {
+        "operationId": "read_order_api_v1_orders__order_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "order_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Order Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "One of your orders",
+        "tags": [
+          "orders"
+        ]
+      }
+    },
     "/api/v1/organizer/events": {
       "get": {
         "operationId": "list_events_api_v1_organizer_events_get",
@@ -2074,6 +3302,382 @@
           }
         ],
         "summary": "Edit an event",
+        "tags": [
+          "organizer"
+        ]
+      }
+    },
+    "/api/v1/organizer/events/{event_id}/ticket-types": {
+      "get": {
+        "operationId": "list_ticket_types_api_v1_organizer_events__event_id__ticket_types_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TicketTypeRead"
+                  },
+                  "title": "Response List Ticket Types Api V1 Organizer Events  Event Id  Ticket Types Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Ticket types with available, reserved, sold, refunded and checked-in counts",
+        "tags": [
+          "organizer"
+        ]
+      },
+      "post": {
+        "description": "Sales-window times without a UTC offset are read in the event's time zone.",
+        "operationId": "create_ticket_type_api_v1_organizer_events__event_id__ticket_types_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TicketTypeCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketTypeRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Add a free (price 0) or paid ticket type",
+        "tags": [
+          "organizer"
+        ]
+      }
+    },
+    "/api/v1/organizer/events/{event_id}/ticket-types/{ticket_type_id}": {
+      "delete": {
+        "operationId": "delete_ticket_type_api_v1_organizer_events__event_id__ticket_types__ticket_type_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ticket_type_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Ticket Type Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete a ticket type that has never been ordered",
+        "tags": [
+          "organizer"
+        ]
+      },
+      "patch": {
+        "operationId": "update_ticket_type_api_v1_organizer_events__event_id__ticket_types__ticket_type_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ticket_type_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Ticket Type Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TicketTypeUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketTypeRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Edit a ticket type, or hide it with is_hidden",
         "tags": [
           "organizer"
         ]
