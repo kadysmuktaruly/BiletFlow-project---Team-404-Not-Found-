@@ -12,14 +12,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import get_settings
 from app.db import engine
 from app.errors import ErrorResponse, install_error_handlers
-from app.routers import auth, health, me, organizer
+from app.routers import auth, health, me, orders, organizer
+from app.services.orders import expiry_sweeper
 
 API_PREFIX = "/api/v1"
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
-    yield
+    async with expiry_sweeper(get_settings().order_sweep_interval_seconds):
+        yield
     await engine.dispose()
 
 
@@ -48,6 +50,7 @@ def create_app() -> FastAPI:
     app.include_router(auth.router, prefix=API_PREFIX)
     app.include_router(me.router, prefix=API_PREFIX)
     app.include_router(organizer.router, prefix=API_PREFIX)
+    app.include_router(orders.router, prefix=API_PREFIX)
     return app
 
 
