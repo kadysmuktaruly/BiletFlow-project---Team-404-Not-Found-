@@ -68,7 +68,7 @@ class PromotionalCampaign(Base, TimestampMixin):
     #
     # This column is that token, and it is all the link carries. The discount above is
     # never serialised into a URL. Its wire format uses the `BFC1.` prefix, which is
-    # disjoint from the `BFT1.` admission prefix — see app/schemas/scan.py for why that
+    # disjoint from the `BFT1.` admission prefix — see app/tickets/tokens.py for why that
     # makes the check-in endpoint structurally unable to accept one.
     # ------------------------------------------------------------------
     qr_token: Mapped[str] = mapped_column(String(64), nullable=False)

@@ -16,6 +16,7 @@ _ENV_FILES = (_API_DIR.parent.parent / ".env", _API_DIR / ".env")
 # Only these environments may run with the built-in development JWT secret.
 _DEV_ENVIRONMENTS = frozenset({"development", "test"})
 _DEV_JWT_SECRET = "dev-only-insecure-jwt-secret-change-me"
+_DEV_TICKET_SECRET = "dev-only-insecure-ticket-secret-change-me"
 
 
 class Settings(BaseSettings):
@@ -53,6 +54,15 @@ class Settings(BaseSettings):
     # SRS 4.3.1: a seat hold expires and releases the seat when checkout is abandoned.
     seat_hold_ttl_seconds: int = 600
 
+    # SRS 4.6: how long an unpaid order holds its tickets before they return to sale, and how
+    # often the background sweep looks for expired orders.
+    order_reservation_ttl_seconds: int = 600
+    order_sweep_interval_seconds: int = 30
+
+    # SRS 4.7: signs admission QR tokens (HMAC-SHA256). Separate from JWT_SECRET so rotating
+    # sign-in keys never invalidates printed tickets.
+    ticket_signing_secret: str = _DEV_TICKET_SECRET
+
     # SRS 3.3: one-time fee per event, in whole KZT. Amount is an open decision (SRS 12);
     # this is a placeholder for the demonstration.
     activation_fee_kzt: int = 5000
@@ -67,6 +77,11 @@ class Settings(BaseSettings):
         # as an empty signing key.
         return _DEV_JWT_SECRET if value in ("", None) else value
 
+    @field_validator("ticket_signing_secret", mode="before")
+    @classmethod
+    def _empty_ticket_secret_means_unset(cls, value: object) -> object:
+        return _DEV_TICKET_SECRET if value in ("", None) else value
+
     @model_validator(mode="after")
     def _require_real_secret_outside_dev(self) -> "Settings":
         if self.environment not in _DEV_ENVIRONMENTS and (
@@ -74,6 +89,13 @@ class Settings(BaseSettings):
         ):
             raise ValueError(
                 "JWT_SECRET must be set to a random value of at least 32 characters "
+                f"when ENVIRONMENT={self.environment!r}"
+            )
+        if self.environment not in _DEV_ENVIRONMENTS and (
+            self.ticket_signing_secret == _DEV_TICKET_SECRET or len(self.ticket_signing_secret) < 32
+        ):
+            raise ValueError(
+                "TICKET_SIGNING_SECRET must be set to a random value of at least 32 characters "
                 f"when ENVIRONMENT={self.environment!r}"
             )
         return self
