@@ -50,10 +50,14 @@ def parse_admission_token(payload: str) -> uuid.UUID | None:
     payload = payload.strip()
     if not payload.startswith(ADMISSION_PREFIX) or len(payload) > 64:
         return None
-    body, _, mac = payload.rpartition(".")
+    body = payload.rpartition(".")[0]
     try:
-        if not hmac.compare_digest(_unb64(mac), _mac(body)):
-            return None
-        return uuid.UUID(bytes=_unb64(body[len(ADMISSION_PREFIX) :]))
+        ticket_id = uuid.UUID(bytes=_unb64(body[len(ADMISSION_PREFIX) :]))
     except (ValueError, TypeError):
         return None
+    # Compare against the canonical token for that id rather than checking the MAC alone.
+    # base64 has several spellings for the same trailing bits; only the canonical one passes,
+    # so each ticket has exactly one valid QR string.
+    if not hmac.compare_digest(payload, sign_admission_token(ticket_id)):
+        return None
+    return ticket_id

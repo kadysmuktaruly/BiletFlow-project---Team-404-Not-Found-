@@ -8,7 +8,8 @@ from app.config import get_settings
 from app.tickets.tokens import ADMISSION_PREFIX, parse_admission_token, sign_admission_token
 
 
-def test_admission_token_signature_and_tamper() -> None:
+@pytest.mark.parametrize("attempt", range(25))  # many random ids: trailing base64 bits vary
+def test_admission_token_signature_and_tamper(attempt: int) -> None:
     ticket_id = uuid.uuid4()
     token = sign_admission_token(ticket_id)
     assert token.startswith(ADMISSION_PREFIX)
@@ -19,8 +20,9 @@ def test_admission_token_signature_and_tamper() -> None:
     for i in range(len(ADMISSION_PREFIX), len(token)):
         if token[i] == ".":
             continue
-        swapped = "A" if token[i] != "A" else "B"
-        assert parse_admission_token(token[:i] + swapped + token[i + 1 :]) is None, i
+        for swapped in "ABQgw_-":  # covers chars that differ only in unused low bits
+            if swapped != token[i]:
+                assert parse_admission_token(token[:i] + swapped + token[i + 1 :]) is None, i
 
 
 def test_another_tickets_signature_does_not_transfer() -> None:
