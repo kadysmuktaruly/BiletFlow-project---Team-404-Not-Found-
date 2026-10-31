@@ -14,6 +14,121 @@
         "title": "AcceptedResponse",
         "type": "object"
       },
+      "ActivationRead": {
+        "description": "SRS 3.2 / 4.5: the paid-sales checklist for one event.",
+        "properties": {
+          "activated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Activated At"
+          },
+          "activation_fee_kzt": {
+            "title": "Activation Fee Kzt",
+            "type": "integer"
+          },
+          "activation_fee_paid": {
+            "title": "Activation Fee Paid",
+            "type": "boolean"
+          },
+          "activation_payment": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "demo": {
+            "const": true,
+            "default": true,
+            "title": "Demo",
+            "type": "boolean"
+          },
+          "event_id": {
+            "format": "uuid",
+            "title": "Event Id",
+            "type": "string"
+          },
+          "fee_refundable": {
+            "const": false,
+            "default": false,
+            "title": "Fee Refundable",
+            "type": "boolean"
+          },
+          "has_paid_ticket_type": {
+            "title": "Has Paid Ticket Type",
+            "type": "boolean"
+          },
+          "identity_verified": {
+            "title": "Identity Verified",
+            "type": "boolean"
+          },
+          "paid_sales_enabled": {
+            "title": "Paid Sales Enabled",
+            "type": "boolean"
+          },
+          "payout_account_connected": {
+            "title": "Payout Account Connected",
+            "type": "boolean"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ActivationStatus"
+          },
+          "suspended_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suspended At"
+          },
+          "terms_accepted": {
+            "title": "Terms Accepted",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "event_id",
+          "status",
+          "paid_sales_enabled",
+          "has_paid_ticket_type",
+          "identity_verified",
+          "payout_account_connected",
+          "activation_fee_paid",
+          "terms_accepted",
+          "activation_fee_kzt",
+          "activation_payment",
+          "activated_at",
+          "suspended_at"
+        ],
+        "title": "ActivationRead",
+        "type": "object"
+      },
+      "ActivationStatus": {
+        "description": "SRS 4.5. `SUSPENDED` exists because 4.5 lets Platform Admins stop paid sales.",
+        "enum": [
+          "not_started",
+          "in_progress",
+          "pending_review",
+          "active",
+          "suspended"
+        ],
+        "title": "ActivationStatus",
+        "type": "string"
+      },
       "AttendeeInput": {
         "properties": {
           "email": {
@@ -51,6 +166,22 @@
           "full_name"
         ],
         "title": "AttendeeInput",
+        "type": "object"
+      },
+      "ConfirmRequest": {
+        "description": "For checklist steps that are a simple confirmation.",
+        "properties": {
+          "confirm": {
+            "const": true,
+            "description": "Must be true.",
+            "title": "Confirm",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "confirm"
+        ],
+        "title": "ConfirmRequest",
         "type": "object"
       },
       "EmailRequest": {
@@ -870,6 +1001,27 @@
         "title": "OrderItemRead",
         "type": "object"
       },
+      "OrderPaymentResult": {
+        "properties": {
+          "order": {
+            "$ref": "#/components/schemas/OrderRead"
+          },
+          "payment": {
+            "$ref": "#/components/schemas/PaymentRead"
+          },
+          "replayed": {
+            "title": "Replayed",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "payment",
+          "order",
+          "replayed"
+        ],
+        "title": "OrderPaymentResult",
+        "type": "object"
+      },
       "OrderRead": {
         "properties": {
           "confirmed_at": {
@@ -1129,6 +1281,140 @@
         "title": "OrganizerProfileUpdate",
         "type": "object"
       },
+      "PaymentPurpose": {
+        "description": "SRS 3.2: the two things money is ever collected for.",
+        "enum": [
+          "activation_fee",
+          "ticket_order"
+        ],
+        "title": "PaymentPurpose",
+        "type": "string"
+      },
+      "PaymentRead": {
+        "properties": {
+          "amount_kzt": {
+            "title": "Amount Kzt",
+            "type": "integer"
+          },
+          "card_brand": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Card Brand"
+          },
+          "card_last4": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Card Last4"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "demo": {
+            "const": true,
+            "default": true,
+            "title": "Demo",
+            "type": "boolean"
+          },
+          "failure_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failure Reason"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_simulated": {
+            "title": "Is Simulated",
+            "type": "boolean"
+          },
+          "provider": {
+            "title": "Provider",
+            "type": "string"
+          },
+          "provider_reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider Reference"
+          },
+          "purpose": {
+            "$ref": "#/components/schemas/PaymentPurpose"
+          },
+          "status": {
+            "$ref": "#/components/schemas/PaymentStatus"
+          },
+          "succeeded_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Succeeded At"
+          }
+        },
+        "required": [
+          "id",
+          "purpose",
+          "status",
+          "amount_kzt",
+          "currency",
+          "provider",
+          "provider_reference",
+          "card_brand",
+          "card_last4",
+          "failure_reason",
+          "is_simulated",
+          "created_at",
+          "succeeded_at"
+        ],
+        "title": "PaymentRead",
+        "type": "object"
+      },
+      "PaymentStatus": {
+        "enum": [
+          "pending",
+          "succeeded",
+          "failed",
+          "refunded"
+        ],
+        "title": "PaymentStatus",
+        "type": "string"
+      },
       "PayoutAccountRead": {
         "description": "A simulated payout account. Only the last four digits are ever stored (SRS 7).",
         "properties": {
@@ -1319,6 +1605,24 @@
         ],
         "title": "SeatingMode",
         "type": "string"
+      },
+      "SimulatedPaymentRequest": {
+        "description": "The DEMO checkout screen lets the attendee choose what the simulated provider does.",
+        "properties": {
+          "outcome": {
+            "enum": [
+              "succeed",
+              "fail"
+            ],
+            "title": "Outcome",
+            "type": "string"
+          }
+        },
+        "required": [
+          "outcome"
+        ],
+        "title": "SimulatedPaymentRequest",
+        "type": "object"
       },
       "TicketRead": {
         "properties": {
@@ -3008,6 +3312,217 @@
         ]
       }
     },
+    "/api/v1/orders/{order_id}/abandon": {
+      "post": {
+        "operationId": "abandon_order_api_v1_orders__order_id__abandon_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "order_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Order Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Leave the DEMO payment step and release the reserved tickets",
+        "tags": [
+          "orders"
+        ]
+      }
+    },
+    "/api/v1/orders/{order_id}/payments": {
+      "post": {
+        "description": "**DEMO: no real money moves.** `outcome` chooses what the simulated provider does. `succeed` confirms the order, issues the tickets and emails them. `fail` releases the tickets and emails a failure notice. Send a unique `Idempotency-Key` per attempt; repeating it returns the original result (200, `replayed: true`) instead of charging again. Reusing it for a different order is `409 idempotency_key_reused`.",
+        "operationId": "pay_order_api_v1_orders__order_id__payments_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "order_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Order Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "A unique value per payment attempt, e.g. a UUID. Reuse it to retry safely.",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "description": "A unique value per payment attempt, e.g. a UUID. Reuse it to retry safely.",
+              "maxLength": 80,
+              "minLength": 8,
+              "pattern": "^[A-Za-z0-9_\\-:.]+$",
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SimulatedPaymentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderPaymentResult"
+                }
+              }
+            },
+            "description": "Replay of an earlier attempt"
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderPaymentResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Pay for an order through the DEMO payment simulation",
+        "tags": [
+          "orders"
+        ]
+      }
+    },
     "/api/v1/organizer/events": {
       "get": {
         "operationId": "list_events_api_v1_organizer_events_get",
@@ -3304,6 +3819,472 @@
         "summary": "Edit an event",
         "tags": [
           "organizer"
+        ]
+      }
+    },
+    "/api/v1/organizer/events/{event_id}/activation": {
+      "get": {
+        "description": "Paid checkout opens only when every step is done: a paid ticket type, the simulated identity check, a connected payout account, the DEMO activation fee and the terms.",
+        "operationId": "read_checklist_api_v1_organizer_events__event_id__activation_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivationRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "The event's paid-sales checklist",
+        "tags": [
+          "activation"
+        ]
+      }
+    },
+    "/api/v1/organizer/events/{event_id}/activation/fee-payment": {
+      "post": {
+        "description": "**DEMO: no real money moves.** Charges `ACTIVATION_FEE_KZT` once per event; the fee is non-refundable. Uses the same `Idempotency-Key` rules as ticket payments.",
+        "operationId": "pay_fee_api_v1_organizer_events__event_id__activation_fee_payment_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "A unique value per payment attempt, e.g. a UUID. Reuse it to retry safely.",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "description": "A unique value per payment attempt, e.g. a UUID. Reuse it to retry safely.",
+              "maxLength": 80,
+              "minLength": 8,
+              "pattern": "^[A-Za-z0-9_\\-:.]+$",
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SimulatedPaymentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivationRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Pay the activation fee through the DEMO payment simulation",
+        "tags": [
+          "activation"
+        ]
+      }
+    },
+    "/api/v1/organizer/events/{event_id}/activation/identity": {
+      "post": {
+        "operationId": "verify_identity_api_v1_organizer_events__event_id__activation_identity_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivationRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Complete the simulated identity check (DEMO; no documents are collected)",
+        "tags": [
+          "activation"
+        ]
+      }
+    },
+    "/api/v1/organizer/events/{event_id}/activation/payout-account": {
+      "post": {
+        "operationId": "connect_payout_account_api_v1_organizer_events__event_id__activation_payout_account_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivationRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Connect your simulated payout account to this event",
+        "tags": [
+          "activation"
+        ]
+      }
+    },
+    "/api/v1/organizer/events/{event_id}/activation/terms": {
+      "post": {
+        "operationId": "accept_terms_api_v1_organizer_events__event_id__activation_terms_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivationRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Accept the paid-event terms",
+        "tags": [
+          "activation"
         ]
       }
     },
