@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "BiletFlow Scanner",
+    "slug": "biletflow-scanner",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "kz.biletflow.scanner"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "kz.biletflow.scanner"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-status-bar",
+      "expo-secure-store",
+      "expo-localization",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "BiletFlow Scanner uses the camera to scan ticket QR codes at the event entrance.",
+          "recordAudioAndroid": false,
+          "barcodeScannerEnabled": true
+        }
+      ]
+    ],
+    "scheme": "biletflow-scanner",
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
