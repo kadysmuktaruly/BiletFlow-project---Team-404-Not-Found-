@@ -29,6 +29,11 @@ def bearer(user: User) -> dict[str, str]:
     return {"Authorization": f"Bearer {create_token(TokenType.ACCESS, user.id)}"}
 
 
+async def organizer_bearer(session: AsyncSession, profile: OrganizerProfile) -> dict[str, str]:
+    """Authorization header for the user who owns `profile`."""
+    return bearer(await session.get_one(User, profile.user_id))
+
+
 async def make_user(
     session: AsyncSession, password: str = DEFAULT_PASSWORD, **overrides: Any
 ) -> User:

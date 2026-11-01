@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import (
     BigInteger,
@@ -26,6 +27,9 @@ from app.enums import (
     SeatingMode,
 )
 from app.models.base import Base, TimestampMixin, pg_enum, uuid_pk
+
+if TYPE_CHECKING:
+    from app.models.seating import Venue
 
 
 class Event(Base, TimestampMixin):
@@ -92,6 +96,9 @@ class Event(Base, TimestampMixin):
         PGUUID(as_uuid=True), ForeignKey("events.id", ondelete="SET NULL")
     )
 
+    # ORM-only (no column or constraint of its own). Loaded eagerly because every event
+    # response shows its venue, and async sessions cannot lazy-load on attribute access.
+    venue: Mapped[Venue | None] = relationship(lazy="selectin")
     ticket_types: Mapped[list[TicketType]] = relationship(back_populates="event")
     activation: Mapped[PaidSalesActivation | None] = relationship(
         back_populates="event", uselist=False
