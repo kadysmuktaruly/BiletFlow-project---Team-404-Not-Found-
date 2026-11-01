@@ -130,3 +130,11 @@ def install_error_handlers(app: FastAPI) -> None:
     app.add_exception_handler(StarletteHTTPException, _http_exception_handler)
     app.add_exception_handler(RequestValidationError, _validation_error_handler)
     app.add_exception_handler(Exception, _unhandled_error_handler)
+
+
+def error_responses(*status_codes: int) -> dict[int | str, dict[str, Any]]:
+    """OpenAPI `responses=` entries documenting the standard error body for these codes."""
+    return {
+        code: {"model": ErrorResponse, "description": HTTPStatus(code).phrase}
+        for code in status_codes
+    }
