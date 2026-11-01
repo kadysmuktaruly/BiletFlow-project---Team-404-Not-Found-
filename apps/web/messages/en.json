@@ -1,0 +1,158 @@
+{
+  "common": {
+    "appName": "BiletFlow",
+    "tagline": "Event tickets for Kazakhstan",
+    "loading": "Loading…",
+    "save": "Save",
+    "saving": "Saving…",
+    "saved": "Saved.",
+    "cancel": "Cancel",
+    "back": "Back",
+    "optional": "optional",
+    "demo": "DEMO",
+    "language": "Language",
+    "locales": { "kk": "Қазақша", "ru": "Русский", "en": "English" }
+  },
+  "nav": {
+    "home": "Home",
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "register": "Create account",
+    "account": "Account",
+    "organizer": "Organizer",
+    "myEvents": "My events",
+    "profile": "Profile"
+  },
+  "home": {
+    "title": "Find events and get your tickets in seconds",
+    "lead": "BiletFlow lets anyone in Kazakhstan publish an event, register guests for free or sell tickets in tenge, and check people in at the door with a QR code.",
+    "forOrganizers": "Organize an event",
+    "forOrganizersText": "Create a free event in minutes. Paid sales unlock after a short activation.",
+    "getStarted": "Get started"
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Password",
+    "passwordHint": "At least 8 characters.",
+    "fullName": "Full name",
+    "register": {
+      "title": "Create your account",
+      "role": "I want to",
+      "roleAttendee": "Attend events",
+      "roleOrganizer": "Organize events",
+      "submit": "Create account",
+      "doneTitle": "Check your inbox",
+      "done": "If {email} can be used for a new account, we've sent a link to confirm it. Open the link to finish signing up.",
+      "haveAccount": "Already have an account?"
+    },
+    "login": {
+      "title": "Sign in",
+      "submit": "Sign in",
+      "forgot": "Forgot your password?",
+      "noAccount": "New to BiletFlow?"
+    },
+    "verify": {
+      "title": "Confirm your email",
+      "working": "Confirming your email…",
+      "success": "Your email is confirmed. You can sign in now.",
+      "missingToken": "This link is incomplete. Open the link from your email again.",
+      "resendTitle": "Need a new link?",
+      "resend": "Send a new link",
+      "resent": "If that account still needs confirming, a new link is on its way."
+    },
+    "forgot": {
+      "title": "Reset your password",
+      "lead": "Enter your email and we'll send you a link to choose a new password.",
+      "submit": "Send reset link",
+      "done": "If an account exists for {email}, a reset link is on its way."
+    },
+    "reset": {
+      "title": "Choose a new password",
+      "newPassword": "New password",
+      "submit": "Save new password",
+      "success": "Your password has been changed. Sign in with your new password."
+    },
+    "required": {
+      "signIn": "Please sign in to continue.",
+      "organizer": "This page is for organizer accounts."
+    }
+  },
+  "organizer": {
+    "profile": {
+      "title": "Organizer profile",
+      "lead": "Attendees see these contact details on your event pages.",
+      "displayName": "Organizer name",
+      "contactEmail": "Contact email",
+      "contactPhone": "Contact phone",
+      "description": "About you",
+      "website": "Website"
+    },
+    "payout": {
+      "title": "Payout account",
+      "demoNotice": "DEMO: no real bank account is connected and no money is paid out. Enter only the last four digits of an account number.",
+      "holder": "Account holder",
+      "bank": "Bank",
+      "last4": "Last 4 digits",
+      "last4Hint": "Digits only. Never enter a full account number.",
+      "status": "Status: {status}",
+      "statuses": {
+        "unverified": "Not verified",
+        "pending": "Pending",
+        "verified": "Verified (simulated)",
+        "rejected": "Rejected"
+      }
+    },
+    "events": {
+      "title": "My events",
+      "new": "New event",
+      "empty": "You haven't created any events yet.",
+      "edit": "Edit",
+      "starts": "Starts"
+    }
+  },
+  "event": {
+    "status": {
+      "draft": "Draft",
+      "published": "Published",
+      "unpublished": "Unpublished",
+      "cancelled": "Cancelled",
+      "completed": "Completed"
+    },
+    "form": {
+      "newTitle": "New event",
+      "editTitle": "Edit event",
+      "details": "Details",
+      "title": "Title",
+      "description": "Description",
+      "category": "Category",
+      "coverImage": "Cover image URL",
+      "venue": "Venue",
+      "venueName": "Venue name",
+      "address": "Address",
+      "city": "City",
+      "when": "Date and time",
+      "startsAt": "Starts",
+      "endsAt": "Ends",
+      "timezone": "Time zone",
+      "timezoneHint": "Times are entered in this time zone.",
+      "createDraft": "Save draft",
+      "draftNotice": "Drafts are only visible to you."
+    }
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "network": "Can't reach BiletFlow. Check your connection and try again.",
+    "validation_error": "Please check the highlighted fields.",
+    "unauthorized": "Please sign in again.",
+    "forbidden": "Your account can't do this.",
+    "invalid_credentials": "The email or password is incorrect.",
+    "account_suspended": "This account has been suspended.",
+    "invalid_token": "This link is invalid or has already been used.",
+    "token_expired": "This link has expired. Request a new one.",
+    "event_not_found": "Event not found.",
+    "event_not_editable": "Cancelled or completed events can't be edited.",
+    "invalid_event_times": "The event must end after it starts.",
+    "payout_account_not_found": "You haven't set up a payout account yet.",
+    "internal_error": "Something went wrong on our side. Please try again."
+  }
+}
