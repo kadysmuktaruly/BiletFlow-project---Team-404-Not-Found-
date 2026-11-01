@@ -1,0 +1,54 @@
+# CI for every pull request, whatever its base branch (stacked PRs target feature branches).
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api:
+    name: API (ruff, mypy, alembic check, pytest)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/api
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: biletflow
+          POSTGRES_PASSWORD: biletflow
+          POSTGRES_DB: biletflow
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U biletflow -d biletflow"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql+asyncpg://biletflow:biletflow@localhost:5432/biletflow
+      ENVIRONMENT: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.12.5"
+          enable-cache: true
+      - run: uv sync --locked
+      - name: Lint
+        run: uv run ruff check .
+      - name: Format
+        run: uv run ruff format --check .
+      - name: Type check (strict)
+        run: uv run mypy .
+      - name: Migrate
+        run: uv run alembic upgrade head
+      - name: Models match migrations
+        run: uv run alembic check
+      # Uses its own biletflow_test database; includes tests/constraints/verify_constraints.sql.
+      - name: Tests
+        run: uv run pytest -q
