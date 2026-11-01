@@ -121,6 +121,12 @@ npm run lint -w @biletflow/scanner       # expo lint + kk/ru/en key check
 npm test -w @biletflow/scanner           # jest (jest-expo)
 ```
 
+After sign-in, the scanner lists only the events you organize or are assigned to as staff
+(`GET /checkin/events`). Tapping one opens the camera, which reads QR codes only. Results use
+color, a symbol and text for all five states: valid, invalid, cancelled, refunded, already
+used. Until live check-in lands (Report 4), the result is simulated on the phone, and the
+screen says so. "Preview result screens" shows all five states for training.
+
 The scanner sends `X-Client: scanner`, so the API returns the refresh token in the response
 body. The app keeps it in the OS keychain or keystore (`expo-secure-store`). The camera is
 used only to read QR codes. Its strings live in `apps/scanner/src/locales/`, and the app uses
