@@ -7,16 +7,24 @@ from fastapi import APIRouter, status
 from app.deps import CurrentOrganizer, OrganizerUser, OwnedEvent, SessionDep
 from app.errors import AppError, error_responses
 from app.models import Event, OrganizerProfile, PayoutAccount
-from app.schemas.event import EventCreate, EventRead, EventUpdate
+from app.schemas.event import (
+    CancelEventRequest,
+    EventCreate,
+    EventRead,
+    EventUpdate,
+    PublicEventRead,
+)
 from app.schemas.organizer import (
     OrganizerProfileRead,
     OrganizerProfileUpdate,
     PayoutAccountRead,
     PayoutAccountUpsert,
 )
+from app.schemas.staff import StaffAssign, StaffRead
 from app.schemas.ticket_type import TicketTypeCreate, TicketTypeRead, TicketTypeUpdate
 from app.services import events as event_service
 from app.services import organizer as organizer_service
+from app.services import staff as staff_service
 from app.services import ticket_types as ticket_type_service
 
 router = APIRouter(prefix="/organizer", tags=["organizer"], responses=error_responses(401, 403))
@@ -100,8 +108,100 @@ async def read_event(event: OwnedEvent) -> Event:
     responses=error_responses(404, 409),
     summary="Edit an event",
 )
-async def update_event(data: EventUpdate, event: OwnedEvent, session: SessionDep) -> Event:
-    return await event_service.update(session, event, data)
+async def update_event(
+    data: EventUpdate, event: OwnedEvent, user: OrganizerUser, session: SessionDep
+) -> Event:
+    return await event_service.update(session, event, user, data)
+
+
+@router.post(
+    "/events/{event_id}/publish",
+    response_model=EventRead,
+    responses=error_responses(404, 409),
+    summary="Publish an event",
+    description=(
+        "Needs a verified email, a venue, at least one visible ticket type, and an end time "
+        "in the future. Public events then appear in the listing; unlisted ones open by link."
+    ),
+)
+async def publish_event(event: OwnedEvent, user: OrganizerUser, session: SessionDep) -> Event:
+    return await event_service.publish(session, event, user)
+
+
+@router.post(
+    "/events/{event_id}/unpublish",
+    response_model=EventRead,
+    responses=error_responses(404, 409),
+    summary="Unpublish an event: hide its page and stop new registrations",
+    description="Tickets already issued stay valid.",
+)
+async def unpublish_event(event: OwnedEvent, user: OrganizerUser, session: SessionDep) -> Event:
+    return await event_service.unpublish(session, event, user)
+
+
+@router.post(
+    "/events/{event_id}/cancel",
+    response_model=EventRead,
+    responses=error_responses(404, 409),
+    summary="Cancel an event",
+    description=(
+        "Cancels every valid ticket (they fail at check-in) and releases unpaid orders. "
+        "Refunds for paid orders arrive with SRS 4.9."
+    ),
+)
+async def cancel_event(
+    data: CancelEventRequest, event: OwnedEvent, user: OrganizerUser, session: SessionDep
+) -> Event:
+    return await event_service.cancel(session, event, user, data.reason)
+
+
+@router.get(
+    "/events/{event_id}/preview",
+    response_model=PublicEventRead,
+    responses=error_responses(404),
+    summary="Preview the public page, whatever the event's status",
+)
+async def preview_event(event: OwnedEvent, session: SessionDep) -> PublicEventRead:
+    return await event_service.public_read(session, event, preview=True)
+
+
+# --- staff (SRS 4.8) ------------------------------------------------------------------------
+
+
+@router.get(
+    "/events/{event_id}/staff",
+    response_model=list[StaffRead],
+    responses=error_responses(404),
+    summary="People who can check attendees in at this event",
+)
+async def list_staff(event: OwnedEvent, session: SessionDep) -> list[StaffRead]:
+    return await staff_service.list_staff(session, event)
+
+
+@router.post(
+    "/events/{event_id}/staff",
+    response_model=StaffRead,
+    status_code=status.HTTP_201_CREATED,
+    responses=error_responses(404, 409),
+    summary="Assign an existing user as Event Admin or check-in staff",
+    description="Event admins can scan and undo check-ins; check-in staff can only scan.",
+)
+async def assign_staff(
+    data: StaffAssign, event: OwnedEvent, user: OrganizerUser, session: SessionDep
+) -> StaffRead:
+    return await staff_service.assign(session, event, user, data)
+
+
+@router.delete(
+    "/events/{event_id}/staff/{assignment_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses=error_responses(404),
+    summary="Remove someone from the event's staff",
+)
+async def revoke_staff(
+    assignment_id: uuid.UUID, event: OwnedEvent, user: OrganizerUser, session: SessionDep
+) -> None:
+    await staff_service.revoke(session, event, user, assignment_id)
 
 
 # --- ticket types (SRS 4.3) ---------------------------------------------------------------

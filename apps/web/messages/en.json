@@ -11,7 +11,19 @@
     "optional": "optional",
     "demo": "DEMO",
     "language": "Language",
-    "locales": { "kk": "Қазақша", "ru": "Русский", "en": "English" }
+    "locales": {
+      "kk": "Қазақша",
+      "ru": "Русский",
+      "en": "English"
+    },
+    "confirm": "Confirm",
+    "close": "Close",
+    "remove": "Remove",
+    "edit": "Edit",
+    "delete": "Delete",
+    "add": "Add",
+    "yes": "Yes",
+    "no": "No"
   },
   "nav": {
     "home": "Home",
@@ -108,6 +120,116 @@
       "empty": "You haven't created any events yet.",
       "edit": "Edit",
       "starts": "Starts"
+    },
+    "manage": {
+      "tabs": {
+        "details": "Details",
+        "tickets": "Tickets",
+        "activation": "Paid sales",
+        "staff": "Staff",
+        "preview": "Preview"
+      },
+      "publish": "Publish",
+      "unpublish": "Unpublish",
+      "cancel": "Cancel event",
+      "cancelTitle": "Cancel this event?",
+      "cancelText": "Every ticket will be cancelled and stop working at the door. Unpaid orders are released. This can't be undone.",
+      "cancelReason": "Reason (shown in the event history)",
+      "cancelKeep": "Keep the event",
+      "cancelDo": "Cancel event",
+      "published": "The event is live.",
+      "unpublished": "The event is hidden and registration is paused. Issued tickets still work.",
+      "cancelledNotice": "This event was cancelled.",
+      "viewPublic": "Open public page"
+    },
+    "ticketTypes": {
+      "title": "Ticket types",
+      "lead": "Free tickets have price 0. Paid tickets need paid sales to be activated.",
+      "empty": "No ticket types yet. Add one to publish the event.",
+      "add": "Add ticket type",
+      "name": "Name",
+      "description": "Description",
+      "price": "Price, KZT",
+      "priceHint": "0 makes it free.",
+      "quantity": "Quantity",
+      "maxPerOrder": "Max per order",
+      "salesStart": "Sales start",
+      "salesEnd": "Sales end",
+      "hidden": "Hidden",
+      "hiddenHint": "Hidden tickets aren't shown or sold, but keep their orders.",
+      "free": "Free",
+      "counts": {
+        "available": "Available",
+        "reserved": "Reserved",
+        "sold": "Sold",
+        "refunded": "Refunded",
+        "checkedIn": "Checked in"
+      },
+      "hide": "Hide",
+      "show": "Show",
+      "deleteConfirm": "Delete this ticket type?"
+    },
+    "activation": {
+      "title": "Paid sales",
+      "lead": "Complete every step to sell paid tickets for this event. Free tickets work without this.",
+      "demoNotice": "DEMO: identity checks, payout accounts and the activation fee are all simulated. No documents are collected and no money moves.",
+      "statusLabel": "Status: {status}",
+      "status": {
+        "not_started": "Not started",
+        "in_progress": "In progress",
+        "pending_review": "Pending review",
+        "active": "Active",
+        "suspended": "Suspended by BiletFlow"
+      },
+      "enabled": "Paid sales are on. Attendees can buy paid tickets.",
+      "suspended": "Paid sales for this event are suspended. Contact BiletFlow support.",
+      "steps": {
+        "paidTicket": {
+          "title": "Paid ticket type",
+          "text": "Add at least one ticket type with a price above 0."
+        },
+        "identity": {
+          "title": "Identity check",
+          "text": "A simulated check for the demo. No documents are uploaded."
+        },
+        "payout": {
+          "title": "Payout account",
+          "text": "Connect the payout account from your organizer profile."
+        },
+        "fee": {
+          "title": "Activation fee",
+          "text": "One-time fee for this event: {amount}. Non-refundable."
+        },
+        "terms": {
+          "title": "Paid-event terms",
+          "text": "You agree to deliver the event and handle refunds under your policy."
+        }
+      },
+      "done": "Done",
+      "verify": "Run simulated check",
+      "connect": "Connect payout account",
+      "accept": "Accept terms",
+      "paySucceed": "Pay (DEMO: succeeds)",
+      "payFail": "Pay (DEMO: fails)",
+      "feeFailed": "The DEMO payment failed. Try again.",
+      "goToTickets": "Add a paid ticket type",
+      "goToProfile": "Set up payout account"
+    },
+    "staff": {
+      "title": "Check-in staff",
+      "lead": "People you add can sign in to the BiletFlow Scanner app and check attendees in at this event only. They need a BiletFlow account first.",
+      "email": "Their BiletFlow email",
+      "role": "Role",
+      "roles": {
+        "event_admin": "Event admin (can undo check-ins)",
+        "check_in_staff": "Check-in staff (scan only)"
+      },
+      "add": "Add to staff",
+      "empty": "No staff assigned yet.",
+      "added": "Added."
+    },
+    "preview": {
+      "banner": "Preview: this is how attendees will see the page."
     }
   },
   "event": {
@@ -136,7 +258,34 @@
       "timezone": "Time zone",
       "timezoneHint": "Times are entered in this time zone.",
       "createDraft": "Save draft",
-      "draftNotice": "Drafts are only visible to you."
+      "draftNotice": "Drafts are only visible to you.",
+      "settings": "Registration and visibility",
+      "visibility": "Visibility",
+      "visibilityOptions": {
+        "public": "Public: listed on BiletFlow",
+        "unlisted": "Unlisted: only people with the link",
+        "private": "Private: only you and your staff"
+      },
+      "registrationOpens": "Registration opens",
+      "registrationCloses": "Registration closes",
+      "registrationHint": "Leave empty to open now and close when the event ends.",
+      "capacity": "Capacity",
+      "capacityHint": "Total tickets across all types. Leave empty for no limit."
+    },
+    "view": {
+      "when": "When",
+      "where": "Where",
+      "organizer": "Organizer",
+      "tickets": "Tickets",
+      "free": "Free",
+      "soldOut": "Sold out",
+      "left": "{count} left",
+      "notOnSale": "Not on sale",
+      "registrationClosed": "Registration is closed.",
+      "registrationNotOpen": "Registration opens {date}.",
+      "cancelled": "This event has been cancelled.",
+      "paidNotEnabled": "Paid tickets aren't on sale yet.",
+      "noTickets": "No tickets available."
     }
   },
   "errors": {
@@ -153,6 +302,26 @@
     "event_not_editable": "Cancelled or completed events can't be edited.",
     "invalid_event_times": "The event must end after it starts.",
     "payout_account_not_found": "You haven't set up a payout account yet.",
-    "internal_error": "Something went wrong on our side. Please try again."
+    "internal_error": "Something went wrong on our side. Please try again.",
+    "no_ticket_types": "Add at least one visible ticket type before publishing.",
+    "email_not_verified": "Confirm your email address before publishing.",
+    "event_in_past": "This event has already ended.",
+    "invalid_status_transition": "That action isn't possible for this event right now.",
+    "venue_required": "Add a venue before publishing.",
+    "capacity_below_sold": "The capacity can't be lower than the tickets already sold or reserved.",
+    "invalid_registration_window": "Registration must close after it opens.",
+    "quantity_below_sold": "The quantity can't be lower than the tickets already sold or reserved.",
+    "ticket_type_has_orders": "This ticket type has orders. Hide it instead of deleting it.",
+    "ticket_type_not_found": "This ticket type isn't available.",
+    "invalid_sales_window": "Sales must end after they start.",
+    "payout_account_required": "Set up your payout account in your profile first.",
+    "activation_fee_already_paid": "The activation fee is already paid.",
+    "idempotency_key_reused": "This payment was already submitted. Refresh and try again.",
+    "user_not_found": "No active BiletFlow account uses that email. Ask them to register first.",
+    "already_owner": "You already manage this event.",
+    "already_assigned": "This person is already on the staff.",
+    "staff_not_found": "That staff member was not found.",
+    "sold_out": "There aren't enough tickets left.",
+    "paid_sales_not_active": "Paid tickets for this event aren't on sale yet."
   }
 }

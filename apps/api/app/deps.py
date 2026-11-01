@@ -48,6 +48,23 @@ async def get_current_user(
 CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
+async def get_optional_user(
+    session: SessionDep,
+    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer)],
+) -> User | None:
+    """The signed-in user if there is a valid token, else None. For public pages that show
+    a little more to the right person (e.g. a private event to its staff)."""
+    if credentials is None:
+        return None
+    try:
+        return await get_current_user(session, credentials)
+    except AppError:
+        return None
+
+
+OptionalUser = Annotated[User | None, Depends(get_optional_user)]
+
+
 def require_role(*roles: UserRole) -> Callable[[User], Awaitable[User]]:
     """Dependency factory: the signed-in user must hold one of these platform roles.
 
