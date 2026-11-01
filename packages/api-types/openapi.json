@@ -186,6 +186,74 @@
         "title": "CancelEventRequest",
         "type": "object"
       },
+      "CheckInEvent": {
+        "description": "An event the signed-in user may check attendees in at.",
+        "properties": {
+          "can_undo": {
+            "title": "Can Undo",
+            "type": "boolean"
+          },
+          "ends_at": {
+            "format": "date-time",
+            "title": "Ends At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "owner",
+              "event_admin",
+              "check_in_staff"
+            ],
+            "title": "Role",
+            "type": "string"
+          },
+          "starts_at": {
+            "format": "date-time",
+            "title": "Starts At",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/EventStatus"
+          },
+          "timezone": {
+            "title": "Timezone",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "venue_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Venue Name"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "status",
+          "starts_at",
+          "ends_at",
+          "timezone",
+          "venue_name",
+          "role",
+          "can_undo"
+        ],
+        "title": "CheckInEvent",
+        "type": "object"
+      },
       "ConfirmRequest": {
         "description": "For checklist steps that are a simple confirmation.",
         "properties": {
@@ -3289,6 +3357,67 @@
         "summary": "Confirm an email address with the token from the verification email",
         "tags": [
           "auth"
+        ]
+      }
+    },
+    "/api/v1/checkin/events": {
+      "get": {
+        "description": "Only events you organize or are assigned to as staff (SRS 4.8: 'view only assigned events'), while published or unpublished and until a day after they end.",
+        "operationId": "list_events_api_v1_checkin_events_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CheckInEvent"
+                  },
+                  "title": "Response List Events Api V1 Checkin Events Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Events you can check attendees in at",
+        "tags": [
+          "check-in"
         ]
       }
     },
