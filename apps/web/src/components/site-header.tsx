@@ -24,6 +24,14 @@ export function SiteHeader() {
           {tc("appName")}
         </Link>
         <div className="flex flex-1 flex-wrap items-center gap-x-4 text-sm">
+          <Link href="/events" className="text-gray-700 hover:text-gray-900">
+            {t("events")}
+          </Link>
+          {user && (
+            <Link href="/tickets" className="text-gray-700 hover:text-gray-900">
+              {t("myTickets")}
+            </Link>
+          )}
           {user?.role === "organizer" && (
             <>
               <Link href="/organizer/events" className="text-gray-700 hover:text-gray-900">
