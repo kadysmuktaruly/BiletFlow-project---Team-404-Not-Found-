@@ -25,4 +25,5 @@ HEALTHCHECK --interval=10s --timeout=5s --start-period=20s --retries=5 \
 
 # Apply migrations, then serve. Fine for development and the demo; a multi-replica
 # deployment would run migrations as a separate one-off step.
-CMD ["sh", "-c", "alembic upgrade head && exec uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+# SEED_DEMO_DATA=true (the Compose default) loads the idempotent demo accounts and events.
+CMD ["sh", "-c", "alembic upgrade head && if [ \"$SEED_DEMO_DATA\" = true ]; then python -m app.seed; fi && exec uvicorn app.main:app --host 0.0.0.0 --port 8000"]
