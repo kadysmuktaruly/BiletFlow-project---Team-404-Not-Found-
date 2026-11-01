@@ -230,6 +230,33 @@ and a background sweep (`ORDER_SWEEP_INTERVAL_SECONDS`) cleans up the rest.
 `TICKET_SIGNING_SECRET`. The token identifies the ticket only. Its status is always read live
 at check-in, so a refunded ticket's QR code stops working.
 
+### DEMO payments and paid-sales activation (SRS 3.2, 4.5, 4.6)
+
+Every payment is simulated. No real money moves. Payment records have `is_simulated: true`,
+API responses carry `"demo": true`, and emails and screens say DEMO.
+
+| Endpoint | Purpose |
+|---|---|
+| `POST /orders/{id}/payments` | Body `{"outcome": "succeed" \| "fail"}` plus an `Idempotency-Key` header. `succeed` confirms the order, issues the tickets and emails them with QR codes. `fail` releases the tickets and emails a DEMO failure notice. |
+| `POST /orders/{id}/abandon` | Leave the payment step. The tickets go back on sale at once rather than at expiry. |
+| `GET /organizer/events/{id}/activation` | The paid-sales checklist: a paid ticket type, the simulated identity check, a connected payout account, the activation fee and the terms. |
+| `POST …/activation/identity`, `…/payout-account`, `…/terms` | Body `{"confirm": true}`. No identity documents are collected. |
+| `POST …/activation/fee-payment` | Pays `ACTIVATION_FEE_KZT` (non-refundable) through the same DEMO provider, with the same `Idempotency-Key` rules. |
+
+**Idempotency.** The key is stored per user in `payments.idempotency_key` (unique). Repeating a
+request returns the original result (`200`, `replayed: true`) and never charges twice, even
+when the retries arrive at the same moment (`test_concurrent_retries_with_one_key_charge_once`).
+Reusing a key for a different order returns `409 idempotency_key_reused`.
+
+**Paid checkout is blocked** (`409 paid_sales_not_active`) until the event's checklist is
+complete, or while a Platform Admin has suspended it. Free registration never needs activation.
+
+**Processing charges** (`PROCESSING_FEE_BPS`, 3% by default) are recorded on the order for the
+organizer's estimated payout. They are never added to what the attendee pays.
+
+**Emails** (all in Mailpit during development): verification, password reset, order
+confirmation with an inline QR image per ticket (free and paid), and DEMO payment failure.
+
 ## Data model conventions
 
 - **UUID primary keys** everywhere, generated both in Python and by the database (`gen_random_uuid()`).
@@ -263,5 +290,6 @@ All variables are documented in [`.env.example`](.env.example). The main ones:
 | `SEAT_HOLD_TTL_SECONDS` | `600` | How long a checkout seat hold lasts |
 | `ORDER_RESERVATION_TTL_SECONDS` | `600` | How long an unpaid order holds its tickets |
 | `TICKET_SIGNING_SECRET` | dev key | Signs ticket QR codes; required outside development |
-| `ACTIVATION_FEE_KZT` | `5000` | Paid sales activation fee (placeholder amount) |
+| `ACTIVATION_FEE_KZT` | `5000` | Paid sales activation fee (placeholder amount, non-refundable) |
+| `PROCESSING_FEE_BPS` | `300` | Processing charge taken from the organizer's payout (DEMO) |
 | `CURRENCY` | `KZT` | Currency for the initial release |

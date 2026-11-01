@@ -10,8 +10,8 @@ from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.enums import EventStatus, UserRole
-from app.models import Event, OrganizerProfile, TicketType, User
+from app.enums import ActivationStatus, EventStatus, UserRole
+from app.models import Event, OrganizerProfile, PaidSalesActivation, TicketType, User
 from app.security import TokenType, create_token, hash_password
 
 _seq = itertools.count(1)
@@ -105,3 +105,21 @@ async def make_published_event(
     overrides.setdefault("status", EventStatus.PUBLISHED)
     overrides.setdefault("published_at", datetime.now(UTC))
     return await make_event(session, organizer, **overrides)
+
+
+async def enable_paid_sales(session: AsyncSession, event: Event) -> PaidSalesActivation:
+    """Mark the event's activation checklist complete, so paid checkout is open (SRS 4.5)."""
+    activation = PaidSalesActivation(
+        event_id=event.id,
+        status=ActivationStatus.ACTIVE,
+        has_paid_ticket_type=True,
+        identity_verified=True,
+        payout_account_connected=True,
+        activation_fee_paid=True,
+        terms_accepted=True,
+        activation_fee_kzt=5000,
+        activated_at=datetime.now(UTC),
+    )
+    session.add(activation)
+    await session.flush()
+    return activation

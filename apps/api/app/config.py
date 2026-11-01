@@ -67,6 +67,10 @@ class Settings(BaseSettings):
     # this is a placeholder for the demonstration.
     activation_fee_kzt: int = 5000
 
+    # SRS 3.3 / 4.6: payment-processing charge in basis points (300 = 3%), deducted from the
+    # organizer's estimated payout, never added to what the attendee pays. A DEMO placeholder.
+    processing_fee_bps: int = 300
+
     # SRS 4.6 / 4.14: the currency for the initial Kazakhstan release.
     currency: str = "KZT"
 
