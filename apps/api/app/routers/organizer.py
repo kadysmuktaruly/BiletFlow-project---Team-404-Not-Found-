@@ -1,8 +1,10 @@
 """/organizer: the signed-in organizer's profile, payout account and events (SRS 4.1, 4.2)."""
 
+import uuid
+
 from fastapi import APIRouter, status
 
-from app.deps import CurrentOrganizer, OwnedEvent, SessionDep
+from app.deps import CurrentOrganizer, OrganizerUser, OwnedEvent, SessionDep
 from app.errors import AppError, error_responses
 from app.models import Event, OrganizerProfile, PayoutAccount
 from app.schemas.event import EventCreate, EventRead, EventUpdate
@@ -12,8 +14,10 @@ from app.schemas.organizer import (
     PayoutAccountRead,
     PayoutAccountUpsert,
 )
+from app.schemas.ticket_type import TicketTypeCreate, TicketTypeRead, TicketTypeUpdate
 from app.services import events as event_service
 from app.services import organizer as organizer_service
+from app.services import ticket_types as ticket_type_service
 
 router = APIRouter(prefix="/organizer", tags=["organizer"], responses=error_responses(401, 403))
 
@@ -98,3 +102,63 @@ async def read_event(event: OwnedEvent) -> Event:
 )
 async def update_event(data: EventUpdate, event: OwnedEvent, session: SessionDep) -> Event:
     return await event_service.update(session, event, data)
+
+
+# --- ticket types (SRS 4.3) ---------------------------------------------------------------
+
+
+@router.get(
+    "/events/{event_id}/ticket-types",
+    response_model=list[TicketTypeRead],
+    responses=error_responses(404),
+    summary="Ticket types with available, reserved, sold, refunded and checked-in counts",
+)
+async def list_ticket_types(event: OwnedEvent, session: SessionDep) -> list[TicketTypeRead]:
+    types = await ticket_type_service.list_for_event(session, event)
+    return await ticket_type_service.to_read(session, types)
+
+
+@router.post(
+    "/events/{event_id}/ticket-types",
+    response_model=TicketTypeRead,
+    status_code=status.HTTP_201_CREATED,
+    responses=error_responses(404, 409),
+    summary="Add a free (price 0) or paid ticket type",
+    description="Sales-window times without a UTC offset are read in the event's time zone.",
+)
+async def create_ticket_type(
+    data: TicketTypeCreate, event: OwnedEvent, user: OrganizerUser, session: SessionDep
+) -> TicketTypeRead:
+    tt = await ticket_type_service.create(session, event, user, data)
+    return (await ticket_type_service.to_read(session, [tt]))[0]
+
+
+@router.patch(
+    "/events/{event_id}/ticket-types/{ticket_type_id}",
+    response_model=TicketTypeRead,
+    responses=error_responses(404, 409),
+    summary="Edit a ticket type, or hide it with is_hidden",
+)
+async def update_ticket_type(
+    ticket_type_id: uuid.UUID,
+    data: TicketTypeUpdate,
+    event: OwnedEvent,
+    user: OrganizerUser,
+    session: SessionDep,
+) -> TicketTypeRead:
+    tt = await ticket_type_service.get_for_event(session, event, ticket_type_id)
+    tt = await ticket_type_service.update(session, event, tt, user, data)
+    return (await ticket_type_service.to_read(session, [tt]))[0]
+
+
+@router.delete(
+    "/events/{event_id}/ticket-types/{ticket_type_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses=error_responses(404, 409),
+    summary="Delete a ticket type that has never been ordered",
+)
+async def delete_ticket_type(
+    ticket_type_id: uuid.UUID, event: OwnedEvent, user: OrganizerUser, session: SessionDep
+) -> None:
+    tt = await ticket_type_service.get_for_event(session, event, ticket_type_id)
+    await ticket_type_service.delete(session, event, tt, user)
