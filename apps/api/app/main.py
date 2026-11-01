@@ -42,7 +42,8 @@ def create_app() -> FastAPI:
         allow_origins=settings.cors_origin_list,
         allow_credentials=True,
         allow_methods=["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
-        allow_headers=["Authorization", "Content-Type", "X-Client"],
+        # Idempotency-Key makes DEMO payment retries safe; browsers must be allowed to send it.
+        allow_headers=["Authorization", "Content-Type", "X-Client", "Idempotency-Key"],
     )
     install_error_handlers(app)
 
