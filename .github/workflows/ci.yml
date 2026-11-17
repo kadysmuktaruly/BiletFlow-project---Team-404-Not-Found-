@@ -157,7 +157,9 @@ jobs:
           uv run python -m app.seed
       - name: Start the API
         working-directory: apps/api
-        run: nohup uv run uvicorn app.main:app --port 8000 > "$RUNNER_TEMP/api.log" 2>&1 &
+        # From the venv directly, not `uv run`: a long-lived uv process would hold uv's cache
+        # lock and make setup-uv's post-job cache step time out.
+        run: nohup .venv/bin/uvicorn app.main:app --port 8000 > "$RUNNER_TEMP/api.log" 2>&1 &
       - run: npm ci
       - name: Build and start the web app
         run: |
@@ -174,6 +176,9 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Core flow
         run: npm run e2e -w @biletflow/web
+      - name: Stop the servers
+        if: always()
+        run: pkill -f "uvicorn app.main:app" || true; pkill -f "next start" || true
       - name: Keep the report and logs
         if: failure()
         uses: actions/upload-artifact@v4
