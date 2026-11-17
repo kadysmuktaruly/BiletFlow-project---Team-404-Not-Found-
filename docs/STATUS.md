@@ -6,6 +6,13 @@ Spec: SRS v0.3 ([`docs/srs/srs.md`](srs/srs.md)), the semester plan and the mode
 
 ## Progress notes (newest first)
 
+- **Nov 17 — Phase 1 complete (rows 1–13).** [#27](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/27): Playwright end-to-end core
+  flow (campaign QR → promo purchase → PDF → support → door → analytics), green in CI on a
+  fresh seeded stack. **Every required feature for Reports 2–6 is now built, tested and
+  documented; none is merged yet.** The bottleneck is review: 25 open PRs (#3–#27), plus
+  #14 (this file). Left before the freeze: merge the stack; decide on the HTTPS proposal and
+  the Next.js patch. After the freeze: kk/ru polish and the WCAG audit (row 14), and the
+  manual tasks below.
 - **Nov 17 — Row 12: hardening and seed.** [#26](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/26): rate limits on sign-in and
   account emails, secret scan as a CI job, backup/restore scripts (ran once into a scratch
   DB: counts identical), richer idempotent seed, HTTPS proxy *proposal* (needs a decision).
@@ -92,8 +99,10 @@ retargeted to `main` and rebased. Suggested reviewer = the plan's owner for that
 | 21 | [#24](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/24) | Organizer analytics API and dashboard | Alisher (reporting), Sanzhar |
 | 22 | [#25](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/25) | Event history: phases, read-only past events, timeline, duplication | Alisher (history), Sanzhar |
 | 23 | [#26](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/26) | Hardening: rate limits, secret scan in CI, backup/restore; richer seed; HTTPS proposal | Kadys (infra), Nurali |
+| 24 | [#27](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/27) | Playwright end-to-end core flow, running in CI | Nurali (tests), Sanzhar |
 
-New Phase 1 PRs are added below as they open.
+Merge in this order. After each merge, the next PR is retargeted to `main` and rebased
+(`--force-with-lease`, own branches only).
 
 ## Decisions log
 
@@ -121,6 +130,8 @@ New Phase 1 PRs are added below as they open.
 | Nov 17 | Known, not fixed: Next.js dev mode logs "Could not validate … instant navigation" on every organizer page (existing before Phase 1). Dev-only; production build is clean. | Out of scope for feature work; candidate for Report 7 stabilization. |
 | Nov 17 | History: "completed" includes ended events; read-only but refundable; timeline for owner, event admins, platform admins; duplicate skips campaigns and activation and shifts past dates by whole weeks. | SRS 4.16 wording; unique codes; per-event activation (SRS 4.5). |
 | Nov 17 | Rate limits in-process (single worker); email limit counts all attempts; off under ENVIRONMENT=test by default. Secret scan is a stdlib script (no new dependency). Backup test restored into a scratch DB, then dropped it. | No new deps; no user-enumeration; never touch dev data. |
+| Nov 17 | The e2e CI job disables rate limits (`RATE_LIMIT_ENABLED=false`) and calls the check-in API for the door step. | Retries would trip the login limit; the scanner is a native app Playwright can't drive (its UI is jest-tested). |
+| Nov 17 | Row 14 (full kk/ru polish, WCAG 2.1 AA audit) not started: it's fixes and polish, allowed after the Nov 29 freeze (Report 7). Every new string already has real kk/ru/en text; new screens use labelled controls, `alertdialog` confirmations and table views. | Priority order: features before polish. |
 
 ## Blocked
 
@@ -197,7 +208,7 @@ or 3 item can have is:
 | 6 | Alisher | Event history: Upcoming / Active / Completed / Cancelled, read-only past events, audit timeline with filters, duplicate button | Partial (unmerged) | [#25](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/25). `GET /history/events/{id}/timeline`, `phase`, History tab; `tests/test_history.py` (4) | Merge #25 |
 | 6 | Kadys | Hardening: rate limiting on login and sign-up, no secrets in repo, backup-and-restore script, HTTPS proxy proposal | Partial (unmerged) | [#26](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/26). `app/ratelimit.py` + `tests/test_rate_limit.py`; `scripts/check-secrets.py` CI job; `scripts/backup-db.sh` / `restore-db.sh` (ran Nov 17); `docs/https-proxy-proposal.md` | Merge #26; decide on the HTTPS proposal |
 | 6 | Kadys | Seed: organizers, free meetup, paid KZT concert, ticket types, campaigns, orders | Partial (unmerged) | [#26](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/26). `app/seed.py`: 6 accounts, 3 events, campaign JAZZ15, promo sale, refund, check-in, support case; `tests/test_seed.py` | Merge #26 |
-| 6 | Nurali | Tests: concurrency for last ticket, promo limit, double check-in; Playwright e2e of the core flow in CI | Partial | Last ticket (#8), double check-in (#15 `test_double_scan_concurrent_one_checkin`), promo limit (#16 `test_promo_limit_holds_under_concurrency`) | Playwright in CI |
+| 6 | Nurali | Tests: concurrency for last ticket, promo limit, double check-in; Playwright e2e of the core flow in CI | Partial (unmerged) | Last ticket (#8), double check-in ([#15](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/15)), promo limit ([#16](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/16)), concurrent refunds ([#21](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/21)); Playwright core flow green in CI ([#27](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/27)) | Merge the stack |
 | 6 | Sanzhar | Attendee pages in kk and ru (en extra); WCAG 2.1 AA on event pages | Partial | All 326 web keys exist in kk, ru and en and are actually translated (5 keys are identical across locales, e.g. brand names) | Strings for every new screen; keyboard, contrast and label audit |
 | Bonus | — | Calendar export, assigned seating | Not started (by rule) | Seating models exist | Only after an explicit go from the team lead |
 
