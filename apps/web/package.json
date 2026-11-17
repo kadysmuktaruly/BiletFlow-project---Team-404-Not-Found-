@@ -11,12 +11,13 @@
     "typecheck": "next typegen && tsc --noEmit"
   },
   "dependencies": {
+    "@biletflow/api-types": "0.1.0",
     "next": "16.4.3",
+    "next-intl": "^4.14.9",
+    "openapi-fetch": "^0.17.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "@biletflow/api-types": "0.1.0",
-    "next-intl": "^4.14.9",
-    "openapi-fetch": "^0.17.0"
+    "recharts": "3.10.1"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",
