@@ -6,6 +6,10 @@ Spec: SRS v0.3 ([`docs/srs/srs.md`](srs/srs.md)), the semester plan and the mode
 
 ## Progress notes (newest first)
 
+- **Nov 17 — Row 12: hardening and seed.** [#26](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/26): rate limits on sign-in and
+  account emails, secret scan as a CI job, backup/restore scripts (ran once into a scratch
+  DB: counts identical), richer idempotent seed, HTTPS proxy *proposal* (needs a decision).
+  pytest 245 passed. Next: Playwright e2e in CI (`test/r6-playwright-e2e`).
 - **Nov 17 — Row 11: history and duplication.** [#25](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/25): phases with My events
   tabs, read-only past events (refunds still allowed), audit-log timeline with filters and
   the records' permissions, Duplicate (configuration only). pytest 241 passed. Next:
@@ -87,6 +91,7 @@ retargeted to `main` and rebased. Suggested reviewer = the plan's owner for that
 | 20 | [#23](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/23) | Admin portal: search, suspensions, paid sales, reports, activation fee, CSV (migrations 0003/0004) | Alisher (admin), Kadys |
 | 21 | [#24](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/24) | Organizer analytics API and dashboard | Alisher (reporting), Sanzhar |
 | 22 | [#25](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/25) | Event history: phases, read-only past events, timeline, duplication | Alisher (history), Sanzhar |
+| 23 | [#26](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/26) | Hardening: rate limits, secret scan in CI, backup/restore; richer seed; HTTPS proposal | Kadys (infra), Nurali |
 
 New Phase 1 PRs are added below as they open.
 
@@ -115,8 +120,12 @@ New Phase 1 PRs are added below as they open.
 | Nov 17 | Analytics: confirmed-in-range order lines; refunds shown separately; fees estimated at `PROCESSING_FEE_BPS`; capacity/attendance current; default last 30 days; read-only transaction. | Exact ticket-type filtering; SRS 7 "never block checkout". |
 | Nov 17 | Known, not fixed: Next.js dev mode logs "Could not validate … instant navigation" on every organizer page (existing before Phase 1). Dev-only; production build is clean. | Out of scope for feature work; candidate for Report 7 stabilization. |
 | Nov 17 | History: "completed" includes ended events; read-only but refundable; timeline for owner, event admins, platform admins; duplicate skips campaigns and activation and shifts past dates by whole weeks. | SRS 4.16 wording; unique codes; per-event activation (SRS 4.5). |
+| Nov 17 | Rate limits in-process (single worker); email limit counts all attempts; off under ENVIRONMENT=test by default. Secret scan is a stdlib script (no new dependency). Backup test restored into a scratch DB, then dropped it. | No new deps; no user-enumeration; never touch dev data. |
 
 ## Blocked
+
+- **HTTPS reverse proxy: needs a team decision.** [Proposal](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/blob/feat/r6-hardening-seed/docs/https-proxy-proposal.md): Caddy behind a Compose profile; scanner over LAN HTTP or CA on phones. Not added until approved (the plan says "propose before adding").
+- **Next.js 16.4.6 security patch: needs approval.** See the decision log (moderate advisory, app not exposed).
 
 Nothing yet.
 
@@ -186,8 +195,8 @@ or 3 item can have is:
 | 6 | Alisher | Event duplication (configuration only) | Partial (unmerged) | [#25](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/25). `history.duplicate`; `test_duplicate_copies_configuration_but_no_transactions` | Merge #25 |
 | 6 | Sanzhar | Dashboard: line chart over time, bar chart by ticket type, filters | Partial (unmerged) | [#24](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/24). `analytics-dashboard.tsx` (recharts), table views; browser-checked desktop and mobile | Merge #24 |
 | 6 | Alisher | Event history: Upcoming / Active / Completed / Cancelled, read-only past events, audit timeline with filters, duplicate button | Partial (unmerged) | [#25](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/25). `GET /history/events/{id}/timeline`, `phase`, History tab; `tests/test_history.py` (4) | Merge #25 |
-| 6 | Kadys | Hardening: login and sign-up rate limiting, no secrets in repo, backup-and-restore script, HTTPS proxy proposal | Partial | Production refuses dev secrets (`test_production_requires_real_secrets`), `.env` gitignored | Rate limiting, secret scan, backup/restore script, proxy proposal |
-| 6 | Kadys | Seed: organizers, free meetup, paid KZT concert, ticket types, campaigns, orders | Partial (unmerged) | PR #12. `app/seed.py`, `tests/test_seed.py`. Two events, four accounts, cancelled and refunded ticket fixtures | Campaigns, more orders. Merge #12 |
+| 6 | Kadys | Hardening: rate limiting on login and sign-up, no secrets in repo, backup-and-restore script, HTTPS proxy proposal | Partial (unmerged) | [#26](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/26). `app/ratelimit.py` + `tests/test_rate_limit.py`; `scripts/check-secrets.py` CI job; `scripts/backup-db.sh` / `restore-db.sh` (ran Nov 17); `docs/https-proxy-proposal.md` | Merge #26; decide on the HTTPS proposal |
+| 6 | Kadys | Seed: organizers, free meetup, paid KZT concert, ticket types, campaigns, orders | Partial (unmerged) | [#26](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/26). `app/seed.py`: 6 accounts, 3 events, campaign JAZZ15, promo sale, refund, check-in, support case; `tests/test_seed.py` | Merge #26 |
 | 6 | Nurali | Tests: concurrency for last ticket, promo limit, double check-in; Playwright e2e of the core flow in CI | Partial | Last ticket (#8), double check-in (#15 `test_double_scan_concurrent_one_checkin`), promo limit (#16 `test_promo_limit_holds_under_concurrency`) | Playwright in CI |
 | 6 | Sanzhar | Attendee pages in kk and ru (en extra); WCAG 2.1 AA on event pages | Partial | All 326 web keys exist in kk, ru and en and are actually translated (5 keys are identical across locales, e.g. brand names) | Strings for every new screen; keyboard, contrast and label audit |
 | Bonus | — | Calendar export, assigned seating | Not started (by rule) | Seating models exist | Only after an explicit go from the team lead |
