@@ -493,7 +493,8 @@
     "report_already_open": "You've already reported this event. We're on it.",
     "report_already_reviewed": "This report has already been reviewed.",
     "report_not_found": "Report not found.",
-    "invalid_date_range": "Pick a range of at most a year, with the end after the start."
+    "invalid_date_range": "Pick a range of at most a year, with the end after the start.",
+    "rate_limited": "Too many attempts. Please wait a minute and try again."
   },
   "events": {
     "title": "Upcoming events",
