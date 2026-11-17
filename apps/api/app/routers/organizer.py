@@ -3,7 +3,7 @@
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Query, status
+from fastapi import APIRouter, BackgroundTasks, Query, status
 
 from app.deps import CurrentOrganizer, OrganizerUser, OwnedEvent, SessionDep
 from app.enums import TicketStatus
@@ -30,6 +30,7 @@ from app.services import events as event_service
 from app.services import organizer as organizer_service
 from app.services import staff as staff_service
 from app.services import ticket_types as ticket_type_service
+from app.services.mail import schedule
 
 router = APIRouter(prefix="/organizer", tags=["organizer"], responses=error_responses(401, 403))
 
@@ -70,9 +71,14 @@ async def read_payout_account(organizer: CurrentOrganizer, session: SessionDep) 
     ),
 )
 async def upsert_payout_account(
-    data: PayoutAccountUpsert, organizer: CurrentOrganizer, session: SessionDep
+    data: PayoutAccountUpsert,
+    organizer: CurrentOrganizer,
+    session: SessionDep,
+    background: BackgroundTasks,
 ) -> PayoutAccount:
-    return await organizer_service.upsert_payout_account(session, organizer, data)
+    account, outbound = await organizer_service.upsert_payout_account(session, organizer, data)
+    schedule(background, outbound)
+    return account
 
 
 @router.post(
@@ -113,9 +119,15 @@ async def read_event(event: OwnedEvent) -> Event:
     summary="Edit an event",
 )
 async def update_event(
-    data: EventUpdate, event: OwnedEvent, user: OrganizerUser, session: SessionDep
+    data: EventUpdate,
+    event: OwnedEvent,
+    user: OrganizerUser,
+    session: SessionDep,
+    background: BackgroundTasks,
 ) -> Event:
-    return await event_service.update(session, event, user, data)
+    updated, outbound = await event_service.update(session, event, user, data)
+    schedule(background, outbound)
+    return updated
 
 
 @router.post(
@@ -149,14 +161,20 @@ async def unpublish_event(event: OwnedEvent, user: OrganizerUser, session: Sessi
     responses=error_responses(404, 409),
     summary="Cancel an event",
     description=(
-        "Cancels every valid ticket (they fail at check-in) and releases unpaid orders. "
-        "Refunds for paid orders arrive with SRS 4.9."
+        "Cancels every valid ticket (they fail at check-in), releases unpaid orders and "
+        "notifies every ticket holder by email and in-app."
     ),
 )
 async def cancel_event(
-    data: CancelEventRequest, event: OwnedEvent, user: OrganizerUser, session: SessionDep
+    data: CancelEventRequest,
+    event: OwnedEvent,
+    user: OrganizerUser,
+    session: SessionDep,
+    background: BackgroundTasks,
 ) -> Event:
-    return await event_service.cancel(session, event, user, data.reason)
+    cancelled, outbound = await event_service.cancel(session, event, user, data.reason)
+    schedule(background, outbound)
+    return cancelled
 
 
 @router.get(

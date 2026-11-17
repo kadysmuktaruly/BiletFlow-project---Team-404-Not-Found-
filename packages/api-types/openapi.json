@@ -1670,6 +1670,130 @@
         "title": "MyTicketRead",
         "type": "object"
       },
+      "NotificationList": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/NotificationRead"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "unread_count": {
+            "title": "Unread Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "unread_count"
+        ],
+        "title": "NotificationList",
+        "type": "object"
+      },
+      "NotificationRead": {
+        "properties": {
+          "action_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Action Path"
+          },
+          "body": {
+            "title": "Body",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "event_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Id"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "order_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Order Id"
+          },
+          "read_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Read At"
+          },
+          "subject": {
+            "title": "Subject",
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/NotificationType"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "subject",
+          "body",
+          "action_path",
+          "event_id",
+          "order_id",
+          "created_at",
+          "read_at"
+        ],
+        "title": "NotificationRead",
+        "type": "object"
+      },
+      "NotificationType": {
+        "description": "SRS 4.10's list, verbatim, plus 4.13's three support notifications.",
+        "enum": [
+          "account_verification",
+          "registration_confirmation",
+          "payment_failure",
+          "ticket_delivery",
+          "event_update",
+          "event_cancellation",
+          "refund_completed",
+          "payout_status",
+          "support_new_message",
+          "support_case_assigned",
+          "support_status_change"
+        ],
+        "title": "NotificationType",
+        "type": "string"
+      },
       "OrderCreate": {
         "description": "Only ids and quantities. Every price and total is computed on the server (SRS 7).",
         "properties": {
@@ -3612,6 +3736,19 @@
         "title": "UndoResult",
         "type": "object"
       },
+      "UnreadCount": {
+        "properties": {
+          "unread_count": {
+            "title": "Unread Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "unread_count"
+        ],
+        "title": "UnreadCount",
+        "type": "object"
+      },
       "UserRead": {
         "properties": {
           "created_at": {
@@ -5213,6 +5350,270 @@
           }
         ],
         "summary": "Update your name, phone or language",
+        "tags": [
+          "me"
+        ]
+      }
+    },
+    "/api/v1/me/notifications": {
+      "get": {
+        "description": "Every notification is also emailed. `unread_count` counts all unread items.",
+        "operationId": "my_notifications_api_v1_me_notifications_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "unread_only",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Unread Only",
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationList"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Your in-app notifications, newest first",
+        "tags": [
+          "me"
+        ]
+      }
+    },
+    "/api/v1/me/notifications/read-all": {
+      "post": {
+        "operationId": "read_all_notifications_api_v1_me_notifications_read_all_post",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Mark every notification as read",
+        "tags": [
+          "me"
+        ]
+      }
+    },
+    "/api/v1/me/notifications/unread-count": {
+      "get": {
+        "operationId": "my_unread_count_api_v1_me_notifications_unread_count_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnreadCount"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "How many in-app notifications are unread (for the header badge)",
+        "tags": [
+          "me"
+        ]
+      }
+    },
+    "/api/v1/me/notifications/{notification_id}/read": {
+      "post": {
+        "operationId": "read_notification_api_v1_me_notifications__notification_id__read_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "notification_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Notification Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Mark one notification as read",
         "tags": [
           "me"
         ]
@@ -7325,7 +7726,7 @@
     },
     "/api/v1/organizer/events/{event_id}/cancel": {
       "post": {
-        "description": "Cancels every valid ticket (they fail at check-in) and releases unpaid orders. Refunds for paid orders arrive with SRS 4.9.",
+        "description": "Cancels every valid ticket (they fail at check-in), releases unpaid orders and notifies every ticket holder by email and in-app.",
         "operationId": "cancel_event_api_v1_organizer_events__event_id__cancel_post",
         "parameters": [
           {

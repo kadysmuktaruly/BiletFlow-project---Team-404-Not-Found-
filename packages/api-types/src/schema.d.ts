@@ -364,6 +364,77 @@ export interface paths {
         patch: operations["update_me_api_v1_me_patch"];
         trace?: never;
     };
+    "/api/v1/me/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Your in-app notifications, newest first
+         * @description Every notification is also emailed. `unread_count` counts all unread items.
+         */
+        get: operations["my_notifications_api_v1_me_notifications_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/notifications/{notification_id}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark one notification as read */
+        post: operations["read_notification_api_v1_me_notifications__notification_id__read_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/notifications/read-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark every notification as read */
+        post: operations["read_all_notifications_api_v1_me_notifications_read_all_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/notifications/unread-count": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** How many in-app notifications are unread (for the header badge) */
+        get: operations["my_unread_count_api_v1_me_notifications_unread_count_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/me/orders": {
         parameters: {
             query?: never;
@@ -752,7 +823,7 @@ export interface paths {
         put?: never;
         /**
          * Cancel an event
-         * @description Cancels every valid ticket (they fail at check-in) and releases unpaid orders. Refunds for paid orders arrive with SRS 4.9.
+         * @description Cancels every valid ticket (they fail at check-in), releases unpaid orders and notifies every ticket holder by email and in-app.
          */
         post: operations["cancel_event_api_v1_organizer_events__event_id__cancel_post"];
         delete?: never;
@@ -1538,6 +1609,45 @@ export interface components {
             /** Ticket Type Name */
             ticket_type_name: string;
         };
+        /** NotificationList */
+        NotificationList: {
+            /** Items */
+            items: components["schemas"]["NotificationRead"][];
+            /** Unread Count */
+            unread_count: number;
+        };
+        /** NotificationRead */
+        NotificationRead: {
+            /** Action Path */
+            action_path: string | null;
+            /** Body */
+            body: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Event Id */
+            event_id: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Order Id */
+            order_id: string | null;
+            /** Read At */
+            read_at: string | null;
+            /** Subject */
+            subject: string;
+            type: components["schemas"]["NotificationType"];
+        };
+        /**
+         * NotificationType
+         * @description SRS 4.10's list, verbatim, plus 4.13's three support notifications.
+         * @enum {string}
+         */
+        NotificationType: "account_verification" | "registration_confirmation" | "payment_failure" | "ticket_delivery" | "event_update" | "event_cancellation" | "refund_completed" | "payout_status" | "support_new_message" | "support_case_assigned" | "support_status_change";
         /**
          * OrderCreate
          * @description Only ids and quantities. Every price and total is computed on the server (SRS 7).
@@ -2251,6 +2361,11 @@ export interface components {
             stats: components["schemas"]["CheckInStats"];
             ticket: components["schemas"]["CheckInTicket"];
         };
+        /** UnreadCount */
+        UnreadCount: {
+            /** Unread Count */
+            unread_count: number;
+        };
         /** UserRead */
         UserRead: {
             /**
@@ -2376,6 +2491,9 @@ export type SchemaHealthResponse = components['schemas']['HealthResponse'];
 export type SchemaLoginRequest = components['schemas']['LoginRequest'];
 export type SchemaManualCheckInRequest = components['schemas']['ManualCheckInRequest'];
 export type SchemaMyTicketRead = components['schemas']['MyTicketRead'];
+export type SchemaNotificationList = components['schemas']['NotificationList'];
+export type SchemaNotificationRead = components['schemas']['NotificationRead'];
+export type SchemaNotificationType = components['schemas']['NotificationType'];
 export type SchemaOrderCreate = components['schemas']['OrderCreate'];
 export type SchemaOrderItemInput = components['schemas']['OrderItemInput'];
 export type SchemaOrderItemRead = components['schemas']['OrderItemRead'];
@@ -2417,6 +2535,7 @@ export type SchemaTicketTypeUpdate = components['schemas']['TicketTypeUpdate'];
 export type SchemaTokenResponse = components['schemas']['TokenResponse'];
 export type SchemaUndoCheckInRequest = components['schemas']['UndoCheckInRequest'];
 export type SchemaUndoResult = components['schemas']['UndoResult'];
+export type SchemaUnreadCount = components['schemas']['UnreadCount'];
 export type SchemaUserRead = components['schemas']['UserRead'];
 export type SchemaUserRole = components['schemas']['UserRole'];
 export type SchemaUserUpdate = components['schemas']['UserUpdate'];
@@ -3313,6 +3432,206 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["UserRead"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    my_notifications_api_v1_me_notifications_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                unread_only?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationList"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    read_notification_api_v1_me_notifications__notification_id__read_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                notification_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationRead"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    read_all_notifications_api_v1_me_notifications_read_all_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    my_unread_count_api_v1_me_notifications_unread_count_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnreadCount"];
                 };
             };
             /** @description Unauthorized */
