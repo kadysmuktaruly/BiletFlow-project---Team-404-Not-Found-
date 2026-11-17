@@ -63,6 +63,12 @@ changes, update this file in the same PR.
   valid or checked-in ticket, notified once each however many tickets they hold.
 - `notifications.action_path` (migration 0002) stores the web path an in-app notification
   links to, because support cases have no column on the table to derive it from.
+- **Analytics definitions.** Order figures use orders *confirmed* in the date range, per order
+  line (so the ticket-type filter is exact). Refunded orders count in gross and again under
+  refunds; the chart and per-type figures show only sales that stand. Processing fees are
+  estimated per line at `PROCESSING_FEE_BPS`. Capacity and attendance are the current state.
+  Default range: last 30 days; days are cut in the event's time zone (SRS §12 "default date
+  ranges and chart formats": daily line chart, horizontal bars by ticket type).
 - **Admin portal.** `event_reports` and `platform_settings` are new tables (migrations 0003,
   0004). The activation fee is read from `platform_settings` when an admin has set it, else from
   `ACTIVATION_FEE_KZT`; a change applies to fees paid afterwards only. Platform Admins can't be

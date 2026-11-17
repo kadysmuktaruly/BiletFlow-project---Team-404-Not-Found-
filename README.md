@@ -462,6 +462,26 @@ suspensions behind a confirmation that requires a reason. Event pages have **Rep
 event**. Two tables arrived with it: `event_reports` (migration 0003) and `platform_settings`
 (0004).
 
+### Organizer analytics (SRS 4.15)
+
+`GET /organizer/analytics?event_id=&ticket_type_id=&date_from=&date_to=`: your events only.
+The date range defaults to the last 30 days in the event's time zone (Asia/Almaty across
+several events), at most a year.
+
+- **Capacity:** capacity, sold, remaining, % sold (current state).
+- **Revenue (DEMO):** tickets sold and refunded, gross, discounts, refunds, net, processing
+  fees and estimated payout, for orders confirmed in the range.
+- **Sales over time:** one point per day. **By ticket type:** sold in range, revenue, sold
+  overall, capacity, checked in.
+- **Campaigns:** redemptions, orders, tickets, gross, discount, net.
+- **Attendance:** issued, checked in, absent, % checked in (current state).
+
+It runs in a read-only, time-boxed transaction, so it can't hold up checkout
+(`test_analytics_never_holds_up_checkout`). The web dashboard is at **Analytics** in the
+organizer menu and on each event's **Analytics** tab: KPI tiles, a line chart of sales over
+time (tickets or revenue, never both on one axis), a bar chart by ticket type, and a table
+view for every chart. Charts use recharts.
+
 ### Attendee web pages (SRS 4.2, 4.4, 4.6, 4.7)
 
 `/events` lists upcoming public events. `/events/{slug}` is the event page with ticket
