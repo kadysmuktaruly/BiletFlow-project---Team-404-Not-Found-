@@ -37,7 +37,8 @@
     "events": "Events",
     "myTickets": "My tickets",
     "notifications": "Notifications",
-    "unread": "{count} unread"
+    "unread": "{count} unread",
+    "myOrders": "My orders"
   },
   "home": {
     "title": "Find events and get your tickets in seconds",
@@ -134,13 +135,14 @@
         "staff": "Staff",
         "preview": "Preview",
         "campaigns": "Campaigns",
-        "attendees": "Attendees"
+        "attendees": "Attendees",
+        "orders": "Orders"
       },
       "publish": "Publish",
       "unpublish": "Unpublish",
       "cancel": "Cancel event",
       "cancelTitle": "Cancel this event?",
-      "cancelText": "Every ticket will be cancelled and stop working at the door. Unpaid orders are released. This can't be undone.",
+      "cancelText": "Every ticket stops working at the door and unpaid orders are released. Every paid order is refunded in full (DEMO: no real money moves), and every ticket holder is notified by email and in the app. This can't be undone.",
       "cancelReason": "Reason (shown in the event history)",
       "cancelKeep": "Keep the event",
       "cancelDo": "Cancel event",
@@ -309,6 +311,37 @@
         "status": "Status",
         "checkedIn": "Checked in"
       }
+    },
+    "orders": {
+      "lead": "Every order for this event. Paid orders can be refunded in full (DEMO); free registrations can be cancelled.",
+      "search": "Search",
+      "searchHint": "Order reference, buyer name or email",
+      "statusFilter": "Status",
+      "all": "All",
+      "empty": "No orders match.",
+      "truncated": "Showing the newest 200. Narrow the search to see the rest.",
+      "col": {
+        "reference": "Order",
+        "buyer": "Buyer",
+        "tickets": "Tickets",
+        "total": "Total",
+        "status": "Status",
+        "placed": "Placed",
+        "actions": "Actions"
+      },
+      "refund": "Refund",
+      "cancel": "Cancel registration",
+      "refundTitle": "Refund order {reference}?",
+      "refundText": "{buyer} gets a full DEMO refund of {amount}. No real money moves. The order's tickets stop working at once and go back on sale, and the buyer is notified.",
+      "cancelTitle": "Cancel registration {reference}?",
+      "cancelText": "{buyer}'s free tickets stop working at once and go back on sale, and they're notified.",
+      "reason": "Reason (optional, kept in the audit log)",
+      "confirmRefund": "Refund in full",
+      "confirmCancel": "Cancel registration",
+      "keep": "Keep the order",
+      "refundedNotice": "Order {reference} was refunded (DEMO).",
+      "cancelledNotice": "Registration {reference} was cancelled.",
+      "refundedAmount": "refunded {amount}"
     }
   },
   "event": {
@@ -349,7 +382,9 @@
       "registrationCloses": "Registration closes",
       "registrationHint": "Leave empty to open now and close when the event ends.",
       "capacity": "Capacity",
-      "capacityHint": "Total tickets across all types. Leave empty for no limit."
+      "capacityHint": "Total tickets across all types. Leave empty for no limit.",
+      "refundPolicy": "Refund policy",
+      "refundPolicyHint": "Shown on the event page, e.g. \"Full refunds until 48 hours before the event.\""
     },
     "view": {
       "when": "When",
@@ -364,7 +399,8 @@
       "registrationNotOpen": "Registration opens {date}.",
       "cancelled": "This event has been cancelled.",
       "paidNotEnabled": "Paid tickets aren't on sale yet.",
-      "noTickets": "No tickets available."
+      "noTickets": "No tickets available.",
+      "refundPolicy": "Refund policy"
     }
   },
   "errors": {
@@ -428,7 +464,10 @@
     "invalid_window": "The end must not be before the start.",
     "event_read_only": "Cancelled and completed events can't be changed.",
     "download_failed": "The download didn't work. Try again.",
-    "notification_not_found": "Notification not found."
+    "notification_not_found": "Notification not found.",
+    "order_not_refundable": "Only paid, confirmed orders can be refunded. Free registrations are cancelled instead.",
+    "order_already_refunded": "This order has already been refunded.",
+    "order_not_cancellable": "Only confirmed free registrations can be cancelled. Paid orders are refunded instead."
   },
   "events": {
     "title": "Upcoming events",
@@ -497,7 +536,9 @@
     "payNow": "Go to payment",
     "subtotal": "Subtotal",
     "discount": "Discount ({code})",
-    "downloadPdf": "Download PDF"
+    "downloadPdf": "Download PDF",
+    "refunded": "Refunded (DEMO): {amount}",
+    "cancelledNote": "This registration was cancelled. Its tickets no longer work."
   },
   "tickets": {
     "title": "My tickets",
@@ -529,5 +570,12 @@
     "open": "Open",
     "new": "New",
     "unreadCount": "{count, plural, =0 {Nothing unread} one {# unread} other {# unread}}"
+  },
+  "orders": {
+    "title": "My orders",
+    "empty": "You haven't placed any orders yet.",
+    "view": "View order",
+    "tickets": "{count, plural, one {# ticket} other {# tickets}}",
+    "placed": "Placed {date}"
   }
 }
