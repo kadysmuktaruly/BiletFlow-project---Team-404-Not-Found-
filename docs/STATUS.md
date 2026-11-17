@@ -6,6 +6,10 @@ Spec: SRS v0.3 ([`docs/srs/srs.md`](srs/srs.md)), the semester plan and the mode
 
 ## Progress notes (newest first)
 
+- **Nov 17 — Row 2: promotions backend.** [#16](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/16): campaigns with one
+  case-insensitive code and an opaque `BFC1.` link, server-side % / fixed-KZT discounts,
+  six rejection reasons, limit holds under 10 concurrent buyers, per-campaign report.
+  pytest 189 passed. Next: PDF tickets and the Campaign QR image (`feat/r4-pdf-campaign-qr`).
 - **Nov 17 — Row 1: check-in API.** [#15](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/15): atomic scan (10 concurrent scans →
   one admission), five live results, Campaign QR rejected, staff-only (404), authorized undo
   with audit, counts, manual search, p95 under 2 s. pytest 176 passed. Next: promotions
@@ -35,6 +39,7 @@ retargeted to `main` and rebased. Suggested reviewer = the plan's owner for that
 | 10 | [#12](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/12) | Attendee purchase flow on the web, web in Compose, demo seed, Report 3 demo script | Sanzhar (web) |
 | 11 | [#13](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/13) | Compose web runs `next dev` to fit a 2 GB Docker VM; production target for the demo | Kadys (infra) |
 | 12 | [#15](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/15) | Live check-in API: atomic scan, five results, undo, counts, manual search | Kadys (check-in), Nurali (scanner) |
+| 13 | [#16](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/16) | Promotions backend: campaigns, server-side discounts, redemption limit, Campaign QR resolve | Sagidolla (promos), Alisher |
 
 New Phase 1 PRs are added below as they open.
 
@@ -50,6 +55,7 @@ New Phase 1 PRs are added below as they open.
 | Nov 17 | Raised the auditing laptop's Docker VM from 2 GB to 6 GB. The runtime is **Colima**, not Docker Desktop. Backup: `~/.colima/default/colima.yaml.bak-2026-11-17`. All 19 containers that were running before the restart are running again (3 from other projects needed a manual `docker start`). | `next dev` was also killed at 2 GB because other projects' containers use about 900 MB of the VM. 6 GB is under half of the laptop's 16 GB. |
 | Nov 17 | No `Co-Authored-By` or "Generated with Claude Code" lines in commits or PRs. | CLAUDE.md forbids them. |
 | Nov 17 | Reviewers are named in each PR description instead of being requested on GitHub. | The teammates aren't collaborators on the repository, so GitHub can't request their review. |
+| Nov 17 | Promotions: one code per campaign; codes unique platform-wide; % rounds down per line, fixed amount capped and split proportionally; discount and eligible types immutable after creation; campaigns active on creation. Full list in `docs/decisions.md`. | Simplest model that meets SRS 4.14 and keeps past orders explainable. |
 
 ## Blocked
 
@@ -105,7 +111,7 @@ or 3 item can have is:
 | 3 | Nurali | Scanner lists only assigned events and reads QR with the camera | Partial (unmerged) | PR #11. `GET /checkin/events`, `tests/test_checkin_events.py`, `scan/[eventId].tsx` | Merge #11 |
 | 3 | Kadys | pytest + httpx against the `*_test` DB in CI | Partial (unmerged) | PR #3. `tests/conftest.py`, `tests/test_harness.py` | Merge #3 |
 | 4 | Kadys | Check-in API: signed token plus live status, five results, atomic, assigned staff only, undo, counts, manual search, Campaign QR rejected, under 2 s | Partial (unmerged) | [#15](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/15). `app/services/checkin.py`, `require_event_staff` in `app/deps.py`, `tests/test_checkin.py` (15 tests incl. `test_double_scan_concurrent_one_checkin`, `test_checkin_under_2s`) | Merge #15 |
-| 4 | Sagidolla | Promotions: % or fixed KZT, validity, max redemptions, eligible types, case-insensitive codes, server-side discounts, limit under concurrency, Campaign QR token resolves, clear rejection reasons | **Missing** | Models only (`app/models/campaign.py`), `ck_promo_codes_within_limit` | All endpoints and tests |
+| 4 | Sagidolla | Promotions: % or fixed KZT, validity, max redemptions, eligible types, case-insensitive codes, server-side discounts, limit under concurrency, Campaign QR token resolves, clear rejection reasons | Partial (unmerged) | [#16](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/16). `app/services/promotions.py`, `app/routers/campaigns.py`, `tests/test_promotions.py` (13 tests incl. `test_promo_limit_holds_under_concurrency`) | Merge #16 |
 | 4 | Sanzhar | Checkout shows code, discount and new total; campaign link pre-applies the code; organizer attendee list with search and status | **Missing** | — | All |
 | 4 | Alisher | Server-generated A4 PDF ticket (all fields, no payment data, grayscale-scannable QR, same ticket ID) | **Missing** | — | All |
 | 4 | Alisher | Campaign management screens; downloadable Campaign QR labelled "Promo, not a ticket" | **Missing** | — | All |
@@ -123,7 +129,7 @@ or 3 item can have is:
 | 6 | Alisher | Event history: Upcoming / Active / Completed / Cancelled, read-only past events, audit timeline with filters, duplicate button | **Missing** | Audit rows are written (see Report 5) | All |
 | 6 | Kadys | Hardening: login and sign-up rate limiting, no secrets in repo, backup-and-restore script, HTTPS proxy proposal | Partial | Production refuses dev secrets (`test_production_requires_real_secrets`), `.env` gitignored | Rate limiting, secret scan, backup/restore script, proxy proposal |
 | 6 | Kadys | Seed: organizers, free meetup, paid KZT concert, ticket types, campaigns, orders | Partial (unmerged) | PR #12. `app/seed.py`, `tests/test_seed.py`. Two events, four accounts, cancelled and refunded ticket fixtures | Campaigns, more orders. Merge #12 |
-| 6 | Nurali | Tests: concurrency for last ticket, promo limit, double check-in; Playwright e2e of the core flow in CI | Partial | Last-ticket test exists (PR #8) | Promo-limit and double-check-in tests (with their features); Playwright in CI |
+| 6 | Nurali | Tests: concurrency for last ticket, promo limit, double check-in; Playwright e2e of the core flow in CI | Partial | Last ticket (#8), double check-in (#15 `test_double_scan_concurrent_one_checkin`), promo limit (#16 `test_promo_limit_holds_under_concurrency`) | Playwright in CI |
 | 6 | Sanzhar | Attendee pages in kk and ru (en extra); WCAG 2.1 AA on event pages | Partial | All 326 web keys exist in kk, ru and en and are actually translated (5 keys are identical across locales, e.g. brand names) | Strings for every new screen; keyboard, contrast and label audit |
 | Bonus | — | Calendar export, assigned seating | Not started (by rule) | Seating models exist | Only after an explicit go from the team lead |
 
