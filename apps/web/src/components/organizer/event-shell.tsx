@@ -112,6 +112,12 @@ export function EventShell({ children }: { children: React.ReactNode }) {
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
+            <Link
+              href={{ pathname: "/support/new", query: { kind: "organizer", event: event.id } }}
+              className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50"
+            >
+              {t("support.contactPlatform")}
+            </Link>
             {event.status === "published" && (
               <Link
                 href={`/events/${event.slug}`}

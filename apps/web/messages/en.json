@@ -38,7 +38,8 @@
     "myTickets": "My tickets",
     "notifications": "Notifications",
     "unread": "{count} unread",
-    "myOrders": "My orders"
+    "myOrders": "My orders",
+    "support": "Support"
   },
   "home": {
     "title": "Find events and get your tickets in seconds",
@@ -467,7 +468,10 @@
     "notification_not_found": "Notification not found.",
     "order_not_refundable": "Only paid, confirmed orders can be refunded. Free registrations are cancelled instead.",
     "order_already_refunded": "This order has already been refunded.",
-    "order_not_cancellable": "Only confirmed free registrations can be cancelled. Paid orders are refunded instead."
+    "order_not_cancellable": "Only confirmed free registrations can be cancelled. Paid orders are refunded instead.",
+    "case_not_found": "Support case not found.",
+    "case_context_required": "Open the case from an event, an order or a ticket.",
+    "invalid_assignee": "That person can't handle this case."
   },
   "events": {
     "title": "Upcoming events",
@@ -577,5 +581,70 @@
     "view": "View order",
     "tickets": "{count, plural, one {# ticket} other {# tickets}}",
     "placed": "Placed {date}"
+  },
+  "support": {
+    "title": "Support",
+    "lead": "Cases you opened and cases you handle. Replies show up here and by email.",
+    "empty": "No support cases yet.",
+    "newCase": "New case",
+    "getHelp": "Get help",
+    "contactPlatform": "Contact BiletFlow support",
+    "open": "Open",
+    "yours": "You opened",
+    "handling": "You handle",
+    "kind": {
+      "attendee": "About an event",
+      "organizer": "Platform support"
+    },
+    "category": {
+      "label": "What is it about?",
+      "ticket_delivery": "Ticket delivery",
+      "payment": "Payment",
+      "refund": "Refund",
+      "seating": "Seating",
+      "event_information": "Event information",
+      "check_in": "Check-in",
+      "account": "Account",
+      "technical": "Technical problem"
+    },
+    "status": {
+      "label": "Status",
+      "open": "Open",
+      "in_progress": "In progress",
+      "waiting_for_customer": "Waiting for the customer",
+      "resolved": "Resolved"
+    },
+    "form": {
+      "title": "Open a support case",
+      "titleOrganizer": "Ask BiletFlow support",
+      "context": "About",
+      "subject": "Subject",
+      "message": "Message",
+      "submit": "Send",
+      "noAttachments": "Attachments aren't supported yet. Describe the problem in words.",
+      "aboutTicket": "this ticket",
+      "aboutOrder": "this order",
+      "aboutEvent": "this event"
+    },
+    "context": {
+      "event": "Event: {title}",
+      "order": "Order {reference}",
+      "ticket": "Ticket {number}",
+      "none": "General question"
+    },
+    "thread": {
+      "requester": "Requester",
+      "assignedTo": "Assigned to",
+      "nobody": "Nobody",
+      "staff": "Support",
+      "internal": "Internal note",
+      "reply": "Your reply",
+      "send": "Send reply",
+      "internalNote": "Internal note (only staff see it)",
+      "manage": "Manage case",
+      "assign": "Assign to",
+      "save": "Update case",
+      "refreshNote": "This conversation refreshes every 10 seconds."
+    }
   }
 }

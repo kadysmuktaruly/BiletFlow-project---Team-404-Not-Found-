@@ -36,6 +36,9 @@ export function SiteHeader() {
               <Link href="/orders" className="text-gray-700 hover:text-gray-900">
                 {t("myOrders")}
               </Link>
+              <Link href="/support" className="text-gray-700 hover:text-gray-900">
+                {t("support")}
+              </Link>
               <NotificationLink />
             </>
           )}

@@ -4,6 +4,8 @@ import { useParams, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 
+import { Link } from "@/i18n/navigation";
+
 import { EventView, type PublicEvent } from "@/components/event-view";
 import { Alert } from "@/components/ui";
 import { api, unwrap } from "@/lib/api";
@@ -14,6 +16,7 @@ import { PurchasePanel } from "./purchase-panel";
 
 export function EventPage() {
   const t = useTranslations("common");
+  const ts = useTranslations("support");
   const errorMessage = useErrorMessage();
   const { slug } = useParams<{ slug: string }>();
   // Set by the Campaign QR landing page (/c/[token]) after the server resolved the campaign.
@@ -37,7 +40,19 @@ export function EventPage() {
   return (
     <EventView
       event={event}
-      ticketSlot={<PurchasePanel event={event} initialPromo={promo} campaignRejection={promoRejected} />}
+      ticketSlot={
+        <>
+          <PurchasePanel event={event} initialPromo={promo} campaignRejection={promoRejected} />
+          {status === "authenticated" && (
+            <Link
+              href={{ pathname: "/support/new", query: { event: event.id } }}
+              className="mt-3 inline-block text-sm font-medium text-gray-900 underline"
+            >
+              {ts("getHelp")}
+            </Link>
+          )}
+        </>
+      }
     />
   );
 }
