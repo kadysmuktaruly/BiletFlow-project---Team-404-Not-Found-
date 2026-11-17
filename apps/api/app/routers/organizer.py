@@ -3,10 +3,10 @@
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, BackgroundTasks, Query, status
+from fastapi import APIRouter, BackgroundTasks, Query, Response, status
 
 from app.deps import CurrentOrganizer, OrganizerUser, OwnedEvent, SessionDep
-from app.enums import TicketStatus
+from app.enums import OrderStatus, TicketStatus
 from app.errors import AppError, error_responses
 from app.models import Event, OrganizerProfile, PayoutAccount
 from app.schemas.checkin import OrganizerAttendeeList
@@ -23,11 +23,20 @@ from app.schemas.organizer import (
     PayoutAccountRead,
     PayoutAccountUpsert,
 )
+from app.schemas.payment import IdempotencyKey
+from app.schemas.refund import (
+    CancelRegistrationRequest,
+    OrganizerOrderList,
+    OrganizerOrderRead,
+    RefundRequest,
+    RefundResult,
+)
 from app.schemas.staff import StaffAssign, StaffRead
 from app.schemas.ticket_type import TicketTypeCreate, TicketTypeRead, TicketTypeUpdate
 from app.services import checkin as checkin_service
 from app.services import events as event_service
 from app.services import organizer as organizer_service
+from app.services import refunds as refund_service
 from app.services import staff as staff_service
 from app.services import ticket_types as ticket_type_service
 from app.services.mail import schedule
@@ -161,8 +170,9 @@ async def unpublish_event(event: OwnedEvent, user: OrganizerUser, session: Sessi
     responses=error_responses(404, 409),
     summary="Cancel an event",
     description=(
-        "Cancels every valid ticket (they fail at check-in), releases unpaid orders and "
-        "notifies every ticket holder by email and in-app."
+        "Cancels every valid ticket (they fail at check-in), releases unpaid orders, "
+        "**refunds every paid order in full (DEMO)** and notifies every ticket holder by "
+        "email and in-app."
     ),
 )
 async def cancel_event(
@@ -305,3 +315,88 @@ async def list_attendees(
     status: TicketStatus | None = None,
 ) -> OrganizerAttendeeList:
     return await checkin_service.organizer_attendees(session, event.id, q, status)
+
+
+# --- orders, refunds and cancellations (SRS 4.9) -------------------------------------------
+
+
+@router.get(
+    "/events/{event_id}/orders",
+    response_model=OrganizerOrderList,
+    responses=error_responses(404, 422),
+    summary="This event's orders",
+    description=(
+        "Newest first. `q` matches the order reference, buyer name or email; `status` "
+        "filters. `can_refund` / `can_cancel` say which action applies. Up to 200 rows."
+    ),
+)
+async def list_orders(
+    event: OwnedEvent,
+    session: SessionDep,
+    q: Annotated[str | None, Query(max_length=200)] = None,
+    status: OrderStatus | None = None,
+) -> OrganizerOrderList:
+    return await refund_service.list_orders(session, event, q, status)
+
+
+@router.post(
+    "/events/{event_id}/orders/{order_id}/refund",
+    response_model=RefundResult,
+    status_code=status.HTTP_201_CREATED,
+    responses={
+        200: {"model": RefundResult, "description": "Replay of an earlier request"},
+        **error_responses(404, 409, 422),
+    },
+    summary="Refund a paid order in full (DEMO)",
+    description=(
+        "**DEMO: no real money moves.** Refunds the whole order through the payment "
+        "simulation. Its tickets become invalid at once and go back on sale, the buyer is "
+        "notified, and the refund is audited. Send a unique `Idempotency-Key`; repeating it "
+        "returns the original refund (200, `replayed: true`). `409 order_not_refundable` for "
+        "free or unpaid orders, `409 order_already_refunded` if it was refunded already."
+    ),
+)
+async def refund_order(
+    order_id: uuid.UUID,
+    data: RefundRequest,
+    idempotency_key: IdempotencyKey,
+    event: OwnedEvent,
+    user: OrganizerUser,
+    session: SessionDep,
+    background: BackgroundTasks,
+    response: Response,
+) -> RefundResult:
+    order, refund, replayed, outbound = await refund_service.refund_order(
+        session, user, event, order_id, idempotency_key, data.reason
+    )
+    schedule(background, outbound)
+    if replayed:
+        response.status_code = status.HTTP_200_OK
+    (read,) = await refund_service.order_reads(session, event, [order])
+    return RefundResult(order=read, refund=refund_service.refund_read(refund), replayed=replayed)
+
+
+@router.post(
+    "/events/{event_id}/orders/{order_id}/cancel",
+    response_model=OrganizerOrderRead,
+    responses=error_responses(404, 409, 422),
+    summary="Cancel a free registration",
+    description=(
+        "Free orders only (paid orders are refunded). The tickets become invalid at once and "
+        "go back on sale; the attendee is notified."
+    ),
+)
+async def cancel_registration(
+    order_id: uuid.UUID,
+    data: CancelRegistrationRequest,
+    event: OwnedEvent,
+    user: OrganizerUser,
+    session: SessionDep,
+    background: BackgroundTasks,
+) -> OrganizerOrderRead:
+    order, outbound = await refund_service.cancel_registration(
+        session, user, event, order_id, data.reason
+    )
+    schedule(background, outbound)
+    (read,) = await refund_service.order_reads(session, event, [order])
+    return read

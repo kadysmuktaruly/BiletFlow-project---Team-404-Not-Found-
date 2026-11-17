@@ -823,9 +823,69 @@ export interface paths {
         put?: never;
         /**
          * Cancel an event
-         * @description Cancels every valid ticket (they fail at check-in), releases unpaid orders and notifies every ticket holder by email and in-app.
+         * @description Cancels every valid ticket (they fail at check-in), releases unpaid orders, **refunds every paid order in full (DEMO)** and notifies every ticket holder by email and in-app.
          */
         post: operations["cancel_event_api_v1_organizer_events__event_id__cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/organizer/events/{event_id}/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * This event's orders
+         * @description Newest first. `q` matches the order reference, buyer name or email; `status` filters. `can_refund` / `can_cancel` say which action applies. Up to 200 rows.
+         */
+        get: operations["list_orders_api_v1_organizer_events__event_id__orders_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/organizer/events/{event_id}/orders/{order_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel a free registration
+         * @description Free orders only (paid orders are refunded). The tickets become invalid at once and go back on sale; the attendee is notified.
+         */
+        post: operations["cancel_registration_api_v1_organizer_events__event_id__orders__order_id__cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/organizer/events/{event_id}/orders/{order_id}/refund": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Refund a paid order in full (DEMO)
+         * @description **DEMO: no real money moves.** Refunds the whole order through the payment simulation. Its tickets become invalid at once and go back on sale, the buyer is notified, and the refund is audited. Send a unique `Idempotency-Key`; repeating it returns the original refund (200, `replayed: true`). `409 order_not_refundable` for free or unpaid orders, `409 order_already_refunded` if it was refunded already.
+         */
+        post: operations["refund_order_api_v1_organizer_events__event_id__orders__order_id__refund_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1241,6 +1301,11 @@ export interface components {
             /** Reason */
             reason?: string | null;
         };
+        /** CancelRegistrationRequest */
+        CancelRegistrationRequest: {
+            /** Reason */
+            reason?: string | null;
+        };
         /**
          * CheckInEvent
          * @description An event the signed-in user may check attendees in at.
@@ -1372,6 +1437,8 @@ export interface components {
              * Format: date-time
              */
             ends_at: string;
+            /** Refund Policy */
+            refund_policy?: string | null;
             /** Registration Closes At */
             registration_closes_at?: string | null;
             /** Registration Opens At */
@@ -1423,6 +1490,8 @@ export interface components {
             id: string;
             /** Published At */
             published_at: string | null;
+            /** Refund Policy */
+            refund_policy: string | null;
             /** Registration Closes At */
             registration_closes_at: string | null;
             /** Registration Closes At Local */
@@ -1511,6 +1580,8 @@ export interface components {
             description?: string | null;
             /** Ends At */
             ends_at?: string | null;
+            /** Refund Policy */
+            refund_policy?: string | null;
             /** Registration Closes At */
             registration_closes_at?: string | null;
             /** Registration Opens At */
@@ -1736,6 +1807,11 @@ export interface components {
             promo_code?: string | null;
             /** Reference */
             reference: string;
+            /**
+             * Refunded Kzt
+             * @default 0
+             */
+            refunded_kzt: number;
             status: components["schemas"]["OrderStatus"];
             /** Subtotal Kzt */
             subtotal_kzt: number;
@@ -1789,6 +1865,59 @@ export interface components {
             stats: components["schemas"]["CheckInStats"];
             /** Truncated */
             truncated: boolean;
+        };
+        /** OrganizerOrderList */
+        OrganizerOrderList: {
+            /** Orders */
+            orders: components["schemas"]["OrganizerOrderRead"][];
+            /** Truncated */
+            truncated: boolean;
+        };
+        /**
+         * OrganizerOrderRead
+         * @description One order of the organizer's event. Buyer contact details are shown to the organizer
+         *     because they need them to run the event (SRS 4.4 attendee list, 4.9 refunds).
+         */
+        OrganizerOrderRead: {
+            /** Buyer Email */
+            buyer_email: string;
+            /** Buyer Name */
+            buyer_name: string;
+            /** Can Cancel */
+            can_cancel: boolean;
+            /** Can Refund */
+            can_refund: boolean;
+            /** Cancelled At */
+            cancelled_at: string | null;
+            /** Confirmed At */
+            confirmed_at: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Discount Kzt */
+            discount_kzt: number;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Processing Fee Kzt */
+            processing_fee_kzt: number;
+            /** Promo Code */
+            promo_code: string | null;
+            /** Reference */
+            reference: string;
+            /** Refunded Kzt */
+            refunded_kzt: number;
+            status: components["schemas"]["OrderStatus"];
+            /** Subtotal Kzt */
+            subtotal_kzt: number;
+            /** Tickets */
+            tickets: number;
+            /** Total Kzt */
+            total_kzt: number;
         };
         /** OrganizerProfileRead */
         OrganizerProfileRead: {
@@ -2016,6 +2145,8 @@ export interface components {
              * @default false
              */
             preview: boolean;
+            /** Refund Policy */
+            refund_policy?: string | null;
             /** Registration Closes At */
             registration_closes_at: string | null;
             /** Registration Open */
@@ -2076,6 +2207,60 @@ export interface components {
             /** Refresh Token */
             refresh_token?: string | null;
         };
+        /** RefundRead */
+        RefundRead: {
+            /** Amount Kzt */
+            amount_kzt: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Currency */
+            currency: string;
+            /**
+             * Demo
+             * @default true
+             * @constant
+             */
+            demo: true;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Simulated */
+            is_simulated: boolean;
+            /**
+             * Order Id
+             * Format: uuid
+             */
+            order_id: string;
+            /** Provider Reference */
+            provider_reference: string | null;
+            /** Reason */
+            reason: string | null;
+            status: components["schemas"]["RefundStatus"];
+            /** Succeeded At */
+            succeeded_at: string | null;
+        };
+        /** RefundRequest */
+        RefundRequest: {
+            /** Reason */
+            reason?: string | null;
+        };
+        /** RefundResult */
+        RefundResult: {
+            order: components["schemas"]["OrganizerOrderRead"];
+            refund: components["schemas"]["RefundRead"];
+            /** Replayed */
+            replayed: boolean;
+        };
+        /**
+         * RefundStatus
+         * @enum {string}
+         */
+        RefundStatus: "pending" | "succeeded" | "failed";
         /** RegisterRequest */
         RegisterRequest: {
             /**
@@ -2471,6 +2656,7 @@ export type SchemaCampaignReport = components['schemas']['CampaignReport'];
 export type SchemaCampaignResolution = components['schemas']['CampaignResolution'];
 export type SchemaCampaignUpdate = components['schemas']['CampaignUpdate'];
 export type SchemaCancelEventRequest = components['schemas']['CancelEventRequest'];
+export type SchemaCancelRegistrationRequest = components['schemas']['CancelRegistrationRequest'];
 export type SchemaCheckInEvent = components['schemas']['CheckInEvent'];
 export type SchemaCheckInMethod = components['schemas']['CheckInMethod'];
 export type SchemaCheckInStats = components['schemas']['CheckInStats'];
@@ -2502,6 +2688,8 @@ export type SchemaOrderRead = components['schemas']['OrderRead'];
 export type SchemaOrderStatus = components['schemas']['OrderStatus'];
 export type SchemaOrganizerAttendee = components['schemas']['OrganizerAttendee'];
 export type SchemaOrganizerAttendeeList = components['schemas']['OrganizerAttendeeList'];
+export type SchemaOrganizerOrderList = components['schemas']['OrganizerOrderList'];
+export type SchemaOrganizerOrderRead = components['schemas']['OrganizerOrderRead'];
 export type SchemaOrganizerProfileRead = components['schemas']['OrganizerProfileRead'];
 export type SchemaOrganizerProfileUpdate = components['schemas']['OrganizerProfileUpdate'];
 export type SchemaOrganizerSummary = components['schemas']['OrganizerSummary'];
@@ -2518,6 +2706,10 @@ export type SchemaPublicEventList = components['schemas']['PublicEventList'];
 export type SchemaPublicEventRead = components['schemas']['PublicEventRead'];
 export type SchemaPublicTicketTypeRead = components['schemas']['PublicTicketTypeRead'];
 export type SchemaRefreshRequest = components['schemas']['RefreshRequest'];
+export type SchemaRefundRead = components['schemas']['RefundRead'];
+export type SchemaRefundRequest = components['schemas']['RefundRequest'];
+export type SchemaRefundResult = components['schemas']['RefundResult'];
+export type SchemaRefundStatus = components['schemas']['RefundStatus'];
 export type SchemaRegisterRequest = components['schemas']['RegisterRequest'];
 export type SchemaResetPasswordRequest = components['schemas']['ResetPasswordRequest'];
 export type SchemaScanRequest = components['schemas']['ScanRequest'];
@@ -5208,6 +5400,223 @@ export interface operations {
                 };
             };
             /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_orders_api_v1_organizer_events__event_id__orders_get: {
+        parameters: {
+            query?: {
+                q?: string | null;
+                status?: components["schemas"]["OrderStatus"] | null;
+            };
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrganizerOrderList"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    cancel_registration_api_v1_organizer_events__event_id__orders__order_id__cancel_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+                order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CancelRegistrationRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrganizerOrderRead"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    refund_order_api_v1_organizer_events__event_id__orders__order_id__refund_post: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A unique value per payment attempt, e.g. a UUID. Reuse it to retry safely. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                event_id: string;
+                order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RefundRequest"];
+            };
+        };
+        responses: {
+            /** @description Replay of an earlier request */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RefundResult"];
+                };
+            };
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RefundResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
             422: {
                 headers: {
                     [name: string]: unknown;

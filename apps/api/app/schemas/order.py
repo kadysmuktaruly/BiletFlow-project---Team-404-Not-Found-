@@ -88,6 +88,8 @@ class OrderRead(BaseModel):
     subtotal_kzt: int
     discount_kzt: int
     total_kzt: int
+    # DEMO refunds so far (SRS 4.9); equals total_kzt once the order is refunded.
+    refunded_kzt: int = 0
     currency: str
     # The promo code applied at checkout, as the organizer spelled it.
     promo_code: str | None = None
