@@ -2,27 +2,32 @@ import { render, screen } from "@testing-library/react-native";
 
 import { ResultView } from "@/components/result-view";
 import i18n from "@/i18n";
-import { classifyPayload, mockResult, RESULT_STATES } from "@/lib/checkin";
+import { formatTime, invalidReasonKey, RESULT_STATES } from "@/lib/checkin";
 
 beforeEach(async () => {
   await i18n.changeLanguage("en");
 });
 
-describe("classifyPayload", () => {
-  it("recognises admission tokens", () => {
-    expect(classifyPayload("BFT1.jezcqwEwTj-Axg-wQRtEeA.gELHFVz714PmskeuhI-ZRQ")).toBe("admission");
-    expect(classifyPayload("  BFT1.abc.def\n")).toBe("admission");
+describe("invalidReasonKey", () => {
+  it("explains invalid results only", () => {
+    expect(invalidReasonKey({ result: "invalid", reason: "campaign_qr_not_admission" })).toBe(
+      "result.reasons.campaign_qr_not_admission",
+    );
+    expect(invalidReasonKey({ result: "invalid", reason: null })).toBeNull();
+    expect(invalidReasonKey({ result: "already_used", reason: null })).toBeNull();
   });
 
-  it("recognises Campaign QR codes, bare or inside a link", () => {
-    expect(classifyPayload("BFC1.abcdef")).toBe("campaign");
-    expect(classifyPayload("https://biletflow.kz/c/BFC1.abcdef")).toBe("campaign");
+  it("has a translation for every reason the API can send", () => {
+    for (const reason of ["unrecognized", "wrong_event", "campaign_qr_not_admission"]) {
+      expect(i18n.exists(`result.reasons.${reason}`)).toBe(true);
+    }
   });
+});
 
-  it("treats anything else as unknown, and never shows it as valid", () => {
-    expect(classifyPayload("https://example.com")).toBe("unknown");
-    expect(mockResult("hello")).toBe("invalid");
-    expect(mockResult("https://biletflow.kz/c/BFC1.abc")).toBe("invalid");
+describe("formatTime", () => {
+  it("shows the time in the event's time zone", () => {
+    expect(formatTime("2026-11-22T14:05:00Z", "Asia/Almaty", "en-GB")).toBe("19:05");
+    expect(formatTime(null, "Asia/Almaty", "en")).toBeNull();
   });
 });
 
@@ -35,8 +40,8 @@ describe("ResultView", () => {
     expect(screen.getByText("Aigerim N")).toBeTruthy();
   });
 
-  it("explains a rejected Campaign QR code", async () => {
-    await render(<ResultView state="invalid" details={{ campaign: true }} />);
+  it("shows why an invalid code failed", async () => {
+    await render(<ResultView state="invalid" details={{ reason: i18n.t("result.reasons.campaign_qr_not_admission") }} />);
     expect(screen.getByText("This is a promo QR code, not a ticket.")).toBeTruthy();
   });
 

@@ -17,7 +17,8 @@ export type ResultDetails = {
   ticketTypeName?: string | null;
   ticketNumber?: string | null;
   checkedInAt?: string | null;
-  campaign?: boolean;
+  // Why an `invalid` scan failed, already translated (e.g. "a promo QR code, not a ticket").
+  reason?: string | null;
 };
 
 export function ResultView({ state, details = {} }: { state: ResultState; details?: ResultDetails }) {
@@ -35,14 +36,16 @@ export function ResultView({ state, details = {} }: { state: ResultState; detail
       accessible
       accessibilityRole="alert"
       accessibilityLiveRegion="assertive"
-      accessibilityLabel={`${t(`result.${state}.title`)}. ${t(`result.${state}.text`)}`}
+      accessibilityLabel={[t(`result.${state}.title`), t(`result.${state}.text`), details.reason]
+        .filter(Boolean)
+        .join(". ")}
       style={[styles.panel, { backgroundColor: look.background }]}
     >
       <Text style={[styles.symbol, { color: look.foreground }]}>{look.symbol}</Text>
       <Text style={[styles.title, { color: look.foreground }]}>{t(`result.${state}.title`)}</Text>
       <Text style={[styles.text, { color: look.foreground }]}>{t(`result.${state}.text`)}</Text>
-      {details.campaign ? (
-        <Text style={[styles.text, styles.bold, { color: look.foreground }]}>{t("result.campaign")}</Text>
+      {details.reason ? (
+        <Text style={[styles.text, styles.bold, { color: look.foreground }]}>{details.reason}</Text>
       ) : null}
       {rows.some(([, v]) => v) ? (
         <View style={styles.details}>
