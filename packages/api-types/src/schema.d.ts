@@ -152,6 +152,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/campaigns/resolve/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Resolve a Campaign QR link to its event and code
+         * @description The `/c/{token}` page calls this. When the campaign can be used, `code` is set so the event page can apply it; otherwise `code` is null and `rejection` says why. The token carries no discount: everything is read from the campaign on the server.
+         */
+        get: operations["resolve_campaign_api_v1_campaigns_resolve__token__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/checkin/events": {
         parameters: {
             query?: never;
@@ -599,6 +619,68 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/organizer/events/{event_id}/campaigns": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** This event's campaigns, newest first */
+        get: operations["list_campaigns_api_v1_organizer_events__event_id__campaigns_get"];
+        put?: never;
+        /**
+         * Create a campaign with its promo code and Campaign QR link
+         * @description A percentage (1–100) or fixed-KZT discount, optional validity dates, an optional redemption limit and optional eligible ticket types (empty = all). Leave `code` empty to get a generated one. Codes are case-insensitive and unique across BiletFlow (`409 promo_code_taken`).
+         */
+        post: operations["create_campaign_api_v1_organizer_events__event_id__campaigns_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/organizer/events/{event_id}/campaigns/{campaign_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One campaign with its sales report */
+        get: operations["read_campaign_api_v1_organizer_events__event_id__campaigns__campaign_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Change a campaign's name, dates or redemption limit
+         * @description The discount and eligible ticket types can't change after creation.
+         */
+        patch: operations["update_campaign_api_v1_organizer_events__event_id__campaigns__campaign_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/organizer/events/{event_id}/campaigns/{campaign_id}/disable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Disable a campaign and its code
+         * @description New checkouts get `promo_disabled`. Orders already placed keep their discount.
+         */
+        post: operations["disable_campaign_api_v1_organizer_events__event_id__campaigns__campaign_id__disable_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/organizer/events/{event_id}/cancel": {
         parameters: {
             query?: never;
@@ -792,6 +874,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/promo/validate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Preview what a promo code is worth for these tickets
+         * @description No sign-in needed. Returns the discount and new total computed on the server, or an error whose `code` says why the code can't be used: `promo_not_found`, `promo_disabled`, `promo_not_started`, `promo_expired`, `promo_exhausted` or `promo_not_applicable`. Checkout recomputes everything; this is only a preview.
+         */
+        post: operations["validate_promo_api_v1_promo_validate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -872,6 +974,136 @@ export interface components {
             stats: components["schemas"]["CheckInStats"];
             /** Tickets */
             tickets: components["schemas"]["CheckInTicket"][];
+        };
+        /** CampaignCreate */
+        CampaignCreate: {
+            /** Code */
+            code?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Discount Kzt */
+            discount_kzt?: number | null;
+            /** Discount Percent */
+            discount_percent?: number | null;
+            discount_type: components["schemas"]["DiscountType"];
+            /** Ends At */
+            ends_at?: string | null;
+            /** Max Redemptions */
+            max_redemptions?: number | null;
+            /** Name */
+            name: string;
+            /** Starts At */
+            starts_at?: string | null;
+            /** Ticket Type Ids */
+            ticket_type_ids?: string[];
+        };
+        /** CampaignRead */
+        CampaignRead: {
+            /** Campaign Url */
+            campaign_url: string;
+            /** Code */
+            code: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Description */
+            description: string | null;
+            /** Disabled At */
+            disabled_at: string | null;
+            /** Discount Kzt */
+            discount_kzt: number | null;
+            /** Discount Percent */
+            discount_percent: number | null;
+            discount_type: components["schemas"]["DiscountType"];
+            /** Ends At */
+            ends_at: string | null;
+            /**
+             * Event Id
+             * Format: uuid
+             */
+            event_id: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Max Redemptions */
+            max_redemptions: number | null;
+            /** Name */
+            name: string;
+            /** Qr Token */
+            qr_token: string;
+            /** Redeemed Count */
+            redeemed_count: number;
+            report: components["schemas"]["CampaignReport"];
+            /** Starts At */
+            starts_at: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "active" | "scheduled" | "expired" | "exhausted" | "disabled";
+            /** Ticket Type Ids */
+            ticket_type_ids: string[];
+        };
+        /**
+         * CampaignReport
+         * @description SRS 4.14: "exact redemptions, orders, tickets sold, gross revenue, discount amount,
+         *     and net revenue for each campaign". Counted over confirmed (and later refunded) orders;
+         *     `net_revenue_kzt` subtracts refunds. DEMO figures: no real money moved.
+         */
+        CampaignReport: {
+            /** Discount Kzt */
+            discount_kzt: number;
+            /** Gross Revenue Kzt */
+            gross_revenue_kzt: number;
+            /** Net Revenue Kzt */
+            net_revenue_kzt: number;
+            /** Orders */
+            orders: number;
+            /** Redemptions */
+            redemptions: number;
+            /** Tickets Sold */
+            tickets_sold: number;
+        };
+        /**
+         * CampaignResolution
+         * @description Where a Campaign QR leads. The code comes back only after the server has checked the
+         *     campaign can be used; otherwise `rejection` says why and the page opens without it.
+         */
+        CampaignResolution: {
+            /** Campaign Name */
+            campaign_name: string;
+            /** Code */
+            code: string | null;
+            /**
+             * Event Id
+             * Format: uuid
+             */
+            event_id: string;
+            /** Event Slug */
+            event_slug: string;
+            /** Rejection */
+            rejection?: ("promo_not_found" | "promo_disabled" | "promo_not_started" | "promo_expired" | "promo_exhausted" | "promo_not_applicable") | null;
+        };
+        /**
+         * CampaignUpdate
+         * @description Name, description, validity dates and the redemption limit. The discount and the
+         *     eligible ticket types are fixed once created, so earlier orders stay explainable.
+         */
+        CampaignUpdate: {
+            /** Description */
+            description?: string | null;
+            /** Ends At */
+            ends_at?: string | null;
+            /** Max Redemptions */
+            max_redemptions?: number | null;
+            /** Name */
+            name?: string | null;
+            /** Starts At */
+            starts_at?: string | null;
         };
         /** CancelEventRequest */
         CancelEventRequest: {
@@ -964,6 +1196,12 @@ export interface components {
              */
             confirm: true;
         };
+        /**
+         * DiscountType
+         * @description SRS 4.14: 'a percentage or fixed-KZT discount'.
+         * @enum {string}
+         */
+        DiscountType: "percentage" | "fixed_kzt";
         /** EmailRequest */
         EmailRequest: {
             /**
@@ -1254,6 +1492,8 @@ export interface components {
             event_id: string;
             /** Items */
             items: components["schemas"]["OrderItemInput"][];
+            /** Promo Code */
+            promo_code?: string | null;
         };
         /** OrderItemInput */
         OrderItemInput: {
@@ -1297,6 +1537,8 @@ export interface components {
         };
         /** OrderRead */
         OrderRead: {
+            /** Campaign Name */
+            campaign_name?: string | null;
             /** Confirmed At */
             confirmed_at: string | null;
             /**
@@ -1320,6 +1562,8 @@ export interface components {
             items: components["schemas"]["OrderItemRead"][];
             /** Payment Required */
             payment_required: boolean;
+            /** Promo Code */
+            promo_code?: string | null;
             /** Reference */
             reference: string;
             status: components["schemas"]["OrderStatus"];
@@ -1476,6 +1720,55 @@ export interface components {
             account_last4: string;
             /** Bank Name */
             bank_name: string;
+        };
+        /** PromoLine */
+        PromoLine: {
+            /** Discount Kzt */
+            discount_kzt: number;
+            /** Line Subtotal Kzt */
+            line_subtotal_kzt: number;
+            /** Line Total Kzt */
+            line_total_kzt: number;
+            /** Quantity */
+            quantity: number;
+            /**
+             * Ticket Type Id
+             * Format: uuid
+             */
+            ticket_type_id: string;
+        };
+        /**
+         * PromoQuote
+         * @description What the code is worth for these items. A preview: checkout recomputes it.
+         */
+        PromoQuote: {
+            /** Campaign Name */
+            campaign_name: string;
+            /** Code */
+            code: string;
+            /** Discount Kzt */
+            discount_kzt: number;
+            /** Discount Percent */
+            discount_percent: number | null;
+            discount_type: components["schemas"]["DiscountType"];
+            /** Lines */
+            lines: components["schemas"]["PromoLine"][];
+            /** Subtotal Kzt */
+            subtotal_kzt: number;
+            /** Total Kzt */
+            total_kzt: number;
+        };
+        /** PromoValidateRequest */
+        PromoValidateRequest: {
+            /** Code */
+            code: string;
+            /**
+             * Event Id
+             * Format: uuid
+             */
+            event_id: string;
+            /** Items */
+            items: components["schemas"]["OrderItemInput"][];
         };
         /** PublicEventList */
         PublicEventList: {
@@ -1957,12 +2250,18 @@ export type SchemaActivationRead = components['schemas']['ActivationRead'];
 export type SchemaActivationStatus = components['schemas']['ActivationStatus'];
 export type SchemaAttendeeInput = components['schemas']['AttendeeInput'];
 export type SchemaAttendeeSearchResult = components['schemas']['AttendeeSearchResult'];
+export type SchemaCampaignCreate = components['schemas']['CampaignCreate'];
+export type SchemaCampaignRead = components['schemas']['CampaignRead'];
+export type SchemaCampaignReport = components['schemas']['CampaignReport'];
+export type SchemaCampaignResolution = components['schemas']['CampaignResolution'];
+export type SchemaCampaignUpdate = components['schemas']['CampaignUpdate'];
 export type SchemaCancelEventRequest = components['schemas']['CancelEventRequest'];
 export type SchemaCheckInEvent = components['schemas']['CheckInEvent'];
 export type SchemaCheckInMethod = components['schemas']['CheckInMethod'];
 export type SchemaCheckInStats = components['schemas']['CheckInStats'];
 export type SchemaCheckInTicket = components['schemas']['CheckInTicket'];
 export type SchemaConfirmRequest = components['schemas']['ConfirmRequest'];
+export type SchemaDiscountType = components['schemas']['DiscountType'];
 export type SchemaEmailRequest = components['schemas']['EmailRequest'];
 export type SchemaErrorBody = components['schemas']['ErrorBody'];
 export type SchemaErrorResponse = components['schemas']['ErrorResponse'];
@@ -1992,6 +2291,9 @@ export type SchemaPaymentStatus = components['schemas']['PaymentStatus'];
 export type SchemaPayoutAccountRead = components['schemas']['PayoutAccountRead'];
 export type SchemaPayoutAccountStatus = components['schemas']['PayoutAccountStatus'];
 export type SchemaPayoutAccountUpsert = components['schemas']['PayoutAccountUpsert'];
+export type SchemaPromoLine = components['schemas']['PromoLine'];
+export type SchemaPromoQuote = components['schemas']['PromoQuote'];
+export type SchemaPromoValidateRequest = components['schemas']['PromoValidateRequest'];
 export type SchemaPublicEventList = components['schemas']['PublicEventList'];
 export type SchemaPublicEventRead = components['schemas']['PublicEventRead'];
 export type SchemaPublicTicketTypeRead = components['schemas']['PublicTicketTypeRead'];
@@ -2310,6 +2612,46 @@ export interface operations {
             };
             /** @description Bad Request */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    resolve_campaign_api_v1_campaigns_resolve__token__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CampaignResolution"];
+                };
+            };
+            /** @description Not Found */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -3883,6 +4225,325 @@ export interface operations {
             };
         };
     };
+    list_campaigns_api_v1_organizer_events__event_id__campaigns_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CampaignRead"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_campaign_api_v1_organizer_events__event_id__campaigns_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CampaignCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CampaignRead"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    read_campaign_api_v1_organizer_events__event_id__campaigns__campaign_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                campaign_id: string;
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CampaignRead"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    update_campaign_api_v1_organizer_events__event_id__campaigns__campaign_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                campaign_id: string;
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CampaignUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CampaignRead"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    disable_campaign_api_v1_organizer_events__event_id__campaigns__campaign_id__disable_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                campaign_id: string;
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CampaignRead"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     cancel_event_api_v1_organizer_events__event_id__cancel_post: {
         parameters: {
             query?: never;
@@ -4794,6 +5455,57 @@ export interface operations {
                 };
             };
             /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    validate_promo_api_v1_promo_validate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PromoValidateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PromoQuote"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
             422: {
                 headers: {
                     [name: string]: unknown;
