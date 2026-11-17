@@ -42,6 +42,11 @@ export function SiteHeader() {
               <NotificationLink />
             </>
           )}
+          {user?.role === "platform_admin" && (
+            <Link href="/admin" className="font-medium text-gray-900 hover:underline">
+              {t("admin")}
+            </Link>
+          )}
           {user?.role === "organizer" && (
             <>
               <Link href="/organizer/events" className="text-gray-700 hover:text-gray-900">

@@ -15,6 +15,7 @@ export function ConfirmDialog({
   confirmLabel,
   cancelLabel,
   reasonLabel,
+  reasonRequired = false,
   busy,
   danger = true,
   onConfirm,
@@ -25,6 +26,8 @@ export function ConfirmDialog({
   confirmLabel: string;
   cancelLabel: string;
   reasonLabel?: string;
+  // The browser won't submit without a reason (at least 3 characters).
+  reasonRequired?: boolean;
   busy?: boolean;
   danger?: boolean;
   onConfirm: (reason: string | null) => void;
@@ -59,7 +62,16 @@ export function ConfirmDialog({
       <p id={`${id}-text`} className="text-sm text-gray-800">
         {text}
       </p>
-      {reasonLabel && <TextArea name="reason" label={reasonLabel} rows={2} maxLength={2000} />}
+      {reasonLabel && (
+        <TextArea
+          name="reason"
+          label={reasonLabel}
+          rows={2}
+          maxLength={2000}
+          required={reasonRequired}
+          minLength={reasonRequired ? 3 : undefined}
+        />
+      )}
       <div className="flex flex-wrap gap-2">
         <Button type="submit" variant={danger ? "danger" : "primary"} disabled={busy}>
           {confirmLabel}
