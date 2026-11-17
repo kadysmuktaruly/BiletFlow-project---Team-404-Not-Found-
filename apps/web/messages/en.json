@@ -128,7 +128,10 @@
       "new": "New event",
       "empty": "You haven't created any events yet.",
       "edit": "Edit",
-      "starts": "Starts"
+      "starts": "Starts",
+      "view": "Show",
+      "all": "All",
+      "open": "Open"
     },
     "manage": {
       "tabs": {
@@ -140,7 +143,8 @@
         "campaigns": "Campaigns",
         "attendees": "Attendees",
         "orders": "Orders",
-        "analytics": "Analytics"
+        "analytics": "Analytics",
+        "history": "History"
       },
       "publish": "Publish",
       "unpublish": "Unpublish",
@@ -153,7 +157,10 @@
       "published": "The event is live.",
       "unpublished": "The event is hidden and registration is paused. Issued tickets still work.",
       "cancelledNotice": "This event was cancelled.",
-      "viewPublic": "Open public page"
+      "viewPublic": "Open public page",
+      "duplicate": "Duplicate",
+      "duplicated": "Draft created from this event. You're now editing the copy.",
+      "readOnly": "This event is over or cancelled, so it's read-only. Its orders, tickets, refunds, check-ins, campaigns and support cases stay available here."
     },
     "ticketTypes": {
       "title": "Ticket types",
@@ -405,6 +412,12 @@
       "paidNotEnabled": "Paid tickets aren't on sale yet.",
       "noTickets": "No tickets available.",
       "refundPolicy": "Refund policy"
+    },
+    "phase": {
+      "upcoming": "Upcoming",
+      "active": "On now",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
     }
   },
   "errors": {
@@ -826,5 +839,27 @@
     "noData": "No ticket types yet.",
     "chartSummaryTickets": "{total} tickets sold over {days} days.",
     "chartSummaryRevenue": "{total} in sales over {days} days."
+  },
+  "history": {
+    "lead": "Everything that happened to this event, newest first. Entries can't be edited or deleted.",
+    "from": "From",
+    "to": "To",
+    "category": "Activity",
+    "allActivity": "All activity",
+    "empty": "No activity matches.",
+    "truncated": "Showing the newest 500 entries. Narrow the dates to see older ones.",
+    "system": "BiletFlow",
+    "categories": {
+      "event": "Event",
+      "ticket_type": "Ticket types",
+      "ticket": "Check-in",
+      "order": "Orders and refunds",
+      "payment": "Payments",
+      "activation": "Paid sales",
+      "promo": "Promotions",
+      "support_case": "Support",
+      "staff": "Staff",
+      "admin": "Platform admin"
+    }
   }
 }
