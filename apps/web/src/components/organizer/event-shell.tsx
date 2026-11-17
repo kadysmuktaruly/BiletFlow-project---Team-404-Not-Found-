@@ -91,6 +91,7 @@ export function EventShell({ children }: { children: React.ReactNode }) {
     { href: `${base}/campaigns`, label: t("organizer.manage.tabs.campaigns") },
     { href: `${base}/attendees`, label: t("organizer.manage.tabs.attendees") },
     { href: `${base}/orders`, label: t("organizer.manage.tabs.orders") },
+    { href: `${base}/analytics`, label: t("organizer.manage.tabs.analytics") },
     { href: `${base}/staff`, label: t("organizer.manage.tabs.staff") },
     { href: `${base}/preview`, label: t("organizer.manage.tabs.preview") },
   ];
