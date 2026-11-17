@@ -18,6 +18,7 @@ dependencies = [
     "aiosmtplib>=3.0",
     "tzdata>=2025.1",
     "segno>=1.6",
+    "reportlab>=4.2",
 ]
 
 [dependency-groups]
@@ -27,6 +28,8 @@ dev = [
     "pytest>=8.3",
     "pytest-asyncio>=0.24",
     "httpx>=0.27",
+    "pypdfium2>=4.30",
+    "zxing-cpp>=2.2",
 ]
 
 [build-system]
@@ -60,6 +63,12 @@ ignore_missing_imports = true
 # asyncpg ships no type information. Only the test harness uses it directly.
 [[tool.mypy.overrides]]
 module = "asyncpg.*"
+ignore_missing_imports = true
+
+# reportlab ships no type hints. The stub package isn't an approved dependency, so treat it
+# as untyped (like alembic and asyncpg above).
+[[tool.mypy.overrides]]
+module = ["reportlab.*", "pypdfium2.*", "zxingcpp.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
