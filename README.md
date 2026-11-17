@@ -386,6 +386,20 @@ and release the tickets. `/orders/{orderId}` is the confirmation with QR codes, 
 (**My tickets**) lists every ticket with its QR code and status. Checkout requires sign-in;
 the event page sends visitors to sign in and brings them back.
 
+**Promo codes on the web (SRS 4.14).** The event page has a promo code field. The server quotes
+the discount for the chosen tickets and the panel shows the code, the discount and the new
+total; checkout and the confirmation repeat them. A Campaign QR opens `/c/{token}`, which
+resolves the campaign and forwards to the event with `?promo=CODE` (or explains why the code
+can't be used). Tickets on the confirmation page and on My tickets have a **Download PDF**
+button.
+
+**Organizer: Campaigns and Attendees tabs.** Campaigns lists each campaign with its code,
+discount, status, redemptions and DEMO sales report, a preview of its Campaign QR ("Promo, not
+a ticket"), copy-link, SVG and A5-poster downloads, and Disable. New campaigns can be
+percentage or fixed KZT, with optional dates (event time zone), limit and eligible ticket types.
+Attendees lists every ticket with search (name, email, ticket number, order) and a status
+filter (`GET /organizer/events/{id}/attendees`).
+
 ## Data model conventions
 
 - **UUID primary keys** everywhere, generated both in Python and by the database (`gen_random_uuid()`).
