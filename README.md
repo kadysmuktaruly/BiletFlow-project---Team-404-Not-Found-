@@ -385,6 +385,33 @@ A5 poster, `?lang=kk|ru|en`): dark-purple modules in a dashed purple frame under
 Text uses the bundled DejaVu Sans (`app/assets/fonts/`, free licence in `DejaVu-LICENSE.txt`),
 which covers Kazakh and Russian. PDFs are built with reportlab.
 
+### Notifications (SRS 4.10)
+
+Every feature tells users things through one call, `app.services.notifications.notify(session,
+user, Message(...))`. It renders a template from `app/i18n/emails.py` in the user's language
+(kk, ru or en) and writes an **email** (sent after commit, tracked as pending → sent or
+failed) and an **in-app** copy with a link. Both say the same thing.
+
+| Trigger | Template | Who |
+|---|---|---|
+| Account verification | `verify_email` | the new user (email only) |
+| Registration or purchase confirmation, ticket delivery | `order_confirmed` (with QR images and PDFs) | buyer |
+| DEMO payment failure | `payment_failed` | buyer |
+| Event update (time, venue or title of a published event) | `event_updated` | ticket holders, once each |
+| Event cancellation | `event_cancelled` | ticket holders |
+| Refund completed, registration cancelled | `refund_completed`, `registration_cancelled` | buyer (sent by refunds, SRS 4.9) |
+| Payout account status (DEMO) | `payout_status` | organizer |
+| Support: new message, assignment, status change | `support_*` | case participants (SRS 4.13) |
+
+| Endpoint | Purpose |
+|---|---|
+| `GET /me/notifications?unread_only=&limit=` | In-app inbox, newest first, with `unread_count`. |
+| `GET /me/notifications/unread-count` | For the header badge. |
+| `POST /me/notifications/{id}/read`, `POST /me/notifications/read-all` | Mark read. Someone else's notification is 404. |
+
+The web header shows **Notifications** with the unread count (polled every minute), and
+`/notifications` lists them with links and "Mark all as read".
+
 ### Attendee web pages (SRS 4.2, 4.4, 4.6, 4.7)
 
 `/events` lists upcoming public events. `/events/{slug}` is the event page with ticket
