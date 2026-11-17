@@ -6,7 +6,7 @@ Spec: SRS v0.3 ([`docs/srs/srs.md`](srs/srs.md)), the semester plan and the mode
 
 ## Progress notes (newest first)
 
-- **Nov 17 — Docker fix.** [#13](../../pull/13): compose runs `next dev` by default, so the
+- **Nov 17 — Docker fix.** [#13](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/13): compose runs `next dev` by default, so the
   stack fits a 2 GB Docker VM; `WEB_BUILD_TARGET=runtime` builds the production image for the
   demo. All four services healthy and six web pages return 200. Next: `feat/r4-check-in-api`.
 - **Nov 17 — Audit.** This file. Ten Report 2–3 PRs (#3–#12) wait for review; Report 4 onward
@@ -19,17 +19,17 @@ retargeted to `main` and rebased. Suggested reviewer = the plan's owner for that
 
 | Order | PR | Summary | Suggested reviewer |
 |---|---|---|---|
-| 1 | [#3](../../pull/3) | CI workflow, DB-backed pytest harness on `*_test`, SRS and plan docs | Nurali (tests) |
-| 2 | [#4](../../pull/4) | Sign-up, login, Argon2, refresh cookie, verify and reset emails, role dependencies | Kadys (auth) |
-| 3 | [#5](../../pull/5) | Organizer profile, DEMO payout account, draft events with IANA time zones | Sagidolla (backend) |
-| 4 | [#6](../../pull/6) | Next.js scaffold with next-intl, auth and organizer pages, generated `api-types` | Sanzhar (web) |
-| 5 | [#7](../../pull/7) | Expo scanner scaffold: sign-in, SecureStore, camera permission | Nurali (scanner) |
-| 6 | [#8](../../pull/8) | Ticket types, inventory reservation, last-ticket concurrency test, orders, signed QR tokens | Sagidolla (tickets/orders) |
-| 7 | [#9](../../pull/9) | DEMO payments with idempotency keys, paid-sales activation checklist, order emails | Kadys (payments infra) |
-| 8 | [#10](../../pull/10) | Publish/unpublish/cancel, visibility, capacity, preview, staff; organizer event hub | Alisher (organizer) |
-| 9 | [#11](../../pull/11) | `GET /checkin/events`; scanner event list, camera, five result screens | Nurali (scanner) |
-| 10 | [#12](../../pull/12) | Attendee purchase flow on the web, web in Compose, demo seed, Report 3 demo script | Sanzhar (web) |
-| 11 | [#13](../../pull/13) | Compose web runs `next dev` to fit a 2 GB Docker VM; production target for the demo | Kadys (infra) |
+| 1 | [#3](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/3) | CI workflow, DB-backed pytest harness on `*_test`, SRS and plan docs | Nurali (tests) |
+| 2 | [#4](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/4) | Sign-up, login, Argon2, refresh cookie, verify and reset emails, role dependencies | Kadys (auth) |
+| 3 | [#5](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/5) | Organizer profile, DEMO payout account, draft events with IANA time zones | Sagidolla (backend) |
+| 4 | [#6](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/6) | Next.js scaffold with next-intl, auth and organizer pages, generated `api-types` | Sanzhar (web) |
+| 5 | [#7](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/7) | Expo scanner scaffold: sign-in, SecureStore, camera permission | Nurali (scanner) |
+| 6 | [#8](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/8) | Ticket types, inventory reservation, last-ticket concurrency test, orders, signed QR tokens | Sagidolla (tickets/orders) |
+| 7 | [#9](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/9) | DEMO payments with idempotency keys, paid-sales activation checklist, order emails | Kadys (payments infra) |
+| 8 | [#10](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/10) | Publish/unpublish/cancel, visibility, capacity, preview, staff; organizer event hub | Alisher (organizer) |
+| 9 | [#11](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/11) | `GET /checkin/events`; scanner event list, camera, five result screens | Nurali (scanner) |
+| 10 | [#12](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/12) | Attendee purchase flow on the web, web in Compose, demo seed, Report 3 demo script | Sanzhar (web) |
+| 11 | [#13](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/13) | Compose web runs `next dev` to fit a 2 GB Docker VM; production target for the demo | Kadys (infra) |
 
 New Phase 1 PRs are added below as they open.
 
