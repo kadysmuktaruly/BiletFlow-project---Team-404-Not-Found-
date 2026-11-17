@@ -20,6 +20,7 @@ from app.routers import (
     checkin,
     events,
     health,
+    history,
     me,
     orders,
     organizer,
@@ -71,6 +72,7 @@ def create_app() -> FastAPI:
     app.include_router(campaigns.public_router, prefix=API_PREFIX)
     app.include_router(support.router, prefix=API_PREFIX)
     app.include_router(admin.router, prefix=API_PREFIX)
+    app.include_router(history.router, prefix=API_PREFIX)
     return app
 
 

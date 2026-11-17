@@ -2425,6 +2425,18 @@
             "title": "Id",
             "type": "string"
           },
+          "phase": {
+            "description": "SRS 4.16: Upcoming / Active / Completed / Cancelled, as of now. Completed and\ncancelled events are read-only.",
+            "enum": [
+              "upcoming",
+              "active",
+              "completed",
+              "cancelled"
+            ],
+            "readOnly": true,
+            "title": "Phase",
+            "type": "string"
+          },
           "published_at": {
             "anyOf": [
               {
@@ -2566,6 +2578,7 @@
           "cancelled_at",
           "created_at",
           "updated_at",
+          "phase",
           "starts_at_local",
           "ends_at_local",
           "registration_opens_at_local",
@@ -5697,6 +5710,101 @@
         "title": "TicketTypeUpdate",
         "type": "object"
       },
+      "Timeline": {
+        "properties": {
+          "categories": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Categories",
+            "type": "array"
+          },
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/TimelineEntry"
+            },
+            "title": "Entries",
+            "type": "array"
+          },
+          "truncated": {
+            "title": "Truncated",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "entries",
+          "categories",
+          "truncated"
+        ],
+        "title": "Timeline",
+        "type": "object"
+      },
+      "TimelineEntry": {
+        "description": "SRS 4.16: \"timestamp, acting user, action type, affected entity, and short\ndescription\". Read from the append-only audit log.",
+        "properties": {
+          "action": {
+            "title": "Action",
+            "type": "string"
+          },
+          "actor_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actor Name"
+          },
+          "category": {
+            "title": "Category",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "entity_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entity Id"
+          },
+          "entity_type": {
+            "title": "Entity Type",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "occurred_at": {
+            "format": "date-time",
+            "title": "Occurred At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "occurred_at",
+          "actor_name",
+          "action",
+          "category",
+          "entity_type",
+          "entity_id",
+          "description"
+        ],
+        "title": "TimelineEntry",
+        "type": "object"
+      },
       "TokenResponse": {
         "properties": {
           "access_token": {
@@ -8785,6 +8893,127 @@
         ]
       }
     },
+    "/api/v1/history/events/{event_id}/timeline": {
+      "get": {
+        "description": "From the append-only audit log: publication and cancellation, price and capacity changes, refunds, promo codes, support-case changes, check-ins and reversals, and more. Filter by date range (event time zone) and by `category` (the part of the action before the dot, e.g. `order`, `promo`, `ticket`). Up to 500 entries.",
+        "operationId": "event_timeline_api_v1_history_events__event_id__timeline_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "date_from",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date From"
+            }
+          },
+          {
+            "in": "query",
+            "name": "date_to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date To"
+            }
+          },
+          {
+            "in": "query",
+            "name": "category",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 40,
+                  "pattern": "^[a-z_]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Category"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Timeline"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "An event's activity timeline, newest first",
+        "tags": [
+          "history"
+        ]
+      }
+    },
     "/api/v1/me": {
       "get": {
         "operationId": "read_me_api_v1_me_get",
@@ -9953,7 +10182,32 @@
     },
     "/api/v1/organizer/events": {
       "get": {
+        "description": "`phase` filters to Upcoming, Active, Completed or Cancelled (SRS 4.16). Completed and cancelled events are read-only.",
         "operationId": "list_events_api_v1_organizer_events_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "phase",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "upcoming",
+                    "active",
+                    "completed",
+                    "cancelled"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Phase"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
@@ -11505,6 +11759,85 @@
           }
         ],
         "summary": "Cancel an event",
+        "tags": [
+          "organizer"
+        ]
+      }
+    },
+    "/api/v1/organizer/events/{event_id}/duplicate": {
+      "post": {
+        "description": "SRS 4.16: copies the details, venue, visibility, capacity, refund policy and ticket types. Never orders, tickets, payments, check-ins, support cases, campaigns or paid-sales activation. A past event's dates move forward by whole weeks.",
+        "operationId": "duplicate_event_api_v1_organizer_events__event_id__duplicate_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Duplicate an event into a new draft",
         "tags": [
           "organizer"
         ]

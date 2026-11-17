@@ -15,6 +15,7 @@ from app.schemas.checkin import OrganizerAttendeeList
 from app.schemas.event import (
     CancelEventRequest,
     EventCreate,
+    EventPhase,
     EventRead,
     EventUpdate,
     PublicEventRead,
@@ -38,6 +39,7 @@ from app.schemas.ticket_type import TicketTypeCreate, TicketTypeRead, TicketType
 from app.services import analytics as analytics_service
 from app.services import checkin as checkin_service
 from app.services import events as event_service
+from app.services import history as history_service
 from app.services import organizer as organizer_service
 from app.services import refunds as refund_service
 from app.services import staff as staff_service
@@ -109,9 +111,19 @@ async def create_event(
     return await event_service.create_draft(session, organizer, data)
 
 
-@router.get("/events", response_model=list[EventRead], summary="Your events, newest first")
-async def list_events(organizer: CurrentOrganizer, session: SessionDep) -> list[Event]:
-    return await event_service.list_owned(session, organizer)
+@router.get(
+    "/events",
+    response_model=list[EventRead],
+    summary="Your events, newest first",
+    description=(
+        "`phase` filters to Upcoming, Active, Completed or Cancelled (SRS 4.16). Completed "
+        "and cancelled events are read-only."
+    ),
+)
+async def list_events(
+    organizer: CurrentOrganizer, session: SessionDep, phase: EventPhase | None = None
+) -> list[Event]:
+    return await event_service.list_owned(session, organizer, phase)
 
 
 @router.get(
@@ -436,3 +448,21 @@ async def analytics(
         date_from=date_from,
         date_to=date_to,
     )
+
+
+@router.post(
+    "/events/{event_id}/duplicate",
+    response_model=EventRead,
+    status_code=status.HTTP_201_CREATED,
+    responses=error_responses(404),
+    summary="Duplicate an event into a new draft",
+    description=(
+        "SRS 4.16: copies the details, venue, visibility, capacity, refund policy and ticket "
+        "types. Never orders, tickets, payments, check-ins, support cases, campaigns or paid-"
+        "sales activation. A past event's dates move forward by whole weeks."
+    ),
+)
+async def duplicate_event(
+    event: OwnedEvent, organizer: CurrentOrganizer, user: OrganizerUser, session: SessionDep
+) -> Event:
+    return await history_service.duplicate(session, event, organizer, user)

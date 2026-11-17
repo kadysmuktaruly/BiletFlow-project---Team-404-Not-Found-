@@ -90,10 +90,9 @@ def _check_window(tt: TicketType) -> None:
 
 
 def _ensure_editable(event: Event) -> None:
-    from app.services.events import EDITABLE_STATUSES
+    from app.services.events import ensure_editable
 
-    if event.status not in EDITABLE_STATUSES:
-        raise AppError(409, "event_not_editable", "Cancelled or completed events can't be edited.")
+    ensure_editable(event)
 
 
 async def create(

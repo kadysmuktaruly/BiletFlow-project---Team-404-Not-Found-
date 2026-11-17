@@ -1,8 +1,8 @@
 """Events as organizers create and edit them (SRS 4.2)."""
 
 import uuid
-from datetime import datetime
-from typing import Annotated
+from datetime import UTC, datetime
+from typing import Annotated, Literal
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from pydantic import (
@@ -112,6 +112,22 @@ class CancelEventRequest(BaseModel):
     reason: str | None = Field(default=None, max_length=2000)
 
 
+EventPhase = Literal["upcoming", "active", "completed", "cancelled"]
+
+
+def phase_of(
+    status: EventStatus, starts_at: datetime, ends_at: datetime, now: datetime | None = None
+) -> EventPhase:
+    """SRS 4.16 dashboard classification. "Completed" includes events whose end time has
+    passed even if nobody marked them completed."""
+    now = now or datetime.now(UTC)
+    if status is EventStatus.CANCELLED:
+        return "cancelled"
+    if status is EventStatus.COMPLETED or ends_at <= now:
+        return "completed"
+    return "active" if starts_at <= now else "upcoming"
+
+
 def localize(value: datetime, tz: ZoneInfo) -> datetime:
     return value.replace(tzinfo=tz) if value.tzinfo is None else value
 
@@ -140,6 +156,13 @@ class EventRead(BaseModel):
     cancelled_at: datetime | None
     created_at: datetime
     updated_at: datetime
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def phase(self) -> "EventPhase":
+        """SRS 4.16: Upcoming / Active / Completed / Cancelled, as of now. Completed and
+        cancelled events are read-only."""
+        return phase_of(self.status, self.starts_at, self.ends_at)
 
     @computed_field  # type: ignore[prop-decorator]
     @property

@@ -657,6 +657,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/history/events/{event_id}/timeline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * An event's activity timeline, newest first
+         * @description From the append-only audit log: publication and cancellation, price and capacity changes, refunds, promo codes, support-case changes, check-ins and reversals, and more. Filter by date range (event time zone) and by `category` (the part of the action before the dot, e.g. `order`, `promo`, `ticket`). Up to 500 entries.
+         */
+        get: operations["event_timeline_api_v1_history_events__event_id__timeline_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/me": {
         parameters: {
             query?: never;
@@ -918,7 +938,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Your events, newest first */
+        /**
+         * Your events, newest first
+         * @description `phase` filters to Upcoming, Active, Completed or Cancelled (SRS 4.16). Completed and cancelled events are read-only.
+         */
         get: operations["list_events_api_v1_organizer_events_get"];
         put?: never;
         /**
@@ -1157,6 +1180,26 @@ export interface paths {
          * @description Cancels every valid ticket (they fail at check-in), releases unpaid orders, **refunds every paid order in full (DEMO)** and notifies every ticket holder by email and in-app.
          */
         post: operations["cancel_event_api_v1_organizer_events__event_id__cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/organizer/events/{event_id}/duplicate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Duplicate an event into a new draft
+         * @description SRS 4.16: copies the details, venue, visibility, capacity, refund policy and ticket types. Never orders, tickets, payments, check-ins, support cases, campaigns or paid-sales activation. A past event's dates move forward by whole weeks.
+         */
+        post: operations["duplicate_event_api_v1_organizer_events__event_id__duplicate_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2368,6 +2411,13 @@ export interface components {
              * Format: uuid
              */
             id: string;
+            /**
+             * Phase
+             * @description SRS 4.16: Upcoming / Active / Completed / Cancelled, as of now. Completed and
+             *     cancelled events are read-only.
+             * @enum {string}
+             */
+            readonly phase: "upcoming" | "active" | "completed" | "cancelled";
             /** Published At */
             published_at: string | null;
             /** Refund Policy */
@@ -3562,6 +3612,44 @@ export interface components {
             /** Sales Start At */
             sales_start_at?: string | null;
         };
+        /** Timeline */
+        Timeline: {
+            /** Categories */
+            categories: string[];
+            /** Entries */
+            entries: components["schemas"]["TimelineEntry"][];
+            /** Truncated */
+            truncated: boolean;
+        };
+        /**
+         * TimelineEntry
+         * @description SRS 4.16: "timestamp, acting user, action type, affected entity, and short
+         *     description". Read from the append-only audit log.
+         */
+        TimelineEntry: {
+            /** Action */
+            action: string;
+            /** Actor Name */
+            actor_name: string | null;
+            /** Category */
+            category: string;
+            /** Description */
+            description: string;
+            /** Entity Id */
+            entity_id: string | null;
+            /** Entity Type */
+            entity_type: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Occurred At
+             * Format: date-time
+             */
+            occurred_at: string;
+        };
         /** TokenResponse */
         TokenResponse: {
             /** Access Token */
@@ -3805,6 +3893,8 @@ export type SchemaTicketTypeCreate = components['schemas']['TicketTypeCreate'];
 export type SchemaTicketTypeFigures = components['schemas']['TicketTypeFigures'];
 export type SchemaTicketTypeRead = components['schemas']['TicketTypeRead'];
 export type SchemaTicketTypeUpdate = components['schemas']['TicketTypeUpdate'];
+export type SchemaTimeline = components['schemas']['Timeline'];
+export type SchemaTimelineEntry = components['schemas']['TimelineEntry'];
 export type SchemaTokenResponse = components['schemas']['TokenResponse'];
 export type SchemaUndoCheckInRequest = components['schemas']['UndoCheckInRequest'];
 export type SchemaUndoResult = components['schemas']['UndoResult'];
@@ -5644,6 +5734,59 @@ export interface operations {
             };
         };
     };
+    event_timeline_api_v1_history_events__event_id__timeline_get: {
+        parameters: {
+            query?: {
+                category?: string | null;
+                date_from?: string | null;
+                date_to?: string | null;
+            };
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Timeline"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     read_me_api_v1_me_get: {
         parameters: {
             query?: never;
@@ -6492,7 +6635,9 @@ export interface operations {
     };
     list_events_api_v1_organizer_events_get: {
         parameters: {
-            query?: never;
+            query?: {
+                phase?: ("upcoming" | "active" | "completed" | "cancelled") | null;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -7540,6 +7685,64 @@ export interface operations {
             };
             /** @description Conflict */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    duplicate_event_api_v1_organizer_events__event_id__duplicate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventRead"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
