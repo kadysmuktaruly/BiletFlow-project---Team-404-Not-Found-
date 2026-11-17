@@ -26,3 +26,7 @@ dist/
 
 # Database dumps (scripts/backup-db.sh): personal data, never commit.
 backups/
+
+# Playwright output
+test-results/
+playwright-report/
