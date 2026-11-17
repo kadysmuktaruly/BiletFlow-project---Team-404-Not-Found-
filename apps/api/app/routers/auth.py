@@ -2,8 +2,9 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, BackgroundTasks, Cookie, Header, Response, status
+from fastapi import APIRouter, BackgroundTasks, Cookie, Header, Request, Response, status
 
+from app import ratelimit
 from app.config import get_settings
 from app.deps import SessionDep
 from app.errors import AppError, error_responses
@@ -63,8 +64,9 @@ def _session_response(user: User, response: Response, x_client: str | None) -> T
     description="Responds identically whether or not the email is already registered.",
 )
 async def register(
-    data: RegisterRequest, session: SessionDep, background: BackgroundTasks
+    data: RegisterRequest, session: SessionDep, background: BackgroundTasks, request: Request
 ) -> AcceptedResponse:
+    ratelimit.enforce(request, "register")
     schedule(background, await auth_service.register(session, data))
     return AcceptedResponse()
 
@@ -86,8 +88,9 @@ async def verify_email(data: VerifyEmailRequest, session: SessionDep) -> User:
     summary="Send the verification email again",
 )
 async def resend_verification(
-    data: EmailRequest, session: SessionDep, background: BackgroundTasks
+    data: EmailRequest, session: SessionDep, background: BackgroundTasks, request: Request
 ) -> AcceptedResponse:
+    ratelimit.enforce(request, "account-email", data.email)
     schedule(background, await auth_service.resend_verification(session, data.email))
     return AcceptedResponse()
 
@@ -95,7 +98,7 @@ async def resend_verification(
 @router.post(
     "/login",
     response_model=TokenResponse,
-    responses=error_responses(401, 403),
+    responses=error_responses(401, 403, 429),
     summary="Sign in",
     description=(
         "Returns an access token. Browsers get the refresh token as an httpOnly cookie; "
@@ -106,8 +109,10 @@ async def login(
     data: LoginRequest,
     session: SessionDep,
     response: Response,
+    request: Request,
     x_client: Annotated[str | None, Header()] = None,
 ) -> TokenResponse:
+    ratelimit.enforce(request, "login", data.email)
     user = await auth_service.authenticate(session, data.email, data.password)
     return _session_response(user, response, x_client)
 
@@ -152,8 +157,9 @@ async def logout(response: Response) -> None:
     description="Responds identically whether or not the email is registered.",
 )
 async def forgot_password(
-    data: EmailRequest, session: SessionDep, background: BackgroundTasks
+    data: EmailRequest, session: SessionDep, background: BackgroundTasks, request: Request
 ) -> AcceptedResponse:
+    ratelimit.enforce(request, "account-email", data.email)
     schedule(background, await auth_service.forgot_password(session, data.email))
     return AcceptedResponse()
 

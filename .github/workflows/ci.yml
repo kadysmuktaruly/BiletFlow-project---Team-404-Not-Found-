@@ -11,6 +11,13 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  secrets:
+    name: No secrets in the repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 scripts/check-secrets.py
+
   api:
     name: API (ruff, mypy, alembic check, pytest)
     runs-on: ubuntu-latest
