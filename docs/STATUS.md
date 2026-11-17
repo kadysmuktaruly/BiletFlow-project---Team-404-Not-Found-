@@ -6,6 +6,10 @@ Spec: SRS v0.3 ([`docs/srs/srs.md`](srs/srs.md)), the semester plan and the mode
 
 ## Progress notes (newest first)
 
+- **Nov 17 — Row 8: support cases.** [#22](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/22): cases from event/order/ticket pages,
+  404 isolation, polled threads with internal notes, assignment and four statuses,
+  organizer-to-platform cases, notifications and audit; web pages and Get help links.
+  pytest 225 passed. Next: admin portal (`feat/r5-admin-portal`, migrations 0003/0004).
 - **Nov 17 — Row 7: refunds and orders.** [#21](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/21): idempotent DEMO full refunds
   (concurrent-safe), free-registration cancellation, event cancel auto-refunds every paid
   order, audit + notifications, refund policy, My orders and the organizer Orders tab with
@@ -66,6 +70,7 @@ retargeted to `main` and rebased. Suggested reviewer = the plan's owner for that
 | 16 | [#19](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/19) | Scanner: live results and reasons, counts, manual search, undo | Nurali (scanner), Kadys |
 | 17 | [#20](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/20) | Notification interface, all templates, inbox API, notification center (migration 0002) | Kadys (notifications), Nurali |
 | 18 | [#21](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/21) | Refunds, cancellations, auto-refund on event cancel, My orders, organizer Orders tab | Sagidolla (orders), Sanzhar |
+| 19 | [#22](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/22) | Support cases: contextual, 404 isolation, threads, notes, assignment, statuses | Nurali (support), Sanzhar |
 
 New Phase 1 PRs are added below as they open.
 
@@ -88,6 +93,7 @@ New Phase 1 PRs are added below as they open.
 | Nov 17 | Scanner: counts poll every 10 s; undo offered right after a valid result only (API supports later undo); the phone no longer classifies payloads, the server's `reason` is the single source. | SRS 4.8 "accidental" check-in; one source of truth. |
 | Nov 17 | Migration 0002 adds nullable `notifications.action_path`. Notifications are rendered once in the account language. "Event update" = time, venue or title. | Support cases need a link the table can't derive; inbox matches the email; avoid noise. |
 | Nov 17 | Refunds are full and owner-only; refunded/cancelled tickets return to sale (not for cancelled events); promo redemptions stay counted after a refund. | SRS 4.9 wording; simplest reversible rules. |
+| Nov 17 | Support: event admins (not check-in staff) answer attendee cases with the organizer; platform admins answer organizer cases and may open any case; a requester's reply reopens waiting/resolved cases. | SRS 4.13 roles; keeps cases from stalling. |
 
 ## Blocked
 
@@ -154,7 +160,7 @@ or 3 item can have is:
 | 5 | Sagidolla | Refund policy, cancel free registrations, idempotent full refunds, refunded or cancelled tickets fail check-in, event cancel auto-refunds and notifies | Partial (unmerged) | [#21](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/21). `app/services/refunds.py`; `tests/test_refunds.py` (9 incl. concurrent same-key refunds) | Merge #21 |
 | 5 | Sanzhar | Web: attendee order history and detail, organizer order list with cancel and refund behind confirmation dialogs, notification center, event-cancellation screen | Partial (unmerged) | [#20](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/20) notification center; [#21](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/21) My orders, Orders tab with `alertdialog` confirmations, cancellation text | Merge #20, #21 |
 | 5 | Alisher | Platform admin portal: search, suspend users and events, suspend paid sales, activation records, set activation fee, reported events, CSV export | **Missing** | `PlatformAdminUser` dependency; seeded admin account; `is_suspended` columns | All. **Needs model changes**: no table for event reports or runtime platform settings |
-| 5 | Nurali | Support cases with context, categories, polled thread, assignment, four statuses, organizer-to-platform cases, 404 isolation | **Missing** | Models only (`app/models/support.py`, `is_organizer_case`) | All |
+| 5 | Nurali | Support cases with context, categories, polled thread, assignment, four statuses, organizer-to-platform cases, 404 isolation | Partial (unmerged) | [#22](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/22). `app/services/support.py`, `/support` web pages; `tests/test_support.py` (6 incl. `test_only_participants_see_a_case`) | Merge #22 |
 | 6 | Alisher | Analytics API (capacity, sales, revenue, over time, by type, campaigns, attendance; filters; own events only; doesn't slow checkout) | **Missing** | Per-type counts exist on ticket-type responses | All |
 | 6 | Alisher | Event duplication (configuration only) | **Missing** | `Event.duplicated_from_event_id` column | All |
 | 6 | Sanzhar | Dashboard: line chart over time, bar chart by ticket type, filters | **Missing** | — | All (needs a chart library) |
