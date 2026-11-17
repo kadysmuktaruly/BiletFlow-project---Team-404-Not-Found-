@@ -1,11 +1,11 @@
-import { setRequestLocale } from "next-intl/server";
 import { Suspense } from "react";
 
 import { RequireAuth } from "@/components/require-auth";
 import { CasePage } from "@/components/support/case-page";
 
-export default async function Page({ params }: PageProps<"/[locale]/support/[caseId]">) {
-  setRequestLocale((await params).locale);
+// The [locale] layout sets the request locale; the case id is read on the client (inside
+// Suspense), so nothing here waits on request data during prerendering.
+export default function Page() {
   return (
     <Suspense>
       <RequireAuth>
