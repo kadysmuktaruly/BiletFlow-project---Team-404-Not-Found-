@@ -249,6 +249,7 @@ local time in the event's IANA `timezone` (for example `Asia/Almaty`). Responses
 | `POST /orders` | Send ticket type ids and quantities (and optionally one attendee per ticket). The server computes every amount. A zero-total order is confirmed at once and its tickets issued. A paid order is `awaiting_payment` and holds its tickets for `ORDER_RESERVATION_TTL_SECONDS`. |
 | `GET /orders/{id}`, `GET /me/orders` | Your orders. Other people's orders return 404. |
 | `GET /me/tickets`, `GET /me/tickets/{id}/qr.svg` | Your tickets and their QR codes. |
+| `GET /me/tickets/{id}/pdf` | The ticket as a print-optimized A4 PDF (SRS 4.7), in your account language. |
 
 **Inventory never oversells.** Checkout locks the event row, then reserves with a conditional
 `UPDATE … WHERE sold + reserved + n <= total`. `ck_ticket_types_inventory_within_total` backs
@@ -358,6 +359,23 @@ holds its redemption and gives it back if it fails, expires or is abandoned.
 
 Campaign tokens (`BFC1.`) and admission tokens (`BFT1.`) never overlap, and check-in rejects
 Campaign QR codes. Creating, changing and disabling a campaign is written to the audit log.
+
+### PDF tickets and Campaign QR images (SRS 4.7, 4.14)
+
+**PDF ticket** (`GET /me/tickets/{id}/pdf`, also attached to every confirmation email): one A4
+page with the event, date and time in the event's time zone, venue, ticket type, attendee, seat
+when assigned, ticket number, status and the QR code. It has **no price or payment data**. The QR
+is the same admission token as the digital ticket, so both copies are one ticket and one
+admission. It's 70 mm, error correction M, black on white with a 4-module quiet zone, drawn as
+vectors. `tests/test_documents.py` renders the PDF in grayscale at 72, 150 and 300 dpi and
+decodes it with zxing.
+
+**Campaign QR** (`GET /organizer/events/{id}/campaigns/{campaign_id}/qr.svg` or `qr.pdf` for an
+A5 poster, `?lang=kk|ru|en`): dark-purple modules in a dashed purple frame under a
+"PROMO · NOT A TICKET" banner. It encodes only the campaign link.
+
+Text uses the bundled DejaVu Sans (`app/assets/fonts/`, free licence in `DejaVu-LICENSE.txt`),
+which covers Kazakh and Russian. PDFs are built with reportlab.
 
 ### Attendee web pages (SRS 4.2, 4.4, 4.6, 4.7)
 

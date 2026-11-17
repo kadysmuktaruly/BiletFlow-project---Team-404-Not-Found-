@@ -5230,6 +5230,81 @@
         ]
       }
     },
+    "/api/v1/me/tickets/{ticket_id}/pdf": {
+      "get": {
+        "description": "SRS 4.7: event, date and time, venue, ticket type, attendee, seat when assigned, ticket number and the same QR as the digital ticket. No price or payment data. Text is in your account language.",
+        "operationId": "my_ticket_pdf_api_v1_me_tickets__ticket_id__pdf_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ticket_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Ticket Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/pdf": {}
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "The ticket as a print-optimized A4 PDF",
+        "tags": [
+          "me"
+        ]
+      }
+    },
     "/api/v1/me/tickets/{ticket_id}/qr.svg": {
       "get": {
         "operationId": "my_ticket_qr_api_v1_me_tickets__ticket_id__qr_svg_get",
@@ -6903,6 +6978,126 @@
           }
         ],
         "summary": "Disable a campaign and its code",
+        "tags": [
+          "campaigns"
+        ]
+      }
+    },
+    "/api/v1/organizer/events/{event_id}/campaigns/{campaign_id}/qr.{fmt}": {
+      "get": {
+        "description": "Purple, dashed-frame design with a printed 'PROMO · NOT A TICKET' banner, so it can't be mistaken for a ticket (SRS 4.14). It encodes the campaign link only. `lang` picks the language of the printed text (default: your account language).",
+        "operationId": "campaign_qr_api_v1_organizer_events__event_id__campaigns__campaign_id__qr__fmt__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "campaign_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Campaign Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "fmt",
+            "required": true,
+            "schema": {
+              "enum": [
+                "svg",
+                "pdf"
+              ],
+              "title": "Fmt",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "lang",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "kk",
+                    "ru",
+                    "en"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Lang"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/pdf": {},
+              "image/svg+xml": {}
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Download the Campaign QR (SVG, or an A5 PDF poster)",
         "tags": [
           "campaigns"
         ]
