@@ -412,6 +412,21 @@ failed) and an **in-app** copy with a link. Both say the same thing.
 The web header shows **Notifications** with the unread count (polled every minute), and
 `/notifications` lists them with links and "Mark all as read".
 
+### Orders, refunds and cancellations (SRS 4.9)
+
+| Endpoint | Purpose |
+|---|---|
+| `GET /organizer/events/{id}/orders?q=&status=` | The event's orders with buyer, totals, refunds and `can_refund` / `can_cancel`. |
+| `POST /organizer/events/{id}/orders/{order_id}/refund` | **DEMO** full refund of a paid order, with an `Idempotency-Key` (a repeat returns the first refund, 200 `replayed: true`). |
+| `POST /organizer/events/{id}/orders/{order_id}/cancel` | Cancel a free registration. |
+| `PATCH /organizer/events/{id}` with `refund_policy` | The refund policy shown on the event page. |
+
+Refunded or cancelled tickets stop working at the door at once and go back on sale. Every refund
+and cancellation is written to the audit log and the buyer is notified. **Cancelling an event
+refunds every paid order in full**, with a fixed key per order so it can never refund twice.
+Only the event's organizer can refund. The web app has **My orders** for attendees and an
+**Orders** tab for organizers, where refunds and cancellations sit behind a confirmation.
+
 ### Attendee web pages (SRS 4.2, 4.4, 4.6, 4.7)
 
 `/events` lists upcoming public events. `/events/{slug}` is the event page with ticket
