@@ -103,3 +103,20 @@ class UndoResult(BaseModel):
 class AttendeeSearchResult(BaseModel):
     tickets: list[CheckInTicket]
     stats: CheckInStats
+
+
+class OrganizerAttendee(CheckInTicket):
+    """A row of the organizer's attendee list (SRS 4.4: "The organizer shall see the
+    registration in the attendee list")."""
+
+    attendee_email: str | None
+    order_id: uuid.UUID
+    order_reference: str
+    issued_at: datetime | None
+
+
+class OrganizerAttendeeList(BaseModel):
+    attendees: list[OrganizerAttendee]
+    stats: CheckInStats
+    # True when there were more matches than `limit`; narrow the search to see the rest.
+    truncated: bool
