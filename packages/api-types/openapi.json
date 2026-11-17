@@ -670,6 +670,424 @@
         "title": "CancelRegistrationRequest",
         "type": "object"
       },
+      "CaseContext": {
+        "properties": {
+          "event_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Id"
+          },
+          "event_slug": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Slug"
+          },
+          "event_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Title"
+          },
+          "order_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Order Id"
+          },
+          "order_reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Order Reference"
+          },
+          "ticket_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ticket Id"
+          },
+          "ticket_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ticket Number"
+          }
+        },
+        "required": [
+          "event_id",
+          "event_title",
+          "event_slug",
+          "order_id",
+          "order_reference",
+          "ticket_id",
+          "ticket_number"
+        ],
+        "title": "CaseContext",
+        "type": "object"
+      },
+      "CaseCreate": {
+        "description": "`attendee`: about an event, order or ticket, answered by the event's organizer team.\n`organizer`: an organizer asking the platform (account, activation, payment, technical).\nThe server derives the event from the order or ticket and checks they're yours.",
+        "properties": {
+          "category": {
+            "$ref": "#/components/schemas/SupportCategory"
+          },
+          "event_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Id"
+          },
+          "kind": {
+            "default": "attendee",
+            "enum": [
+              "attendee",
+              "organizer"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "message": {
+            "maxLength": 5000,
+            "minLength": 1,
+            "title": "Message",
+            "type": "string"
+          },
+          "order_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Order Id"
+          },
+          "subject": {
+            "maxLength": 300,
+            "minLength": 3,
+            "title": "Subject",
+            "type": "string"
+          },
+          "ticket_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ticket Id"
+          }
+        },
+        "required": [
+          "category",
+          "subject",
+          "message"
+        ],
+        "title": "CaseCreate",
+        "type": "object"
+      },
+      "CaseRead": {
+        "properties": {
+          "assigned_to": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Person"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "assignees": {
+            "items": {
+              "$ref": "#/components/schemas/Person"
+            },
+            "title": "Assignees",
+            "type": "array"
+          },
+          "can_manage": {
+            "title": "Can Manage",
+            "type": "boolean"
+          },
+          "category": {
+            "$ref": "#/components/schemas/SupportCategory"
+          },
+          "context": {
+            "$ref": "#/components/schemas/CaseContext"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "attendee",
+              "organizer"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "last_message_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Message At"
+          },
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/MessageRead"
+            },
+            "title": "Messages",
+            "type": "array"
+          },
+          "reference": {
+            "title": "Reference",
+            "type": "string"
+          },
+          "requester": {
+            "$ref": "#/components/schemas/Person"
+          },
+          "resolved_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved At"
+          },
+          "status": {
+            "$ref": "#/components/schemas/SupportCaseStatus"
+          },
+          "subject": {
+            "title": "Subject",
+            "type": "string"
+          },
+          "viewer_role": {
+            "enum": [
+              "requester",
+              "staff"
+            ],
+            "title": "Viewer Role",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "reference",
+          "kind",
+          "category",
+          "status",
+          "subject",
+          "requester",
+          "assigned_to",
+          "context",
+          "viewer_role",
+          "created_at",
+          "last_message_at",
+          "resolved_at",
+          "messages",
+          "can_manage",
+          "assignees"
+        ],
+        "title": "CaseRead",
+        "type": "object"
+      },
+      "CaseSummary": {
+        "properties": {
+          "assigned_to": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Person"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "category": {
+            "$ref": "#/components/schemas/SupportCategory"
+          },
+          "context": {
+            "$ref": "#/components/schemas/CaseContext"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "attendee",
+              "organizer"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "last_message_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Message At"
+          },
+          "reference": {
+            "title": "Reference",
+            "type": "string"
+          },
+          "requester": {
+            "$ref": "#/components/schemas/Person"
+          },
+          "resolved_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved At"
+          },
+          "status": {
+            "$ref": "#/components/schemas/SupportCaseStatus"
+          },
+          "subject": {
+            "title": "Subject",
+            "type": "string"
+          },
+          "viewer_role": {
+            "enum": [
+              "requester",
+              "staff"
+            ],
+            "title": "Viewer Role",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "reference",
+          "kind",
+          "category",
+          "status",
+          "subject",
+          "requester",
+          "assigned_to",
+          "context",
+          "viewer_role",
+          "created_at",
+          "last_message_at",
+          "resolved_at"
+        ],
+        "title": "CaseSummary",
+        "type": "object"
+      },
+      "CaseUpdate": {
+        "properties": {
+          "assigned_to_user_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assigned To User Id"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SupportCaseStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "title": "CaseUpdate",
+        "type": "object"
+      },
       "CheckInEvent": {
         "description": "An event the signed-in user may check attendees in at.",
         "properties": {
@@ -1592,6 +2010,65 @@
           }
         },
         "title": "ManualCheckInRequest",
+        "type": "object"
+      },
+      "MessageCreate": {
+        "properties": {
+          "body": {
+            "maxLength": 5000,
+            "minLength": 1,
+            "title": "Body",
+            "type": "string"
+          },
+          "internal": {
+            "default": false,
+            "title": "Internal",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "body"
+        ],
+        "title": "MessageCreate",
+        "type": "object"
+      },
+      "MessageRead": {
+        "properties": {
+          "author": {
+            "$ref": "#/components/schemas/Person"
+          },
+          "body": {
+            "title": "Body",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "from_staff": {
+            "title": "From Staff",
+            "type": "boolean"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "internal": {
+            "title": "Internal",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "author",
+          "from_staff",
+          "body",
+          "internal",
+          "created_at"
+        ],
+        "title": "MessageRead",
         "type": "object"
       },
       "MyTicketRead": {
@@ -2786,6 +3263,25 @@
         "title": "PayoutAccountUpsert",
         "type": "object"
       },
+      "Person": {
+        "properties": {
+          "full_name": {
+            "title": "Full Name",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "full_name"
+        ],
+        "title": "Person",
+        "type": "object"
+      },
       "PromoLine": {
         "properties": {
           "discount_kzt": {
@@ -3584,6 +4080,32 @@
           "check_in_staff"
         ],
         "title": "StaffRole",
+        "type": "string"
+      },
+      "SupportCaseStatus": {
+        "description": "SRS 4.13 names exactly these four.",
+        "enum": [
+          "open",
+          "in_progress",
+          "waiting_for_customer",
+          "resolved"
+        ],
+        "title": "SupportCaseStatus",
+        "type": "string"
+      },
+      "SupportCategory": {
+        "description": "SRS 4.13's issue categories, verbatim.",
+        "enum": [
+          "ticket_delivery",
+          "payment",
+          "refund",
+          "seating",
+          "event_information",
+          "check_in",
+          "account",
+          "technical"
+        ],
+        "title": "SupportCategory",
         "type": "string"
       },
       "TicketRead": {
@@ -9729,6 +10251,397 @@
         "summary": "Preview what a promo code is worth for these tickets",
         "tags": [
           "promotions"
+        ]
+      }
+    },
+    "/api/v1/support/cases": {
+      "get": {
+        "description": "Most recently active first. Poll it; there are no sockets (SRS 4.13).",
+        "operationId": "list_cases_api_v1_support_cases_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CaseSummary"
+                  },
+                  "title": "Response List Cases Api V1 Support Cases Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Cases you opened and cases you handle",
+        "tags": [
+          "support"
+        ]
+      },
+      "post": {
+        "description": "`attendee` cases come from an event, order or ticket page and go to the event's organizer team; the event is derived from the order or ticket, which must be yours. `organizer` cases go to the platform (organizers only). No attachments.",
+        "operationId": "open_case_api_v1_support_cases_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaseCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Open a support case",
+        "tags": [
+          "support"
+        ]
+      }
+    },
+    "/api/v1/support/cases/{case_id}": {
+      "get": {
+        "description": "Requesters never see internal notes. Poll this to refresh the thread.",
+        "operationId": "read_case_api_v1_support_cases__case_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "A case with its message thread",
+        "tags": [
+          "support"
+        ]
+      },
+      "patch": {
+        "description": "Statuses: open, in_progress, waiting_for_customer, resolved. Assign to someone from the case's `assignees`, or null to unassign. The requester is notified of status changes, and the assignee of the assignment.",
+        "operationId": "update_case_api_v1_support_cases__case_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaseUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Change a case's status or assignee (handling staff only)",
+        "tags": [
+          "support"
+        ]
+      }
+    },
+    "/api/v1/support/cases/{case_id}/messages": {
+      "post": {
+        "description": "A requester's reply moves a case that was waiting for them back to In progress, and a resolved case back to Open. `internal: true` (staff only) adds a note the requester never sees.",
+        "operationId": "reply_api_v1_support_cases__case_id__messages_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MessageCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Reply in a case",
+        "tags": [
+          "support"
         ]
       }
     }

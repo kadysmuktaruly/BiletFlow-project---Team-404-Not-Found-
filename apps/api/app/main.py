@@ -22,6 +22,7 @@ from app.routers import (
     me,
     orders,
     organizer,
+    support,
 )
 from app.services.orders import expiry_sweeper
 
@@ -67,6 +68,7 @@ def create_app() -> FastAPI:
     app.include_router(checkin.router, prefix=API_PREFIX)
     app.include_router(campaigns.router, prefix=API_PREFIX)
     app.include_router(campaigns.public_router, prefix=API_PREFIX)
+    app.include_router(support.router, prefix=API_PREFIX)
     return app
 
 

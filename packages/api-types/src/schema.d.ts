@@ -1085,6 +1085,74 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/support/cases": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Cases you opened and cases you handle
+         * @description Most recently active first. Poll it; there are no sockets (SRS 4.13).
+         */
+        get: operations["list_cases_api_v1_support_cases_get"];
+        put?: never;
+        /**
+         * Open a support case
+         * @description `attendee` cases come from an event, order or ticket page and go to the event's organizer team; the event is derived from the order or ticket, which must be yours. `organizer` cases go to the platform (organizers only). No attachments.
+         */
+        post: operations["open_case_api_v1_support_cases_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/support/cases/{case_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * A case with its message thread
+         * @description Requesters never see internal notes. Poll this to refresh the thread.
+         */
+        get: operations["read_case_api_v1_support_cases__case_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Change a case's status or assignee (handling staff only)
+         * @description Statuses: open, in_progress, waiting_for_customer, resolved. Assign to someone from the case's `assignees`, or null to unassign. The requester is notified of status changes, and the assignee of the assignment.
+         */
+        patch: operations["update_case_api_v1_support_cases__case_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/support/cases/{case_id}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reply in a case
+         * @description A requester's reply moves a case that was waiting for them back to In progress, and a resolved case back to Open. `internal: true` (staff only) adds a note the requester never sees.
+         */
+        post: operations["reply_api_v1_support_cases__case_id__messages_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1305,6 +1373,132 @@ export interface components {
         CancelRegistrationRequest: {
             /** Reason */
             reason?: string | null;
+        };
+        /** CaseContext */
+        CaseContext: {
+            /** Event Id */
+            event_id: string | null;
+            /** Event Slug */
+            event_slug: string | null;
+            /** Event Title */
+            event_title: string | null;
+            /** Order Id */
+            order_id: string | null;
+            /** Order Reference */
+            order_reference: string | null;
+            /** Ticket Id */
+            ticket_id: string | null;
+            /** Ticket Number */
+            ticket_number: string | null;
+        };
+        /**
+         * CaseCreate
+         * @description `attendee`: about an event, order or ticket, answered by the event's organizer team.
+         *     `organizer`: an organizer asking the platform (account, activation, payment, technical).
+         *     The server derives the event from the order or ticket and checks they're yours.
+         */
+        CaseCreate: {
+            category: components["schemas"]["SupportCategory"];
+            /** Event Id */
+            event_id?: string | null;
+            /**
+             * Kind
+             * @default attendee
+             * @enum {string}
+             */
+            kind: "attendee" | "organizer";
+            /** Message */
+            message: string;
+            /** Order Id */
+            order_id?: string | null;
+            /** Subject */
+            subject: string;
+            /** Ticket Id */
+            ticket_id?: string | null;
+        };
+        /** CaseRead */
+        CaseRead: {
+            assigned_to: components["schemas"]["Person"] | null;
+            /** Assignees */
+            assignees: components["schemas"]["Person"][];
+            /** Can Manage */
+            can_manage: boolean;
+            category: components["schemas"]["SupportCategory"];
+            context: components["schemas"]["CaseContext"];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "attendee" | "organizer";
+            /** Last Message At */
+            last_message_at: string | null;
+            /** Messages */
+            messages: components["schemas"]["MessageRead"][];
+            /** Reference */
+            reference: string;
+            requester: components["schemas"]["Person"];
+            /** Resolved At */
+            resolved_at: string | null;
+            status: components["schemas"]["SupportCaseStatus"];
+            /** Subject */
+            subject: string;
+            /**
+             * Viewer Role
+             * @enum {string}
+             */
+            viewer_role: "requester" | "staff";
+        };
+        /** CaseSummary */
+        CaseSummary: {
+            assigned_to: components["schemas"]["Person"] | null;
+            category: components["schemas"]["SupportCategory"];
+            context: components["schemas"]["CaseContext"];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "attendee" | "organizer";
+            /** Last Message At */
+            last_message_at: string | null;
+            /** Reference */
+            reference: string;
+            requester: components["schemas"]["Person"];
+            /** Resolved At */
+            resolved_at: string | null;
+            status: components["schemas"]["SupportCaseStatus"];
+            /** Subject */
+            subject: string;
+            /**
+             * Viewer Role
+             * @enum {string}
+             */
+            viewer_role: "requester" | "staff";
+        };
+        /** CaseUpdate */
+        CaseUpdate: {
+            /** Assigned To User Id */
+            assigned_to_user_id?: string | null;
+            status?: components["schemas"]["SupportCaseStatus"] | null;
         };
         /**
          * CheckInEvent
@@ -1637,6 +1831,36 @@ export interface components {
         ManualCheckInRequest: {
             /** Device Label */
             device_label?: string | null;
+        };
+        /** MessageCreate */
+        MessageCreate: {
+            /** Body */
+            body: string;
+            /**
+             * Internal
+             * @default false
+             */
+            internal: boolean;
+        };
+        /** MessageRead */
+        MessageRead: {
+            author: components["schemas"]["Person"];
+            /** Body */
+            body: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** From Staff */
+            from_staff: boolean;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Internal */
+            internal: boolean;
         };
         /** MyTicketRead */
         MyTicketRead: {
@@ -2060,6 +2284,16 @@ export interface components {
             /** Bank Name */
             bank_name: string;
         };
+        /** Person */
+        Person: {
+            /** Full Name */
+            full_name: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+        };
         /** PromoLine */
         PromoLine: {
             /** Discount Kzt */
@@ -2382,6 +2616,18 @@ export interface components {
          * @enum {string}
          */
         StaffRole: "event_admin" | "check_in_staff";
+        /**
+         * SupportCaseStatus
+         * @description SRS 4.13 names exactly these four.
+         * @enum {string}
+         */
+        SupportCaseStatus: "open" | "in_progress" | "waiting_for_customer" | "resolved";
+        /**
+         * SupportCategory
+         * @description SRS 4.13's issue categories, verbatim.
+         * @enum {string}
+         */
+        SupportCategory: "ticket_delivery" | "payment" | "refund" | "seating" | "event_information" | "check_in" | "account" | "technical";
         /** TicketRead */
         TicketRead: {
             /** Attendee Email */
@@ -2657,6 +2903,11 @@ export type SchemaCampaignResolution = components['schemas']['CampaignResolution
 export type SchemaCampaignUpdate = components['schemas']['CampaignUpdate'];
 export type SchemaCancelEventRequest = components['schemas']['CancelEventRequest'];
 export type SchemaCancelRegistrationRequest = components['schemas']['CancelRegistrationRequest'];
+export type SchemaCaseContext = components['schemas']['CaseContext'];
+export type SchemaCaseCreate = components['schemas']['CaseCreate'];
+export type SchemaCaseRead = components['schemas']['CaseRead'];
+export type SchemaCaseSummary = components['schemas']['CaseSummary'];
+export type SchemaCaseUpdate = components['schemas']['CaseUpdate'];
 export type SchemaCheckInEvent = components['schemas']['CheckInEvent'];
 export type SchemaCheckInMethod = components['schemas']['CheckInMethod'];
 export type SchemaCheckInStats = components['schemas']['CheckInStats'];
@@ -2676,6 +2927,8 @@ export type SchemaFieldError = components['schemas']['FieldError'];
 export type SchemaHealthResponse = components['schemas']['HealthResponse'];
 export type SchemaLoginRequest = components['schemas']['LoginRequest'];
 export type SchemaManualCheckInRequest = components['schemas']['ManualCheckInRequest'];
+export type SchemaMessageCreate = components['schemas']['MessageCreate'];
+export type SchemaMessageRead = components['schemas']['MessageRead'];
 export type SchemaMyTicketRead = components['schemas']['MyTicketRead'];
 export type SchemaNotificationList = components['schemas']['NotificationList'];
 export type SchemaNotificationRead = components['schemas']['NotificationRead'];
@@ -2699,6 +2952,7 @@ export type SchemaPaymentStatus = components['schemas']['PaymentStatus'];
 export type SchemaPayoutAccountRead = components['schemas']['PayoutAccountRead'];
 export type SchemaPayoutAccountStatus = components['schemas']['PayoutAccountStatus'];
 export type SchemaPayoutAccountUpsert = components['schemas']['PayoutAccountUpsert'];
+export type SchemaPerson = components['schemas']['Person'];
 export type SchemaPromoLine = components['schemas']['PromoLine'];
 export type SchemaPromoQuote = components['schemas']['PromoQuote'];
 export type SchemaPromoValidateRequest = components['schemas']['PromoValidateRequest'];
@@ -2719,6 +2973,8 @@ export type SchemaSimulatedPaymentRequest = components['schemas']['SimulatedPaym
 export type SchemaStaffAssign = components['schemas']['StaffAssign'];
 export type SchemaStaffRead = components['schemas']['StaffRead'];
 export type SchemaStaffRole = components['schemas']['StaffRole'];
+export type SchemaSupportCaseStatus = components['schemas']['SupportCaseStatus'];
+export type SchemaSupportCategory = components['schemas']['SupportCategory'];
 export type SchemaTicketRead = components['schemas']['TicketRead'];
 export type SchemaTicketStatus = components['schemas']['TicketStatus'];
 export type SchemaTicketTypeCreate = components['schemas']['TicketTypeCreate'];
@@ -6510,6 +6766,295 @@ export interface operations {
             };
             /** @description Conflict */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_cases_api_v1_support_cases_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaseSummary"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    open_case_api_v1_support_cases_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CaseCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaseRead"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    read_case_api_v1_support_cases__case_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaseRead"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    update_case_api_v1_support_cases__case_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CaseUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaseRead"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    reply_api_v1_support_cases__case_id__messages_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MessageCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaseRead"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
