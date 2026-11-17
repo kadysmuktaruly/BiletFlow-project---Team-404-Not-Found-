@@ -4,6 +4,7 @@ import type { Schemas } from "@biletflow/api-types";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
+import { TicketPdfButton } from "@/components/ticket-pdf-button";
 import { TicketQr } from "@/components/ticket-qr";
 import { Alert, PageTitle } from "@/components/ui";
 import { Link } from "@/i18n/navigation";
@@ -73,6 +74,7 @@ export function MyTicketsPage() {
                     {ticket.ticket_type_name} · {ticket.attendee_name}
                   </p>
                   {ticket.status === "valid" && <p className="text-xs text-gray-600">{t("tickets.showAtDoor")}</p>}
+                  <TicketPdfButton ticketId={ticket.id} ticketNumber={ticket.ticket_number} />
                 </li>
               ))}
             </ul>

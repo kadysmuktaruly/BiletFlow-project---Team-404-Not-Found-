@@ -99,10 +99,22 @@ export function CheckoutPage() {
               <span>
                 {item.ticket_type_name} × {item.quantity}
               </span>
-              <span>{money(item.line_total_kzt)}</span>
+              <span>{money(item.unit_price_kzt * item.quantity)}</span>
             </li>
           ))}
         </ul>
+        {order.discount_kzt > 0 && (
+          <dl className="space-y-1 border-t border-gray-200 pt-2 text-sm text-gray-700">
+            <div className="flex justify-between">
+              <dt>{t("purchase.subtotal")}</dt>
+              <dd>{money(order.subtotal_kzt)}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt>{t("purchase.discount", { code: order.promo_code ?? "" })}</dt>
+              <dd>−{money(order.discount_kzt)}</dd>
+            </div>
+          </dl>
+        )}
         <div className="flex justify-between border-t border-gray-200 pt-2 font-semibold">
           <span>{t("purchase.total")}</span>
           <span>{money(order.total_kzt)}</span>
