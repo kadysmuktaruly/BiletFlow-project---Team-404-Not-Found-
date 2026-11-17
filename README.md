@@ -427,6 +427,20 @@ refunds every paid order in full**, with a fixed key per order so it can never r
 Only the event's organizer can refund. The web app has **My orders** for attendees and an
 **Orders** tab for organizers, where refunds and cancellations sit behind a confirmation.
 
+### Support cases (SRS 4.13)
+
+| Endpoint | Purpose |
+|---|---|
+| `POST /support/cases` | Open a case. `attendee` cases come from an event, order or ticket (the server derives the event and checks they're yours) and go to the event's organizer and event admins. `organizer` cases go to Platform Admins. No attachments. |
+| `GET /support/cases`, `GET /support/cases/{id}` | Cases you opened and cases you handle; one case with its thread. Poll them; there are no sockets. |
+| `POST /support/cases/{id}/messages` | Reply. Staff can add `internal` notes the requester never sees. A requester's reply moves a waiting case to In progress and a resolved one back to Open. |
+| `PATCH /support/cases/{id}` | Staff only: status (Open, In progress, Waiting for customer, Resolved) and assignee. |
+
+A case you aren't part of returns **404**. New messages, assignments and status changes notify
+the other side by email and in-app; status changes go on the event's audit timeline. On the
+web: **Get help** on event, order and ticket pages, **Contact BiletFlow support** for
+organizers, and **Support** in the header, with the thread refreshing every 10 seconds.
+
 ### Attendee web pages (SRS 4.2, 4.4, 4.6, 4.7)
 
 `/events` lists upcoming public events. `/events/{slug}` is the event page with ticket
