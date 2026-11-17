@@ -43,5 +43,17 @@ changes, update this file in the same PR.
   `ck_promo_codes_within_limit` hold under concurrent checkout.
 - Event owners and `StaffRole.EVENT_ADMIN` assignees can undo a check-in.
   `StaffRole.CHECK_IN_STAFF` assignees can scan but not undo.
+- **One promo code per campaign.** The schema allows several, but SRS 4.14 asks for "a unique
+  promo code" per campaign, so the API creates exactly one with it. Codes are unique across
+  BiletFlow regardless of case (`uq_promo_codes_code_lower`).
+- **Discount rounding.** A percentage rounds down to whole KZT on each order line. A fixed-KZT
+  discount is capped at the eligible subtotal and split across eligible lines in proportion to
+  their value, with the rounding remainder on the last line.
+- A campaign's discount and eligible ticket types can't change after creation, so earlier
+  orders stay explainable. Its name, dates and redemption limit can (not below what's used).
+- A paid ticket type discounted to 0 KZT still needs paid-sales activation; the order is then
+  confirmed at once like a free one.
+- A Campaign QR resolves to its event even when the campaign can't be used; the page opens
+  without the code and says why.
 - Cancelling an event cancels its valid tickets and pending orders. Automatic refunds of paid
   orders are Report 5 work (SRS §4.9).
