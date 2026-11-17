@@ -194,6 +194,29 @@ runs that script against the test database as part of `uv run pytest`. See
 [`apps/api/tests/constraints/README.md`](apps/api/tests/constraints/README.md) for what each
 check covers.
 
+### End-to-end test (Playwright)
+
+`apps/web/e2e/core-flow.spec.ts` runs the SRS 13.4 core flow in Chromium against a running
+stack with the demo seed:
+
+1. The organizer creates a campaign.
+2. The attendee opens its Campaign QR link, sees the code applied, and buys a ticket with the
+   DEMO payment.
+3. The confirmation shows the discount, the PDF downloads, and a support case opens from the
+   order.
+4. At the door the ticket is admitted once, then `already_used`, and the Campaign QR is
+   rejected.
+5. The organizer's analytics count the redemption.
+
+```bash
+docker compose up -d                      # the stack, with demo data
+npx playwright install chromium           # once
+npm run e2e -w @biletflow/web             # E2E_BASE_URL / E2E_API_URL to point elsewhere
+```
+
+Running it again within a minute can hit the login rate limit (5 sign-ins per email per
+minute). Wait a minute, or run the API with `RATE_LIMIT_ENABLED=false` as CI does.
+
 ### Continuous integration
 
 `.github/workflows/ci.yml` runs on every pull request, whatever its base branch:
@@ -203,6 +226,10 @@ check covers.
 - **Web:** eslint, the kk/ru/en key check, `tsc` for every workspace, and a production build.
 - **Scanner:** `expo lint`, the kk/ru/en key check, `tsc`, and jest.
 - **API types:** regenerates `packages/api-types` and fails if it differs from what's committed.
+- **No secrets:** `scripts/check-secrets.py`.
+- **End-to-end:** migrates and seeds a fresh database, starts the API and the production web
+  build, and runs the Playwright core flow in Chromium. On failure it keeps the report, traces
+  and server logs as an artifact.
 
 ### Project documents
 
