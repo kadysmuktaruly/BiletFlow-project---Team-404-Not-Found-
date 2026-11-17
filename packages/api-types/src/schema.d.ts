@@ -4,6 +4,297 @@
  */
 
 export interface paths {
+    "/api/v1/admin/activations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Paid-sales activation records */
+        get: operations["activations_api_v1_admin_activations_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search events */
+        get: operations["events_api_v1_admin_events_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/events/{event_id}/paid-sales/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Resume paid sales
+         * @description Active again if the checklist is complete, otherwise back to in progress.
+         */
+        post: operations["resume_paid_sales_api_v1_admin_events__event_id__paid_sales_resume_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/events/{event_id}/paid-sales/suspend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Suspend paid sales for an event (fraud suspected)
+         * @description Paid checkout and payment stop on the next request. Free tickets still work.
+         */
+        post: operations["suspend_paid_sales_api_v1_admin_events__event_id__paid_sales_suspend_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/events/{event_id}/suspend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Suspend an event: stop all sales and hide it
+         * @description Checkout stops on the next request; issued tickets stay valid.
+         */
+        post: operations["suspend_event_api_v1_admin_events__event_id__suspend_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/events/{event_id}/unsuspend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reinstate an event */
+        post: operations["unsuspend_event_api_v1_admin_events__event_id__unsuspend_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/export/{kind}.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download users, events, orders or payments as CSV
+         * @description Up to 10,000 rows, newest first. Payments are DEMO records.
+         */
+        get: operations["export_api_v1_admin_export__kind__csv_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search orders */
+        get: operations["orders_api_v1_admin_orders_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search DEMO payments (failures, refunds…) */
+        get: operations["payments_api_v1_admin_payments_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Reported events */
+        get: operations["reports_api_v1_admin_reports_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports/{report_id}/review": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Dismiss a report, or suspend the reported event */
+        post: operations["review_report_api_v1_admin_reports__report_id__review_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Platform settings */
+        get: operations["read_settings_api_v1_admin_settings_get"];
+        /**
+         * Change platform settings (the activation fee)
+         * @description The new fee applies to activation fees paid from now on.
+         */
+        put: operations["update_settings_api_v1_admin_settings_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Platform counts for the overview */
+        get: operations["summary_api_v1_admin_summary_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search users by email or name */
+        get: operations["users_api_v1_admin_users_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users/{user_id}/suspend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Suspend a user
+         * @description They can't sign in, and their open sessions stop working at once.
+         */
+        post: operations["suspend_user_api_v1_admin_users__user_id__suspend_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users/{user_id}/unsuspend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reinstate a user */
+        post: operations["unsuspend_user_api_v1_admin_users__user_id__unsuspend_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/forgot-password": {
         parameters: {
             query?: never;
@@ -323,6 +614,26 @@ export interface paths {
         get: operations["read_event_api_v1_events__slug__get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/events/{slug}/report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Report an event to the platform
+         * @description Signed-in users report an event they can see (fraud, misleading, inappropriate, spam, other). A Platform Admin reviews it. One open report per person per event (`409 report_already_open`).
+         */
+        post: operations["report_event_api_v1_events__slug__report_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1219,6 +1530,265 @@ export interface components {
          * @enum {string}
          */
         ActivationStatus: "not_started" | "in_progress" | "pending_review" | "active" | "suspended";
+        /**
+         * AdminActivation
+         * @description SRS 4.12 "Inspect paid-sales activation records".
+         */
+        AdminActivation: {
+            /** Activated At */
+            activated_at: string | null;
+            /** Activation Fee Kzt */
+            activation_fee_kzt: number;
+            /** Activation Fee Paid */
+            activation_fee_paid: boolean;
+            /**
+             * Event Id
+             * Format: uuid
+             */
+            event_id: string;
+            /** Event Title */
+            event_title: string;
+            /** Has Paid Ticket Type */
+            has_paid_ticket_type: boolean;
+            /** Identity Verified */
+            identity_verified: boolean;
+            /** Organizer Name */
+            organizer_name: string;
+            /** Payout Account Connected */
+            payout_account_connected: boolean;
+            status: components["schemas"]["ActivationStatus"];
+            /** Suspended At */
+            suspended_at: string | null;
+            /** Suspended Reason */
+            suspended_reason: string | null;
+            /** Terms Accepted */
+            terms_accepted: boolean;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** AdminActivationList */
+        AdminActivationList: {
+            /** Items */
+            items: components["schemas"]["AdminActivation"][];
+            /** Truncated */
+            truncated: boolean;
+        };
+        /** AdminEvent */
+        AdminEvent: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Suspended */
+            is_suspended: boolean;
+            /** Open Reports */
+            open_reports: number;
+            /** Organizer Email */
+            organizer_email: string;
+            /** Organizer Name */
+            organizer_name: string;
+            paid_sales: components["schemas"]["ActivationStatus"] | null;
+            /** Slug */
+            slug: string;
+            /**
+             * Starts At
+             * Format: date-time
+             */
+            starts_at: string;
+            status: components["schemas"]["EventStatus"];
+            /** Title */
+            title: string;
+            visibility: components["schemas"]["EventVisibility"];
+        };
+        /** AdminEventList */
+        AdminEventList: {
+            /** Items */
+            items: components["schemas"]["AdminEvent"][];
+            /** Truncated */
+            truncated: boolean;
+        };
+        /** AdminOrder */
+        AdminOrder: {
+            /** Buyer Email */
+            buyer_email: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Event Id
+             * Format: uuid
+             */
+            event_id: string;
+            /** Event Title */
+            event_title: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Reference */
+            reference: string;
+            /** Refunded Kzt */
+            refunded_kzt: number;
+            status: components["schemas"]["OrderStatus"];
+            /** Total Kzt */
+            total_kzt: number;
+        };
+        /** AdminOrderList */
+        AdminOrderList: {
+            /** Items */
+            items: components["schemas"]["AdminOrder"][];
+            /** Truncated */
+            truncated: boolean;
+        };
+        /** AdminPayment */
+        AdminPayment: {
+            /** Amount Kzt */
+            amount_kzt: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Demo
+             * @default true
+             * @constant
+             */
+            demo: true;
+            /** Event Title */
+            event_title: string | null;
+            /** Failure Reason */
+            failure_reason: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Simulated */
+            is_simulated: boolean;
+            /** Order Reference */
+            order_reference: string | null;
+            /** Provider Reference */
+            provider_reference: string | null;
+            purpose: components["schemas"]["PaymentPurpose"];
+            status: components["schemas"]["PaymentStatus"];
+            /** User Email */
+            user_email: string;
+        };
+        /** AdminPaymentList */
+        AdminPaymentList: {
+            /** Items */
+            items: components["schemas"]["AdminPayment"][];
+            /** Truncated */
+            truncated: boolean;
+        };
+        /** AdminReport */
+        AdminReport: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Details */
+            details: string | null;
+            /**
+             * Event Id
+             * Format: uuid
+             */
+            event_id: string;
+            /** Event Slug */
+            event_slug: string;
+            /** Event Suspended */
+            event_suspended: boolean;
+            /** Event Title */
+            event_title: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            reason: components["schemas"]["EventReportReason"];
+            /** Reporter Email */
+            reporter_email: string;
+            /** Review Note */
+            review_note: string | null;
+            /** Reviewed At */
+            reviewed_at: string | null;
+            status: components["schemas"]["EventReportStatus"];
+        };
+        /** AdminReportList */
+        AdminReportList: {
+            /** Items */
+            items: components["schemas"]["AdminReport"][];
+            /** Truncated */
+            truncated: boolean;
+        };
+        /** AdminSummary */
+        AdminSummary: {
+            /** Events Published */
+            events_published: number;
+            /** Open Reports */
+            open_reports: number;
+            /** Open Support Cases */
+            open_support_cases: number;
+            /** Orders Confirmed */
+            orders_confirmed: number;
+            /** Paid Sales Suspended */
+            paid_sales_suspended: number;
+            /** Payments Failed */
+            payments_failed: number;
+            /** Refunds */
+            refunds: number;
+            /** Suspended Events */
+            suspended_events: number;
+            /** Suspended Users */
+            suspended_users: number;
+            /** Users */
+            users: number;
+        };
+        /** AdminUser */
+        AdminUser: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Email */
+            email: string;
+            /** Full Name */
+            full_name: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Email Verified */
+            is_email_verified: boolean;
+            /** Is Suspended */
+            is_suspended: boolean;
+            role: components["schemas"]["UserRole"];
+            /** Suspended At */
+            suspended_at: string | null;
+        };
+        /** AdminUserList */
+        AdminUserList: {
+            /** Items */
+            items: components["schemas"]["AdminUser"][];
+            /** Truncated */
+            truncated: boolean;
+        };
         /** AttendeeInput */
         AttendeeInput: {
             /** Email */
@@ -1720,6 +2290,17 @@ export interface components {
             venue: components["schemas"]["VenueRead"] | null;
             visibility: components["schemas"]["EventVisibility"];
         };
+        /**
+         * EventReportReason
+         * @description Why someone reported an event to the platform (SRS 4.12 "Review reported events").
+         * @enum {string}
+         */
+        EventReportReason: "fraud" | "misleading" | "inappropriate" | "spam" | "other";
+        /**
+         * EventReportStatus
+         * @enum {string}
+         */
+        EventReportStatus: "open" | "dismissed" | "actioned";
         /**
          * EventStatus
          * @description Stored lifecycle, driven by the SRS 4.2 verbs (publish / unpublish / cancel).
@@ -2519,6 +3100,31 @@ export interface components {
              */
             role: "attendee" | "organizer";
         };
+        /** ReportCreate */
+        ReportCreate: {
+            /** Details */
+            details?: string | null;
+            reason: components["schemas"]["EventReportReason"];
+        };
+        /** ReportCreated */
+        ReportCreated: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            status: components["schemas"]["EventReportStatus"];
+        };
+        /** ReportReview */
+        ReportReview: {
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "dismiss" | "suspend_event";
+            /** Note */
+            note?: string | null;
+        };
         /** ResetPasswordRequest */
         ResetPasswordRequest: {
             /** New Password */
@@ -2562,6 +3168,20 @@ export interface components {
          * @enum {string}
          */
         SeatingMode: "general_admission" | "assigned_seating";
+        /** SettingsRead */
+        SettingsRead: {
+            /** Activation Fee Kzt */
+            activation_fee_kzt: number;
+            /** Customized */
+            customized: boolean;
+            /** Updated At */
+            updated_at: string | null;
+        };
+        /** SettingsUpdate */
+        SettingsUpdate: {
+            /** Activation Fee Kzt */
+            activation_fee_kzt: number;
+        };
         /**
          * SimulatedPaymentRequest
          * @description The DEMO checkout screen lets the attendee choose what the simulated provider does.
@@ -2628,6 +3248,11 @@ export interface components {
          * @enum {string}
          */
         SupportCategory: "ticket_delivery" | "payment" | "refund" | "seating" | "event_information" | "check_in" | "account" | "technical";
+        /** SuspendRequest */
+        SuspendRequest: {
+            /** Reason */
+            reason: string;
+        };
         /** TicketRead */
         TicketRead: {
             /** Attendee Email */
@@ -2894,6 +3519,19 @@ export interface components {
 export type SchemaAcceptedResponse = components['schemas']['AcceptedResponse'];
 export type SchemaActivationRead = components['schemas']['ActivationRead'];
 export type SchemaActivationStatus = components['schemas']['ActivationStatus'];
+export type SchemaAdminActivation = components['schemas']['AdminActivation'];
+export type SchemaAdminActivationList = components['schemas']['AdminActivationList'];
+export type SchemaAdminEvent = components['schemas']['AdminEvent'];
+export type SchemaAdminEventList = components['schemas']['AdminEventList'];
+export type SchemaAdminOrder = components['schemas']['AdminOrder'];
+export type SchemaAdminOrderList = components['schemas']['AdminOrderList'];
+export type SchemaAdminPayment = components['schemas']['AdminPayment'];
+export type SchemaAdminPaymentList = components['schemas']['AdminPaymentList'];
+export type SchemaAdminReport = components['schemas']['AdminReport'];
+export type SchemaAdminReportList = components['schemas']['AdminReportList'];
+export type SchemaAdminSummary = components['schemas']['AdminSummary'];
+export type SchemaAdminUser = components['schemas']['AdminUser'];
+export type SchemaAdminUserList = components['schemas']['AdminUserList'];
 export type SchemaAttendeeInput = components['schemas']['AttendeeInput'];
 export type SchemaAttendeeSearchResult = components['schemas']['AttendeeSearchResult'];
 export type SchemaCampaignCreate = components['schemas']['CampaignCreate'];
@@ -2919,6 +3557,8 @@ export type SchemaErrorBody = components['schemas']['ErrorBody'];
 export type SchemaErrorResponse = components['schemas']['ErrorResponse'];
 export type SchemaEventCreate = components['schemas']['EventCreate'];
 export type SchemaEventRead = components['schemas']['EventRead'];
+export type SchemaEventReportReason = components['schemas']['EventReportReason'];
+export type SchemaEventReportStatus = components['schemas']['EventReportStatus'];
 export type SchemaEventStatus = components['schemas']['EventStatus'];
 export type SchemaEventSummary = components['schemas']['EventSummary'];
 export type SchemaEventUpdate = components['schemas']['EventUpdate'];
@@ -2965,16 +3605,22 @@ export type SchemaRefundRequest = components['schemas']['RefundRequest'];
 export type SchemaRefundResult = components['schemas']['RefundResult'];
 export type SchemaRefundStatus = components['schemas']['RefundStatus'];
 export type SchemaRegisterRequest = components['schemas']['RegisterRequest'];
+export type SchemaReportCreate = components['schemas']['ReportCreate'];
+export type SchemaReportCreated = components['schemas']['ReportCreated'];
+export type SchemaReportReview = components['schemas']['ReportReview'];
 export type SchemaResetPasswordRequest = components['schemas']['ResetPasswordRequest'];
 export type SchemaScanRequest = components['schemas']['ScanRequest'];
 export type SchemaScanResult = components['schemas']['ScanResult'];
 export type SchemaSeatingMode = components['schemas']['SeatingMode'];
+export type SchemaSettingsRead = components['schemas']['SettingsRead'];
+export type SchemaSettingsUpdate = components['schemas']['SettingsUpdate'];
 export type SchemaSimulatedPaymentRequest = components['schemas']['SimulatedPaymentRequest'];
 export type SchemaStaffAssign = components['schemas']['StaffAssign'];
 export type SchemaStaffRead = components['schemas']['StaffRead'];
 export type SchemaStaffRole = components['schemas']['StaffRole'];
 export type SchemaSupportCaseStatus = components['schemas']['SupportCaseStatus'];
 export type SchemaSupportCategory = components['schemas']['SupportCategory'];
+export type SchemaSuspendRequest = components['schemas']['SuspendRequest'];
 export type SchemaTicketRead = components['schemas']['TicketRead'];
 export type SchemaTicketStatus = components['schemas']['TicketStatus'];
 export type SchemaTicketTypeCreate = components['schemas']['TicketTypeCreate'];
@@ -2992,6 +3638,950 @@ export type SchemaVenueRead = components['schemas']['VenueRead'];
 export type SchemaVerifyEmailRequest = components['schemas']['VerifyEmailRequest'];
 export type $defs = Record<string, never>;
 export interface operations {
+    activations_api_v1_admin_activations_get: {
+        parameters: {
+            query?: {
+                q?: string | null;
+                status?: components["schemas"]["ActivationStatus"] | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminActivationList"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    events_api_v1_admin_events_get: {
+        parameters: {
+            query?: {
+                q?: string | null;
+                status?: components["schemas"]["EventStatus"] | null;
+                suspended?: boolean | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminEventList"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    resume_paid_sales_api_v1_admin_events__event_id__paid_sales_resume_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminActivation"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    suspend_paid_sales_api_v1_admin_events__event_id__paid_sales_suspend_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SuspendRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminActivation"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    suspend_event_api_v1_admin_events__event_id__suspend_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SuspendRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminEvent"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    unsuspend_event_api_v1_admin_events__event_id__unsuspend_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminEvent"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    export_api_v1_admin_export__kind__csv_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                kind: "users" | "events" | "orders" | "payments";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    orders_api_v1_admin_orders_get: {
+        parameters: {
+            query?: {
+                q?: string | null;
+                status?: components["schemas"]["OrderStatus"] | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrderList"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    payments_api_v1_admin_payments_get: {
+        parameters: {
+            query?: {
+                q?: string | null;
+                status?: components["schemas"]["PaymentStatus"] | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminPaymentList"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    reports_api_v1_admin_reports_get: {
+        parameters: {
+            query?: {
+                status?: components["schemas"]["EventReportStatus"] | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminReportList"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    review_report_api_v1_admin_reports__report_id__review_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReportReview"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminReport"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    read_settings_api_v1_admin_settings_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SettingsRead"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    update_settings_api_v1_admin_settings_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SettingsUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SettingsRead"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    summary_api_v1_admin_summary_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminSummary"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    users_api_v1_admin_users_get: {
+        parameters: {
+            query?: {
+                q?: string | null;
+                role?: components["schemas"]["UserRole"] | null;
+                suspended?: boolean | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminUserList"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    suspend_user_api_v1_admin_users__user_id__suspend_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SuspendRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminUser"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    unsuspend_user_api_v1_admin_users__user_id__unsuspend_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminUser"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     forgot_password_api_v1_auth_forgot_password_post: {
         parameters: {
             query?: never;
@@ -3765,6 +5355,68 @@ export interface operations {
                 };
             };
             /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    report_event_api_v1_events__slug__report_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReportCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportCreated"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
             422: {
                 headers: {
                     [name: string]: unknown;
