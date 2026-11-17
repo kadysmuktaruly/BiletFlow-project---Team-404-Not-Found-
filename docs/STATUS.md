@@ -6,6 +6,10 @@ Spec: SRS v0.3 ([`docs/srs/srs.md`](srs/srs.md)), the semester plan and the mode
 
 ## Progress notes (newest first)
 
+- **Nov 17 — Row 3: PDF tickets and Campaign QR.** [#17](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/17): A4 PDF with every
+  SRS 4.7 field and no payment data; its QR decodes from 72-dpi grayscale renders; PDF
+  attached to confirmation emails (checked in Mailpit). Campaign QR as SVG and A5 poster,
+  labelled "PROMO · NOT A TICKET". pytest 197 passed. Next: web screens (`feat/r4-web-promo-campaigns-attendees`).
 - **Nov 17 — Row 2: promotions backend.** [#16](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/16): campaigns with one
   case-insensitive code and an opaque `BFC1.` link, server-side % / fixed-KZT discounts,
   six rejection reasons, limit holds under 10 concurrent buyers, per-campaign report.
@@ -40,6 +44,7 @@ retargeted to `main` and rebased. Suggested reviewer = the plan's owner for that
 | 11 | [#13](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/13) | Compose web runs `next dev` to fit a 2 GB Docker VM; production target for the demo | Kadys (infra) |
 | 12 | [#15](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/15) | Live check-in API: atomic scan, five results, undo, counts, manual search | Kadys (check-in), Nurali (scanner) |
 | 13 | [#16](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/16) | Promotions backend: campaigns, server-side discounts, redemption limit, Campaign QR resolve | Sagidolla (promos), Alisher |
+| 14 | [#17](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/17) | A4 PDF tickets (emailed too) and Campaign QR SVG/PDF downloads | Alisher (PDF), Sagidolla |
 
 New Phase 1 PRs are added below as they open.
 
@@ -56,6 +61,7 @@ New Phase 1 PRs are added below as they open.
 | Nov 17 | No `Co-Authored-By` or "Generated with Claude Code" lines in commits or PRs. | CLAUDE.md forbids them. |
 | Nov 17 | Reviewers are named in each PR description instead of being requested on GitHub. | The teammates aren't collaborators on the repository, so GitHub can't request their review. |
 | Nov 17 | Promotions: one code per campaign; codes unique platform-wide; % rounds down per line, fixed amount capped and split proportionally; discount and eligible types immutable after creation; campaigns active on creation. Full list in `docs/decisions.md`. | Simplest model that meets SRS 4.14 and keeps past orders explainable. |
+| Nov 17 | PDF: no order reference on the print; cancelled/refunded tickets still download with a large "not valid" status; DejaVu Sans vendored for Cyrillic; mypy treats reportlab as untyped instead of adding `types-reportlab`. | SRS 4.7 "no unnecessary sensitive information"; stub package isn't approved. |
 
 ## Blocked
 
@@ -113,8 +119,8 @@ or 3 item can have is:
 | 4 | Kadys | Check-in API: signed token plus live status, five results, atomic, assigned staff only, undo, counts, manual search, Campaign QR rejected, under 2 s | Partial (unmerged) | [#15](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/15). `app/services/checkin.py`, `require_event_staff` in `app/deps.py`, `tests/test_checkin.py` (15 tests incl. `test_double_scan_concurrent_one_checkin`, `test_checkin_under_2s`) | Merge #15 |
 | 4 | Sagidolla | Promotions: % or fixed KZT, validity, max redemptions, eligible types, case-insensitive codes, server-side discounts, limit under concurrency, Campaign QR token resolves, clear rejection reasons | Partial (unmerged) | [#16](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/16). `app/services/promotions.py`, `app/routers/campaigns.py`, `tests/test_promotions.py` (13 tests incl. `test_promo_limit_holds_under_concurrency`) | Merge #16 |
 | 4 | Sanzhar | Checkout shows code, discount and new total; campaign link pre-applies the code; organizer attendee list with search and status | **Missing** | — | All |
-| 4 | Alisher | Server-generated A4 PDF ticket (all fields, no payment data, grayscale-scannable QR, same ticket ID) | **Missing** | — | All |
-| 4 | Alisher | Campaign management screens; downloadable Campaign QR labelled "Promo, not a ticket" | **Missing** | — | All |
+| 4 | Alisher | Server-generated A4 PDF ticket (all fields, no payment data, grayscale-scannable QR, same ticket ID) | Partial (unmerged) | [#17](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/17). `app/tickets/pdf.py`, `GET /me/tickets/{id}/pdf`, emailed; `tests/test_documents.py` decodes the QR at 72/150/300 dpi grayscale | Merge #17. Physical print test (manual) |
+| 4 | Alisher | Campaign management screens; downloadable Campaign QR labelled "Promo, not a ticket" | Partial | Downloadable Campaign QR SVG/PDF with the label ([#17](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/17)) | Web campaign screens (row 4) |
 | 4 | Nurali | Scanner live check-in: five states with color and text, manual search, undo, live counts | Partial | Five result screens with color, symbol and text (`components/result-view.tsx`, `__tests__/checkin.test.tsx`), but the result is **simulated on the phone** | Wire to the live API, manual search, undo, counts |
 | 4 | Kadys | `docker compose up` starts db, api, web, Mailpit | Partial (unmerged) | PR #12 adds the web service with a health check | Merge #12. Team machines need at least 4 GB for Docker |
 | 5 | Kadys | Notification interface; email and in-app for every trigger; kk/ru/en templates; in-app list API | Partial | `app/services/notifications.py` records **email** rows only. kk/ru/en emails for verification, reset, order confirmation, payment failure (`app/i18n/emails.py`). All 11 trigger types exist in `NotificationType` | In-app channel, list and mark-read API, templates for event update, cancellation, refund, payout, support |
