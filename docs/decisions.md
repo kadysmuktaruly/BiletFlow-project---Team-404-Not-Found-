@@ -63,6 +63,9 @@ changes, update this file in the same PR.
   valid or checked-in ticket, notified once each however many tickets they hold.
 - `notifications.action_path` (migration 0002) stores the web path an in-app notification
   links to, because support cases have no column on the table to derive it from.
+- **Rate limits** are in-process (single API worker) and keyed by IP and by email; the email
+  limit counts every attempt so a 429 doesn't reveal registration. Limits: login 20/min/IP and
+  5/min/email; register 5/10 min/IP; account emails 5/15 min/IP and 3/15 min/email.
 - **Event history.** "Completed" includes events whose end time has passed. Completed and
   cancelled events are read-only, but refunds still work. The timeline is visible to the
   organizer, event admins and Platform Admins (not check-in staff). Duplicating copies
