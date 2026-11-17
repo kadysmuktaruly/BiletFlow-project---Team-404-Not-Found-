@@ -6,6 +6,10 @@ Spec: SRS v0.3 ([`docs/srs/srs.md`](srs/srs.md)), the semester plan and the mode
 
 ## Progress notes (newest first)
 
+- **Nov 17 — Row 10: analytics.** [#24](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/24): analytics API (own events, filters,
+  read-only so checkout is never held up) and dashboard with a line chart, a bar chart,
+  KPI tiles, campaigns and table views (recharts 3.10.1). pytest 237 passed. Also fixed a
+  prerender error CI caught on #22 (merged into #23). Next: event history and duplication.
 - **Nov 17 — Row 9: admin portal.** [#23](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/23): search users/events/orders/payments,
   suspend users, events and paid sales (immediate), activation records, reported events,
   runtime activation fee, CSV export; all audited. Migrations 0003 `event_reports` and 0004
@@ -77,6 +81,7 @@ retargeted to `main` and rebased. Suggested reviewer = the plan's owner for that
 | 18 | [#21](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/21) | Refunds, cancellations, auto-refund on event cancel, My orders, organizer Orders tab | Sagidolla (orders), Sanzhar |
 | 19 | [#22](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/22) | Support cases: contextual, 404 isolation, threads, notes, assignment, statuses | Nurali (support), Sanzhar |
 | 20 | [#23](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/23) | Admin portal: search, suspensions, paid sales, reports, activation fee, CSV (migrations 0003/0004) | Alisher (admin), Kadys |
+| 21 | [#24](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/24) | Organizer analytics API and dashboard | Alisher (reporting), Sanzhar |
 
 New Phase 1 PRs are added below as they open.
 
@@ -101,6 +106,9 @@ New Phase 1 PRs are added below as they open.
 | Nov 17 | Refunds are full and owner-only; refunded/cancelled tickets return to sale (not for cancelled events); promo redemptions stay counted after a refund. | SRS 4.9 wording; simplest reversible rules. |
 | Nov 17 | Support: event admins (not check-in staff) answer attendee cases with the organizer; platform admins answer organizer cases and may open any case; a requester's reply reopens waiting/resolved cases. | SRS 4.13 roles; keeps cases from stalling. |
 | Nov 17 | Admin: suspensions need a reason; suspending an event keeps issued tickets valid; admins can't be suspended in the portal; fee changes apply to future payments only; CSV formula cells escaped. | Audit trail; least surprise for ticket holders; security. |
+| Nov 17 | **Process:** run `npm run build -w @biletflow/web` locally before every web PR. | CI's production build caught a prerender error on #22 that lint and tsc didn't (`await params` outside Suspense). Fixed on #22 and merged into #23. |
+| Nov 17 | Analytics: confirmed-in-range order lines; refunds shown separately; fees estimated at `PROCESSING_FEE_BPS`; capacity/attendance current; default last 30 days; read-only transaction. | Exact ticket-type filtering; SRS 7 "never block checkout". |
+| Nov 17 | Known, not fixed: Next.js dev mode logs "Could not validate … instant navigation" on every organizer page (existing before Phase 1). Dev-only; production build is clean. | Out of scope for feature work; candidate for Report 7 stabilization. |
 
 ## Blocked
 
@@ -168,9 +176,9 @@ or 3 item can have is:
 | 5 | Sanzhar | Web: attendee order history and detail, organizer order list with cancel and refund behind confirmation dialogs, notification center, event-cancellation screen | Partial (unmerged) | [#20](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/20) notification center; [#21](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/21) My orders, Orders tab with `alertdialog` confirmations, cancellation text | Merge #20, #21 |
 | 5 | Alisher | Platform admin portal: search, suspend users and events, suspend paid sales, activation records, set activation fee, reported events, CSV export | Partial (unmerged) | [#23](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/23). `app/services/admin.py`, `/admin` web portal, migrations 0003/0004; `tests/test_admin.py` (8) | Merge #23 |
 | 5 | Nurali | Support cases with context, categories, polled thread, assignment, four statuses, organizer-to-platform cases, 404 isolation | Partial (unmerged) | [#22](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/22). `app/services/support.py`, `/support` web pages; `tests/test_support.py` (6 incl. `test_only_participants_see_a_case`) | Merge #22 |
-| 6 | Alisher | Analytics API (capacity, sales, revenue, over time, by type, campaigns, attendance; filters; own events only; doesn't slow checkout) | **Missing** | Per-type counts exist on ticket-type responses | All |
+| 6 | Alisher | Analytics API (capacity, sales, revenue, over time, by type, campaigns, attendance; filters; own events only; doesn't slow checkout) | Partial (unmerged) | [#24](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/24). `app/services/analytics.py`; `tests/test_analytics.py` (4 incl. concurrent checkout) | Merge #24 |
 | 6 | Alisher | Event duplication (configuration only) | **Missing** | `Event.duplicated_from_event_id` column | All |
-| 6 | Sanzhar | Dashboard: line chart over time, bar chart by ticket type, filters | **Missing** | — | All (needs a chart library) |
+| 6 | Sanzhar | Dashboard: line chart over time, bar chart by ticket type, filters | Partial (unmerged) | [#24](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/24). `analytics-dashboard.tsx` (recharts), table views; browser-checked desktop and mobile | Merge #24 |
 | 6 | Alisher | Event history: Upcoming / Active / Completed / Cancelled, read-only past events, audit timeline with filters, duplicate button | **Missing** | Audit rows are written (see Report 5) | All |
 | 6 | Kadys | Hardening: login and sign-up rate limiting, no secrets in repo, backup-and-restore script, HTTPS proxy proposal | Partial | Production refuses dev secrets (`test_production_requires_real_secrets`), `.env` gitignored | Rate limiting, secret scan, backup/restore script, proxy proposal |
 | 6 | Kadys | Seed: organizers, free meetup, paid KZT concert, ticket types, campaigns, orders | Partial (unmerged) | PR #12. `app/seed.py`, `tests/test_seed.py`. Two events, four accounts, cancelled and refunded ticket fixtures | Campaigns, more orders. Merge #12 |
