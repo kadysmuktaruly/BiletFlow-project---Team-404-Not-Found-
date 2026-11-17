@@ -6,6 +6,10 @@ Spec: SRS v0.3 ([`docs/srs/srs.md`](srs/srs.md)), the semester plan and the mode
 
 ## Progress notes (newest first)
 
+- **Nov 17 — Row 7: refunds and orders.** [#21](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/21): idempotent DEMO full refunds
+  (concurrent-safe), free-registration cancellation, event cancel auto-refunds every paid
+  order, audit + notifications, refund policy, My orders and the organizer Orders tab with
+  confirmations. pytest 219 passed. Next: support cases (`feat/r5-support-cases`).
 - **Nov 17 — Row 6: notifications.** [#20](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/20): one `notify()` interface (email +
   in-app, kk/ru/en), templates for every SRS 4.10 trigger, event update/cancel and payout
   triggers wired, inbox API, notification center and header badge. Migration 0002 adds
@@ -61,6 +65,7 @@ retargeted to `main` and rebased. Suggested reviewer = the plan's owner for that
 | 15 | [#18](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/18) | Web: promo codes at checkout, Campaign QR landing, PDF downloads, organizer Campaigns and Attendees | Sanzhar (web), Alisher |
 | 16 | [#19](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/19) | Scanner: live results and reasons, counts, manual search, undo | Nurali (scanner), Kadys |
 | 17 | [#20](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/20) | Notification interface, all templates, inbox API, notification center (migration 0002) | Kadys (notifications), Nurali |
+| 18 | [#21](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/21) | Refunds, cancellations, auto-refund on event cancel, My orders, organizer Orders tab | Sagidolla (orders), Sanzhar |
 
 New Phase 1 PRs are added below as they open.
 
@@ -82,6 +87,7 @@ New Phase 1 PRs are added below as they open.
 | Nov 17 | **Next.js 16.4.3 advisory** (GHSA-mfr8-8qww-v76h, moderate, fixed in 16.4.6) not patched in feature PRs. The app uses neither `use cache` nor `unstable_cache`, so it isn't exposed; CI builds pass. **Recommended:** a separate one-line patch bump to `next@16.4.6` once the team approves. | A framework version change belongs in its own PR with the team's OK. |
 | Nov 17 | Scanner: counts poll every 10 s; undo offered right after a valid result only (API supports later undo); the phone no longer classifies payloads, the server's `reason` is the single source. | SRS 4.8 "accidental" check-in; one source of truth. |
 | Nov 17 | Migration 0002 adds nullable `notifications.action_path`. Notifications are rendered once in the account language. "Event update" = time, venue or title. | Support cases need a link the table can't derive; inbox matches the email; avoid noise. |
+| Nov 17 | Refunds are full and owner-only; refunded/cancelled tickets return to sale (not for cancelled events); promo redemptions stay counted after a refund. | SRS 4.9 wording; simplest reversible rules. |
 
 ## Blocked
 
@@ -144,9 +150,9 @@ or 3 item can have is:
 | 4 | Nurali | Scanner live check-in: five states with color and text, manual search, undo, live counts | Partial (unmerged) | [#19](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/19). `app/result.tsx`, `app/search/[eventId].tsx`, `lib/checkin.ts`; jest `live-checkin.test.tsx`, `search.test.tsx` | Merge #19. Physical-device test (manual) |
 | 4 | Kadys | `docker compose up` starts db, api, web, Mailpit | Partial (unmerged) | PR #12 adds the web service with a health check | Merge #12. Team machines need at least 4 GB for Docker |
 | 5 | Kadys | Notification interface; email and in-app for every trigger; kk/ru/en templates; in-app list API | Partial (unmerged) | [#20](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/20). `app/services/notifications.py` (`notify`), templates in `app/i18n/emails.py`, `GET /me/notifications`; `tests/test_notifications.py` (10) | Merge #20. Refund and support triggers wired in their PRs |
-| 5 | Kadys | Audit entries for every payment, refund, activation, suspension and admin action; append-only test | Partial | `app/services/audit.py`, called by payments, activation, events, staff, ticket types. UPDATE and DELETE blocked in `tests/constraints/verify_constraints.sql`, run by `test_constraints_sql.py` | Refund, suspension and admin audits (those features don't exist yet) |
-| 5 | Sagidolla | Refund policy, cancel free registrations, idempotent full refunds, refunded or cancelled tickets fail check-in, event cancel auto-refunds and notifies | **Missing** | `Event.refund_policy`, `Refund` model. Event cancel already cancels tickets (`test_cancel_cancels_tickets_and_releases_unpaid_orders`) but doesn't refund | All refund logic |
-| 5 | Sanzhar | Web: attendee order history and detail, organizer order list with confirmed cancel and refund, notification center, event-cancellation screen | Partial | `GET /me/orders`, `/orders/[orderId]` confirmation page, Cancel action in the event hub | Order history list, organizer orders, dialogs, notification center |
+| 5 | Kadys | Audit entries for every payment, refund, activation, suspension and admin action; append-only test | Partial (unmerged) | Payments, activation, refunds, cancellations, check-ins, promos audited ([#15](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/15)–[#21](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/21)); `tests/test_audit.py` proves UPDATE/DELETE are rejected | Suspension and admin actions (admin portal PR) |
+| 5 | Sagidolla | Refund policy, cancel free registrations, idempotent full refunds, refunded or cancelled tickets fail check-in, event cancel auto-refunds and notifies | Partial (unmerged) | [#21](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/21). `app/services/refunds.py`; `tests/test_refunds.py` (9 incl. concurrent same-key refunds) | Merge #21 |
+| 5 | Sanzhar | Web: attendee order history and detail, organizer order list with cancel and refund behind confirmation dialogs, notification center, event-cancellation screen | Partial (unmerged) | [#20](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/20) notification center; [#21](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/21) My orders, Orders tab with `alertdialog` confirmations, cancellation text | Merge #20, #21 |
 | 5 | Alisher | Platform admin portal: search, suspend users and events, suspend paid sales, activation records, set activation fee, reported events, CSV export | **Missing** | `PlatformAdminUser` dependency; seeded admin account; `is_suspended` columns | All. **Needs model changes**: no table for event reports or runtime platform settings |
 | 5 | Nurali | Support cases with context, categories, polled thread, assignment, four statuses, organizer-to-platform cases, 404 isolation | **Missing** | Models only (`app/models/support.py`, `is_organizer_case`) | All |
 | 6 | Alisher | Analytics API (capacity, sales, revenue, over time, by type, campaigns, attendance; filters; own events only; doesn't slow checkout) | **Missing** | Per-type counts exist on ticket-type responses | All |
