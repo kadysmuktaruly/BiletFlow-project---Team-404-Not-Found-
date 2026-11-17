@@ -172,6 +172,103 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/checkin/events/{event_id}/attendees": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search attendees for manual check-in
+         * @description Matches attendee name, attendee email or ticket number, case-insensitively. At most 50 results. Without `q`, lists the first ones.
+         */
+        get: operations["search_attendees_api_v1_checkin_events__event_id__attendees_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/checkin/events/{event_id}/scan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Validate a scanned QR code and check the ticket in
+         * @description Send the raw QR text. The result is always 200 with one of `valid`, `invalid`, `cancelled`, `refunded` or `already_used`. `valid` means this request recorded the check-in: if two devices scan one ticket at once, exactly one gets `valid` and the other `already_used`. Campaign QR codes are always `invalid` with reason `campaign_qr_not_admission`. Includes live registered and checked-in counts.
+         */
+        post: operations["scan_api_v1_checkin_events__event_id__scan_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/checkin/events/{event_id}/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Registered and checked-in counts */
+        get: operations["stats_api_v1_checkin_events__event_id__stats_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/checkin/events/{event_id}/tickets/{ticket_id}/check-in": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Check a ticket in from manual search
+         * @description The same atomic check-in and results as a scan, for a ticket found by search.
+         */
+        post: operations["manual_check_in_api_v1_checkin_events__event_id__tickets__ticket_id__check_in_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/checkin/events/{event_id}/tickets/{ticket_id}/undo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Undo an accidental check-in
+         * @description Event owners and event admins only; check-in staff get `403 checkin_undo_forbidden`. The ticket becomes valid again, and the reversal is kept in the check-in history and the audit log. `409 not_checked_in` if there is nothing to undo.
+         */
+        post: operations["undo_api_v1_checkin_events__event_id__tickets__ticket_id__undo_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/events": {
         parameters: {
             query?: never;
@@ -770,6 +867,12 @@ export interface components {
             /** Phone */
             phone?: string | null;
         };
+        /** AttendeeSearchResult */
+        AttendeeSearchResult: {
+            stats: components["schemas"]["CheckInStats"];
+            /** Tickets */
+            tickets: components["schemas"]["CheckInTicket"][];
+        };
         /** CancelEventRequest */
         CancelEventRequest: {
             /** Reason */
@@ -809,6 +912,45 @@ export interface components {
             title: string;
             /** Venue Name */
             venue_name: string | null;
+        };
+        /**
+         * CheckInMethod
+         * @description SRS 4.8 allows both a camera scan and a manual attendee search.
+         * @enum {string}
+         */
+        CheckInMethod: "qr_scan" | "manual_search";
+        /**
+         * CheckInStats
+         * @description SRS 4.8: "View the total number of registered and checked-in attendees."
+         *
+         *     `registered` counts tickets that can still be used or already were (valid or checked
+         *     in). Cancelled and refunded tickets aren't attendees any more.
+         */
+        CheckInStats: {
+            /** Checked In */
+            checked_in: number;
+            /** Registered */
+            registered: number;
+        };
+        /**
+         * CheckInTicket
+         * @description The ticket behind a scan or search result. No price or payment data.
+         */
+        CheckInTicket: {
+            /** Attendee Name */
+            attendee_name: string;
+            /** Checked In At */
+            checked_in_at: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            status: components["schemas"]["TicketStatus"];
+            /** Ticket Number */
+            ticket_number: string;
+            /** Ticket Type Name */
+            ticket_type_name: string;
         };
         /**
          * ConfirmRequest
@@ -1050,6 +1192,11 @@ export interface components {
             email: string;
             /** Password */
             password: string;
+        };
+        /** ManualCheckInRequest */
+        ManualCheckInRequest: {
+            /** Device Label */
+            device_label?: string | null;
         };
         /** MyTicketRead */
         MyTicketRead: {
@@ -1457,6 +1604,36 @@ export interface components {
             /** Token */
             token: string;
         };
+        /** ScanRequest */
+        ScanRequest: {
+            /**
+             * Device Label
+             * @description Optional name of the scanning device.
+             */
+            device_label?: string | null;
+            /**
+             * Payload
+             * @description The raw text the camera read from the QR code.
+             */
+            payload: string;
+        };
+        /** ScanResult */
+        ScanResult: {
+            /** @description How this check-in was recorded, when `result` is `valid`. */
+            method?: components["schemas"]["CheckInMethod"] | null;
+            /**
+             * Reason
+             * @description Set only when `result` is `invalid`.
+             */
+            reason?: ("unrecognized" | "campaign_qr_not_admission" | "wrong_event") | null;
+            /**
+             * Result
+             * @enum {string}
+             */
+            result: "valid" | "invalid" | "cancelled" | "refunded" | "already_used";
+            stats: components["schemas"]["CheckInStats"];
+            ticket?: components["schemas"]["CheckInTicket"] | null;
+        };
         /**
          * SeatingMode
          * @description SRS 4.3.1: general admission or assigned seating.
@@ -1671,6 +1848,16 @@ export interface components {
             token_type: "bearer";
             user: components["schemas"]["UserRead"];
         };
+        /** UndoCheckInRequest */
+        UndoCheckInRequest: {
+            /** Reason */
+            reason?: string | null;
+        };
+        /** UndoResult */
+        UndoResult: {
+            stats: components["schemas"]["CheckInStats"];
+            ticket: components["schemas"]["CheckInTicket"];
+        };
         /** UserRead */
         UserRead: {
             /**
@@ -1769,8 +1956,12 @@ export type SchemaAcceptedResponse = components['schemas']['AcceptedResponse'];
 export type SchemaActivationRead = components['schemas']['ActivationRead'];
 export type SchemaActivationStatus = components['schemas']['ActivationStatus'];
 export type SchemaAttendeeInput = components['schemas']['AttendeeInput'];
+export type SchemaAttendeeSearchResult = components['schemas']['AttendeeSearchResult'];
 export type SchemaCancelEventRequest = components['schemas']['CancelEventRequest'];
 export type SchemaCheckInEvent = components['schemas']['CheckInEvent'];
+export type SchemaCheckInMethod = components['schemas']['CheckInMethod'];
+export type SchemaCheckInStats = components['schemas']['CheckInStats'];
+export type SchemaCheckInTicket = components['schemas']['CheckInTicket'];
 export type SchemaConfirmRequest = components['schemas']['ConfirmRequest'];
 export type SchemaEmailRequest = components['schemas']['EmailRequest'];
 export type SchemaErrorBody = components['schemas']['ErrorBody'];
@@ -1784,6 +1975,7 @@ export type SchemaEventVisibility = components['schemas']['EventVisibility'];
 export type SchemaFieldError = components['schemas']['FieldError'];
 export type SchemaHealthResponse = components['schemas']['HealthResponse'];
 export type SchemaLoginRequest = components['schemas']['LoginRequest'];
+export type SchemaManualCheckInRequest = components['schemas']['ManualCheckInRequest'];
 export type SchemaMyTicketRead = components['schemas']['MyTicketRead'];
 export type SchemaOrderCreate = components['schemas']['OrderCreate'];
 export type SchemaOrderItemInput = components['schemas']['OrderItemInput'];
@@ -1806,6 +1998,8 @@ export type SchemaPublicTicketTypeRead = components['schemas']['PublicTicketType
 export type SchemaRefreshRequest = components['schemas']['RefreshRequest'];
 export type SchemaRegisterRequest = components['schemas']['RegisterRequest'];
 export type SchemaResetPasswordRequest = components['schemas']['ResetPasswordRequest'];
+export type SchemaScanRequest = components['schemas']['ScanRequest'];
+export type SchemaScanResult = components['schemas']['ScanResult'];
 export type SchemaSeatingMode = components['schemas']['SeatingMode'];
 export type SchemaSimulatedPaymentRequest = components['schemas']['SimulatedPaymentRequest'];
 export type SchemaStaffAssign = components['schemas']['StaffAssign'];
@@ -1817,6 +2011,8 @@ export type SchemaTicketTypeCreate = components['schemas']['TicketTypeCreate'];
 export type SchemaTicketTypeRead = components['schemas']['TicketTypeRead'];
 export type SchemaTicketTypeUpdate = components['schemas']['TicketTypeUpdate'];
 export type SchemaTokenResponse = components['schemas']['TokenResponse'];
+export type SchemaUndoCheckInRequest = components['schemas']['UndoCheckInRequest'];
+export type SchemaUndoResult = components['schemas']['UndoResult'];
 export type SchemaUserRead = components['schemas']['UserRead'];
 export type SchemaUserRole = components['schemas']['UserRole'];
 export type SchemaUserUpdate = components['schemas']['UserUpdate'];
@@ -2169,6 +2365,321 @@ export interface operations {
                 };
             };
             /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    search_attendees_api_v1_checkin_events__event_id__attendees_get: {
+        parameters: {
+            query?: {
+                q?: string | null;
+            };
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendeeSearchResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    scan_api_v1_checkin_events__event_id__scan_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ScanRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScanResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    stats_api_v1_checkin_events__event_id__stats_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CheckInStats"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    manual_check_in_api_v1_checkin_events__event_id__tickets__ticket_id__check_in_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+                ticket_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ManualCheckInRequest"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScanResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    undo_api_v1_checkin_events__event_id__tickets__ticket_id__undo_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+                ticket_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["UndoCheckInRequest"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UndoResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
             422: {
                 headers: {
                     [name: string]: unknown;
