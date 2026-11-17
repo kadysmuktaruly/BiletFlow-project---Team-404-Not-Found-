@@ -35,7 +35,9 @@
     "myEvents": "My events",
     "profile": "Profile",
     "events": "Events",
-    "myTickets": "My tickets"
+    "myTickets": "My tickets",
+    "notifications": "Notifications",
+    "unread": "{count} unread"
   },
   "home": {
     "title": "Find events and get your tickets in seconds",
@@ -425,7 +427,8 @@
     "max_redemptions_below_used": "The limit can't be lower than the redemptions already used.",
     "invalid_window": "The end must not be before the start.",
     "event_read_only": "Cancelled and completed events can't be changed.",
-    "download_failed": "The download didn't work. Try again."
+    "download_failed": "The download didn't work. Try again.",
+    "notification_not_found": "Notification not found."
   },
   "events": {
     "title": "Upcoming events",
@@ -517,5 +520,14 @@
     "opening": "Opening the event…",
     "invalid": "This campaign link isn't valid.",
     "browse": "Browse events"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "No notifications yet.",
+    "markAll": "Mark all as read",
+    "markRead": "Mark as read",
+    "open": "Open",
+    "new": "New",
+    "unreadCount": "{count, plural, =0 {Nothing unread} one {# unread} other {# unread}}"
   }
 }
