@@ -6,6 +6,10 @@ Spec: SRS v0.3 ([`docs/srs/srs.md`](srs/srs.md)), the semester plan and the mode
 
 ## Progress notes (newest first)
 
+- **Nov 17 — Row 1: check-in API.** [#15](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/15): atomic scan (10 concurrent scans →
+  one admission), five live results, Campaign QR rejected, staff-only (404), authorized undo
+  with audit, counts, manual search, p95 under 2 s. pytest 176 passed. Next: promotions
+  backend (`feat/r4-promotions-backend`).
 - **Nov 17 — Docker fix.** [#13](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/13): compose runs `next dev` by default, so the
   stack fits a 2 GB Docker VM; `WEB_BUILD_TARGET=runtime` builds the production image for the
   demo. All four services healthy and six web pages return 200. Next: `feat/r4-check-in-api`.
@@ -30,6 +34,7 @@ retargeted to `main` and rebased. Suggested reviewer = the plan's owner for that
 | 9 | [#11](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/11) | `GET /checkin/events`; scanner event list, camera, five result screens | Nurali (scanner) |
 | 10 | [#12](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/12) | Attendee purchase flow on the web, web in Compose, demo seed, Report 3 demo script | Sanzhar (web) |
 | 11 | [#13](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/13) | Compose web runs `next dev` to fit a 2 GB Docker VM; production target for the demo | Kadys (infra) |
+| 12 | [#15](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/15) | Live check-in API: atomic scan, five results, undo, counts, manual search | Kadys (check-in), Nurali (scanner) |
 
 New Phase 1 PRs are added below as they open.
 
@@ -38,7 +43,8 @@ New Phase 1 PRs are added below as they open.
 | Date | Decision | Reason |
 |---|---|---|
 | Nov 17 | `docs/STATUS.md` lives only on the `docs/status` branch (PR off `main`). Feature PRs don't edit it. | Feature PRs are stacked; editing one file in all of them would conflict at every rebase. |
-| Nov 17 | Phase 1 branches stack on #12, each on the previous one. | Team lead's decision; `main` lacks the Report 2–3 code. |
+| Nov 17 | Phase 1 branches stack on #12, each on the previous one; row 1 sits on #13 so the chain stays linear. | Team lead's decision; `main` lacks the Report 2–3 code. One chain is simpler to retarget than a fork. |
+| Nov 17 | Check-in: every scan returns 200 with a `result`; `invalid` has a `reason` (`unrecognized`, `wrong_event`, `campaign_qr_not_admission`). Undo is by ticket id; Platform Admins can't scan unless assigned. | A scan result is data, not an error. SRS 4.8 limits the door to assigned events. |
 | Nov 17 | The Docker fix (#13) targets #12's branch, not `main`. | `apps/web` and the compose web service don't exist on `main` yet. |
 | Nov 17 | Compose's web service defaults to `next dev`; `WEB_BUILD_TARGET=runtime` builds the production image. | `next build` was OOM-killed at 2 GB even with a 1536 MB heap cap (Turbopack's native memory isn't capped by it). `next dev` fits. |
 | Nov 17 | Raised the auditing laptop's Docker VM from 2 GB to 6 GB. The runtime is **Colima**, not Docker Desktop. Backup: `~/.colima/default/colima.yaml.bak-2026-11-17`. All 19 containers that were running before the restart are running again (3 from other projects needed a manual `docker start`). | `next dev` was also killed at 2 GB because other projects' containers use about 900 MB of the VM. 6 GB is under half of the laptop's 16 GB. |
@@ -98,7 +104,7 @@ or 3 item can have is:
 | 3 | Sanzhar | Attendee web flow: list, detail, selection, attendee details, DEMO payment, confirmation, My tickets with QR. Sign-in required. Strings in one module | Partial (unmerged) | PR #12. `components/attendee/*`, `messages/{kk,ru,en}.json`. API-level `tests/e2e/test_report3_flow.py` | Merge #12. No browser test |
 | 3 | Nurali | Scanner lists only assigned events and reads QR with the camera | Partial (unmerged) | PR #11. `GET /checkin/events`, `tests/test_checkin_events.py`, `scan/[eventId].tsx` | Merge #11 |
 | 3 | Kadys | pytest + httpx against the `*_test` DB in CI | Partial (unmerged) | PR #3. `tests/conftest.py`, `tests/test_harness.py` | Merge #3 |
-| 4 | Kadys | Check-in API: signed token plus live status, five results, atomic, assigned staff only, undo, counts, manual search, Campaign QR rejected, under 2 s | **Missing** | Only token verification exists (`app/tickets/`, `test_garbage_and_campaign_payloads_are_not_admission_tokens`). `uq_checkin_active_ticket` in the DB | All endpoints and tests, incl. concurrent double scan |
+| 4 | Kadys | Check-in API: signed token plus live status, five results, atomic, assigned staff only, undo, counts, manual search, Campaign QR rejected, under 2 s | Partial (unmerged) | [#15](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/15). `app/services/checkin.py`, `require_event_staff` in `app/deps.py`, `tests/test_checkin.py` (15 tests incl. `test_double_scan_concurrent_one_checkin`, `test_checkin_under_2s`) | Merge #15 |
 | 4 | Sagidolla | Promotions: % or fixed KZT, validity, max redemptions, eligible types, case-insensitive codes, server-side discounts, limit under concurrency, Campaign QR token resolves, clear rejection reasons | **Missing** | Models only (`app/models/campaign.py`), `ck_promo_codes_within_limit` | All endpoints and tests |
 | 4 | Sanzhar | Checkout shows code, discount and new total; campaign link pre-applies the code; organizer attendee list with search and status | **Missing** | — | All |
 | 4 | Alisher | Server-generated A4 PDF ticket (all fields, no payment data, grayscale-scannable QR, same ticket ID) | **Missing** | — | All |
