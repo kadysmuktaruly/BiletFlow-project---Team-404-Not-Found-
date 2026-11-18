@@ -2,11 +2,11 @@
 
 import type { Schemas } from "@biletflow/api-types";
 import { useTranslations } from "next-intl";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 
 import { Alert, Button, TextArea } from "@/components/ui";
-import { Link, usePathname } from "@/i18n/navigation";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { api, unwrap } from "@/lib/api";
 import { useErrorMessage } from "@/lib/use-error-message";
 
@@ -30,6 +30,8 @@ export function EventShell({ children }: { children: React.ReactNode }) {
   const errorMessage = useErrorMessage();
   const { eventId } = useParams<{ eventId: string }>();
   const pathname = usePathname();
+  const router = useRouter();
+  const justDuplicated = useSearchParams().get("duplicated") === "1";
   const [event, setEvent] = useState<OrganizerEvent | null>(null);
   const [loadError, setLoadError] = useState<unknown>(null);
   const [actionError, setActionError] = useState<unknown>(null);
@@ -80,6 +82,21 @@ export function EventShell({ children }: { children: React.ReactNode }) {
     [eventId, t],
   );
 
+  async function duplicate() {
+    setBusy(true);
+    setActionError(null);
+    try {
+      const copy = await unwrap(
+        api.POST("/api/v1/organizer/events/{event_id}/duplicate", { params: { path: { event_id: eventId } } }),
+      );
+      router.push({ pathname: `/organizer/events/${copy.id}`, query: { duplicated: "1" } });
+    } catch (err) {
+      setActionError(err);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   if (loadError) return <Alert kind="error">{errorMessage(loadError)}</Alert>;
   if (!event) return <p className="text-gray-600">{t("common.loading")}</p>;
 
@@ -92,10 +109,12 @@ export function EventShell({ children }: { children: React.ReactNode }) {
     { href: `${base}/attendees`, label: t("organizer.manage.tabs.attendees") },
     { href: `${base}/orders`, label: t("organizer.manage.tabs.orders") },
     { href: `${base}/analytics`, label: t("organizer.manage.tabs.analytics") },
+    { href: `${base}/history`, label: t("organizer.manage.tabs.history") },
     { href: `${base}/staff`, label: t("organizer.manage.tabs.staff") },
     { href: `${base}/preview`, label: t("organizer.manage.tabs.preview") },
   ];
-  const closed = event.status === "cancelled" || event.status === "completed";
+  // SRS 4.16: past and cancelled events are read-only (the API enforces it).
+  const closed = event.phase === "completed" || event.phase === "cancelled";
 
   return (
     <EventContext.Provider value={{ event, setEvent }}>
@@ -119,6 +138,9 @@ export function EventShell({ children }: { children: React.ReactNode }) {
             >
               {t("support.contactPlatform")}
             </Link>
+            <Button variant="secondary" disabled={busy} onClick={() => void duplicate()}>
+              {t("organizer.manage.duplicate")}
+            </Button>
             {event.status === "published" && (
               <Link
                 href={`/events/${event.slug}`}
@@ -127,12 +149,12 @@ export function EventShell({ children }: { children: React.ReactNode }) {
                 {t("organizer.manage.viewPublic")}
               </Link>
             )}
-            {(event.status === "draft" || event.status === "unpublished") && (
+            {!closed && (event.status === "draft" || event.status === "unpublished") && (
               <Button disabled={busy} onClick={() => void act("publish")}>
                 {t("organizer.manage.publish")}
               </Button>
             )}
-            {event.status === "published" && (
+            {event.status === "published" && !closed && (
               <Button variant="secondary" disabled={busy} onClick={() => void act("unpublish")}>
                 {t("organizer.manage.unpublish")}
               </Button>
@@ -145,6 +167,8 @@ export function EventShell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
 
+        {closed && <Alert kind="info">{t("organizer.manage.readOnly")}</Alert>}
+        {justDuplicated && <Alert kind="success">{t("organizer.manage.duplicated")}</Alert>}
         {notice && <Alert kind="success">{notice}</Alert>}
         {actionError ? <Alert kind="error">{errorMessage(actionError)}</Alert> : null}
 

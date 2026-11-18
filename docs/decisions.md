@@ -63,6 +63,11 @@ changes, update this file in the same PR.
   valid or checked-in ticket, notified once each however many tickets they hold.
 - `notifications.action_path` (migration 0002) stores the web path an in-app notification
   links to, because support cases have no column on the table to derive it from.
+- **Event history.** "Completed" includes events whose end time has passed. Completed and
+  cancelled events are read-only, but refunds still work. The timeline is visible to the
+  organizer, event admins and Platform Admins (not check-in staff). Duplicating copies
+  configuration only (not campaigns, whose codes are unique, nor paid-sales activation, which is
+  per event) and moves a past event forward by whole weeks.
 - **Analytics definitions.** Order figures use orders *confirmed* in the date range, per order
   line (so the ticket-type filter is exact). Refunded orders count in gross and again under
   refunds; the chart and per-type figures show only sales that stand. Processing fees are

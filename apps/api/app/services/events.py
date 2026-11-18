@@ -32,6 +32,7 @@ from app.models import (
 )
 from app.schemas.event import (
     EventCreate,
+    EventPhase,
     EventUpdate,
     OrganizerSummary,
     PublicEventList,
@@ -39,6 +40,7 @@ from app.schemas.event import (
     VenueInput,
     VenueRead,
     localize,
+    phase_of,
 )
 from app.services import audit
 from app.services.mail import Outbound
@@ -47,6 +49,18 @@ from app.slugs import event_slug
 
 # Cancelled and completed events are historical records (SRS 4.16) and stay as they were.
 EDITABLE_STATUSES = frozenset({EventStatus.DRAFT, EventStatus.UNPUBLISHED, EventStatus.PUBLISHED})
+
+
+def phase(event: Event, now: datetime | None = None) -> EventPhase:
+    return phase_of(event.status, event.starts_at, event.ends_at, now)
+
+
+def ensure_editable(event: Event) -> None:
+    """SRS 4.16: past (completed or cancelled) events are read-only. Their records stay
+    available to review; refunds of their orders are still possible."""
+    if event.status not in EDITABLE_STATUSES or phase(event) == "completed":
+        raise AppError(409, "event_not_editable", "Past and cancelled events are read-only.")
+
 
 _SLUG_ATTEMPTS = 5
 
@@ -95,20 +109,25 @@ async def create_draft(
     raise AppError(500, "internal_error", "Could not allocate an event address.")
 
 
-async def list_owned(session: AsyncSession, organizer: OrganizerProfile) -> list[Event]:
+async def list_owned(
+    session: AsyncSession, organizer: OrganizerProfile, only: EventPhase | None = None
+) -> list[Event]:
     result = await session.scalars(
         select(Event)
         .where(Event.organizer_profile_id == organizer.id)
         .order_by(Event.starts_at.desc())
     )
-    return list(result)
+    events = list(result)
+    if only is not None:
+        now = datetime.now(UTC)
+        events = [e for e in events if phase(e, now) == only]
+    return events
 
 
 async def update(
     session: AsyncSession, event: Event, user: User, data: EventUpdate
 ) -> tuple[Event, Outbound]:
-    if event.status not in EDITABLE_STATUSES:
-        raise AppError(409, "event_not_editable", "Cancelled or completed events can't be edited.")
+    ensure_editable(event)
     old_capacity, old_visibility = event.capacity, event.visibility
     before = _material(event)
 
@@ -344,7 +363,7 @@ async def cancel(
     in full (SRS 4.9, DEMO), and tells every ticket holder (SRS 4.10)."""
     from app.services.orders import OPEN_STATUSES, release_order
 
-    if event.status not in EDITABLE_STATUSES:
+    if event.status not in EDITABLE_STATUSES or phase(event) == "completed":
         raise AppError(409, "invalid_status_transition", "This event can't be cancelled.")
     await session.refresh(event, with_for_update=True)
     holders = await ticket_holders(session, event.id)

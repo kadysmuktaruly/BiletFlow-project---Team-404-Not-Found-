@@ -482,6 +482,24 @@ organizer menu and on each event's **Analytics** tab: KPI tiles, a line chart of
 time (tickets or revenue, never both on one axis), a bar chart by ticket type, and a table
 view for every chart. Charts use recharts.
 
+### Event history and duplication (SRS 4.16)
+
+- Every event has a `phase`: **upcoming**, **active**, **completed** (ended, or marked
+  completed) or **cancelled**. `GET /organizer/events?phase=` filters by it; **My events** has a
+  tab for each.
+- **Past and cancelled events are read-only**: edits, ticket types, campaigns and cancelling
+  return `409 event_not_editable`. Their orders, tickets, attendees, check-ins, campaigns,
+  support cases and analytics stay available, and refunds still work.
+- `GET /history/events/{id}/timeline?date_from=&date_to=&category=`: the activity timeline
+  from the append-only audit log (time, who, action, entity, description), for the event's
+  organizer, its event admins and Platform Admins (404 for anyone else). Each event has a
+  **History** tab.
+- `POST /organizer/events/{id}/duplicate`: a new draft with the same details, venue,
+  visibility, capacity, refund policy and ticket types. It never copies orders, tickets,
+  payments, check-ins, support cases, campaigns or paid-sales activation. A past event's dates
+  move forward by whole weeks (same weekday and time). The **Duplicate** button is on every
+  event.
+
 ### Attendee web pages (SRS 4.2, 4.4, 4.6, 4.7)
 
 `/events` lists upcoming public events. `/events/{slug}` is the event page with ticket

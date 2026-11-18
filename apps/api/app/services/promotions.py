@@ -437,8 +437,9 @@ async def _code_taken(session: AsyncSession, text: str) -> bool:
 async def create(
     session: AsyncSession, event: Event, user: User, data: CampaignCreate
 ) -> PromotionalCampaign:
-    if event.status in (EventStatus.CANCELLED, EventStatus.COMPLETED):
-        raise AppError(409, "event_read_only", "Cancelled and completed events can't change.")
+    from app.services.events import ensure_editable
+
+    ensure_editable(event)
     if data.ticket_type_ids:
         found = set(
             await session.scalars(
