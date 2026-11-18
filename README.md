@@ -62,13 +62,21 @@ biletflow/
 
 ## Getting started
 
-Requirements: Docker (with at least 4 GB of memory for the first build). For development
+Requirements: Docker with at least 2 GB of memory. For development
 outside Docker you also need [uv](https://docs.astral.sh/uv/) and Node.js 22.
 
 ```bash
 cp .env.example .env        # optional; the defaults work
 docker compose up -d --build
 docker compose ps           # wait for db, api, web and mailpit to be "healthy"
+```
+
+By default the web container runs `next dev`, which fits a 2 GB Docker VM; each page compiles
+the first time you open it. For the demo, run the production build instead (it needs a Docker
+VM with at least 4 GB):
+
+```bash
+WEB_BUILD_TARGET=runtime docker compose up -d --build
 ```
 
 | Service | URL |

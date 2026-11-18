@@ -71,9 +71,15 @@ services:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
+      # `next dev` fits a 2 GB Docker VM; `next build` doesn't. CI still runs the production
+      # build, and `--target runtime` builds the production image (see apps/web/Dockerfile).
+      target: ${WEB_BUILD_TARGET:-dev}
       args:
         # Baked into the browser bundle: the API as seen from the user's browser.
         NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8000}
+    environment:
+      # Read by `next dev` at compile time (the production stage bakes it in as a build arg).
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8000}
     ports:
       - "${WEB_PORT:-3000}:3000"
     depends_on:
@@ -82,9 +88,9 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/api/health || exit 1"]
       interval: 10s
-      timeout: 5s
-      start_period: 20s
-      retries: 5
+      timeout: 10s
+      start_period: 60s
+      retries: 10
     restart: unless-stopped
 
 volumes:
