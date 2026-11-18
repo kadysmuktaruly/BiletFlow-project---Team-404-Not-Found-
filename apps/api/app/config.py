@@ -70,6 +70,9 @@ class Settings(BaseSettings):
     # SRS 3.3 / 4.6: payment-processing charge in basis points (300 = 3%), deducted from the
     # organizer's estimated payout, never added to what the attendee pays. A DEMO placeholder.
     processing_fee_bps: int = 300
+    # Brute-force protection on sign-in and account emails. Off under ENVIRONMENT=test unless
+    # set explicitly, so the test suite can sign in freely; tests/test_rate_limit.py turns it on.
+    rate_limit_enabled: bool | None = None
 
     # SRS 4.6 / 4.14: the currency for the initial Kazakhstan release.
     currency: str = "KZT"

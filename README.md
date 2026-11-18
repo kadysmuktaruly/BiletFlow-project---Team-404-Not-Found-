@@ -86,8 +86,11 @@ WEB_BUILD_TARGET=runtime docker compose up -d --build
 | Mailpit (every email the app sends) | http://localhost:8025 |
 | Postgres | `localhost:5433` |
 
-The API applies migrations and loads demo data on start (`SEED_DEMO_DATA=true`): a free and a
-paid event, plus organizer, attendee, Event Admin and Platform Admin accounts, all with the
+The API applies migrations and loads demo data on start (`SEED_DEMO_DATA=true`). The data
+covers a free student meetup, a paid KZT jazz night with a 15% campaign (code `JAZZ15`), a
+promo purchase, a refunded order, a check-in, a support case, and a past event for the history
+views. The accounts are organizer, three attendees (`attendee@`, `aliya@`, `timur@`), an Event
+Admin (`staff@`) and a Platform Admin (`admin@`), all at `demo.biletflow.kz`, all with the
 password `Demo-pass-2026`. See [`apps/api/app/seed.py`](apps/api/app/seed.py) and the
 walkthrough in [`docs/demo-report-3.md`](docs/demo-report-3.md).
 
@@ -499,6 +502,24 @@ view for every chart. Charts use recharts.
   payments, check-ins, support cases, campaigns or paid-sales activation. A past event's dates
   move forward by whole weeks (same weekday and time). The **Duplicate** button is on every
   event.
+
+### Hardening (Report 6)
+
+- **Rate limiting** on `POST /auth/login` (20 per minute per client IP, 5 per minute per
+  email), `/auth/register` (5 per 10 minutes per IP), and `/auth/forgot-password` and
+  `/auth/resend-verification` (5 per 15 minutes per IP, 3 per email). Over the limit you get
+  `429 rate_limited` with `Retry-After`. The per-email limit counts attempts whether or not the
+  address is registered, so it reveals nothing. It's in-process (`app/ratelimit.py`), which is
+  exact for the single API process Compose runs. Off under `ENVIRONMENT=test` unless
+  `RATE_LIMIT_ENABLED` is set.
+- **No secrets in the repository:** `python3 scripts/check-secrets.py` scans tracked files for
+  private keys, tokens and secrets in env files, and fails if a `.env` is tracked. CI runs it
+  on every PR. Production refuses to start with the development secrets.
+- **Backups:** `scripts/backup-db.sh` writes a compressed `pg_dump` to `backups/` (git-ignored).
+  `scripts/restore-db.sh <dump> <database>` restores it into another database to check it, or
+  over the main one with `--yes` (stop `api` first).
+- **HTTPS:** proposed, not added yet. See
+  [`docs/https-proxy-proposal.md`](docs/https-proxy-proposal.md).
 
 ### Attendee web pages (SRS 4.2, 4.4, 4.6, 4.7)
 

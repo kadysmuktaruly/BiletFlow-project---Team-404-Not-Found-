@@ -23,3 +23,6 @@ dist/
 *.swp
 .idea/
 .vscode/
+
+# Database dumps (scripts/backup-db.sh): personal data, never commit.
+backups/

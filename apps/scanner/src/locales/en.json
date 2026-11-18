@@ -32,7 +32,8 @@
     "event_not_found": "You're not assigned to this event any more.",
     "ticket_not_found": "Ticket not found.",
     "not_checked_in": "This ticket isn't checked in.",
-    "checkin_undo_forbidden": "Only event admins can undo a check-in."
+    "checkin_undo_forbidden": "Only event admins can undo a check-in.",
+    "rate_limited": "Too many attempts. Please wait a minute and try again."
   },
   "events": {
     "title": "Your events",

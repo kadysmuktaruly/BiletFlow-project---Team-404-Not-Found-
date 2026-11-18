@@ -16,6 +16,9 @@ What it creates:
 * staff@demo.biletflow.kz: an Event Admin assigned to both events (for the scanner app).
 * admin@demo.biletflow.kz: a Platform Admin (never self-assignable, so it only comes from here).
 * Fixtures for the scanner's five result screens: one cancelled and one refunded ticket.
+* Reports 4-6: a campaign on the jazz night (code JAZZ15, 15%), aliya@demo.biletflow.kz's
+  promo purchase with one ticket checked in and a support case, timur@demo.biletflow.kz's VIP
+  order refunded by the organizer, and a past "Nauryz Spring Fair" for event history.
 """
 
 import asyncio
@@ -310,14 +313,129 @@ async def seed() -> None:
             jazz_ticket.refunded_at = now
             await session.commit()
 
+        await _report_6_data(session, organizer, organizer_user, staff, jazz)
+
     print("Demo data ready. Password for every account:", PASSWORD)
     for email in (
         "organizer@demo.biletflow.kz",
         "attendee@demo.biletflow.kz",
+        "aliya@demo.biletflow.kz",
+        "timur@demo.biletflow.kz",
         "staff@demo.biletflow.kz",
         "admin@demo.biletflow.kz",
     ):
         print("  ", email)
+
+
+async def _report_6_data(
+    session: AsyncSession,
+    organizer: OrganizerProfile,
+    organizer_user: User,
+    staff: User,
+    jazz: Event,
+) -> None:
+    """Data that shows Reports 4-6 in the demo: a campaign and a promo sale, a refund, a
+    check-in, a support case and a past event. Everything goes through the normal services,
+    so it's exactly what the app would have recorded. Runs once (keyed on the campaign)."""
+    from app.deps import StaffAccess
+    from app.enums import DiscountType, SupportCategory
+    from app.models import PromoCode
+    from app.schemas.promo import CampaignCreate
+    from app.schemas.support import CaseCreate, MessageCreate
+    from app.services import checkin, promotions, refunds, support
+
+    if await session.scalar(select(PromoCode).where(PromoCode.code == "JAZZ15")) is not None:
+        return
+    await promotions.create(
+        session,
+        jazz,
+        organizer_user,
+        CampaignCreate(
+            name="Students 15%",
+            discount_type=DiscountType.PERCENTAGE,
+            discount_percent=15,
+            code="JAZZ15",
+            max_redemptions=50,
+        ),
+    )
+    aliya = await _user(session, "aliya@demo.biletflow.kz", "Aliya Bekova", UserRole.ATTENDEE, "ru")
+    timur = await _user(
+        session, "timur@demo.biletflow.kz", "Timur Akhmetov", UserRole.ATTENDEE, "en"
+    )
+    standard = await session.scalar(
+        select(TicketType).where(TicketType.event_id == jazz.id, TicketType.name == "Standard")
+    )
+    vip = await session.scalar(
+        select(TicketType).where(TicketType.event_id == jazz.id, TicketType.name == "VIP")
+    )
+    assert standard and vip
+
+    # A promo sale, as if Aliya came through the Campaign QR.
+    promo_order, _ = await orders.create_order(
+        session,
+        aliya,
+        OrderCreate(
+            event_id=jazz.id,
+            items=[OrderItemInput(ticket_type_id=standard.id, quantity=2)],
+            promo_code="jazz15",
+        ),
+    )
+    await payments.pay_order(session, aliya, promo_order.id, "seed-aliya-payment", "succeed")
+
+    # A VIP order the organizer refunds in full (DEMO).
+    vip_order, _ = await orders.create_order(
+        session,
+        timur,
+        OrderCreate(event_id=jazz.id, items=[OrderItemInput(ticket_type_id=vip.id, quantity=1)]),
+    )
+    await payments.pay_order(session, timur, vip_order.id, "seed-timur-payment", "succeed")
+    await refunds.refund_order(
+        session, organizer_user, jazz, vip_order.id, "seed-timur-refund", "Can't attend"
+    )
+
+    # Aliya's first ticket is scanned in by the Event Admin.
+    first = await session.scalar(
+        select(Ticket).where(Ticket.order_id == promo_order.id).order_by(Ticket.id).limit(1)
+    )
+    assert first
+    access = StaffAccess(event=jazz, user=staff, role="event_admin")
+    await checkin.scan(session, access, first.admission_token, "seed-door-phone")
+
+    # A support case from Aliya's order, answered by the organizer.
+    case, _ = await support.create_case(
+        session,
+        aliya,
+        CaseCreate(
+            category=SupportCategory.TICKET_DELIVERY,
+            subject="Second ticket for my friend",
+            message="Can my friend show the second QR on her own phone?",
+            order_id=promo_order.id,
+        ),
+    )
+    await support.add_message(
+        session,
+        organizer_user,
+        case.id,
+        MessageCreate(body="Yes. Forward her the PDF; each QR admits one person once."),
+    )
+
+    # A past event for the Completed view in event history.
+    past, past_new = await _event(
+        session,
+        organizer,
+        slug="nauryz-spring-fair-demo",
+        title="Nauryz Spring Fair",
+        description="A spring fair with music, crafts and food.",
+        category="Festival",
+        venue=Venue(name="Central Park", address_line1="Gogol St 1", city="Almaty"),
+        starts_at=_evening(-30, 12),
+        hours=6,
+    )
+    if past_new:
+        session.add(
+            TicketType(event_id=past.id, name="Free entry", price_kzt=0, quantity_total=500)
+        )
+    await session.commit()
 
 
 if __name__ == "__main__":
