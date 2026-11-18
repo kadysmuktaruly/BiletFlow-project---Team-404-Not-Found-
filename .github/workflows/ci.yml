@@ -115,3 +115,78 @@ jobs:
             echo "::error::packages/api-types is out of date. Run 'npm run gen:api-types' and commit the result."
             exit 1
           }
+
+  e2e:
+    name: End-to-end (Playwright, core flow)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: biletflow
+          POSTGRES_PASSWORD: biletflow
+          POSTGRES_DB: biletflow
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U biletflow -d biletflow"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql+asyncpg://biletflow:biletflow@localhost:5432/biletflow
+      ENVIRONMENT: development
+      EMAIL_BACKEND: memory
+      # Rate limits have their own tests; a Playwright retry shouldn't trip them here.
+      RATE_LIMIT_ENABLED: "false"
+      PUBLIC_BASE_URL: http://localhost:3000
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.12.5"
+          enable-cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: API database and demo data
+        working-directory: apps/api
+        run: |
+          uv sync --locked
+          uv run alembic upgrade head
+          uv run python -m app.seed
+      - name: Start the API
+        working-directory: apps/api
+        # From the venv directly, not `uv run`: a long-lived uv process would hold uv's cache
+        # lock and make setup-uv's post-job cache step time out.
+        run: nohup .venv/bin/uvicorn app.main:app --port 8000 > "$RUNNER_TEMP/api.log" 2>&1 &
+      - run: npm ci
+      - name: Build and start the web app
+        run: |
+          npm run build -w @biletflow/web
+          nohup npm run start -w @biletflow/web > "$RUNNER_TEMP/web.log" 2>&1 &
+      - name: Wait for both
+        run: |
+          for url in http://localhost:8000/api/v1/health http://localhost:3000/api/health; do
+            for i in $(seq 1 60); do curl -fs "$url" > /dev/null && break; sleep 2; done
+            curl -fs "$url" > /dev/null
+          done
+      - name: Install Chromium
+        working-directory: apps/web
+        run: npx playwright install --with-deps chromium
+      - name: Core flow
+        run: npm run e2e -w @biletflow/web
+      - name: Stop the servers
+        if: always()
+        run: pkill -f "uvicorn app.main:app" || true; pkill -f "next start" || true
+      - name: Keep the report and logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report
+          path: |
+            apps/web/playwright-report
+            apps/web/test-results
+            ${{ runner.temp }}/api.log
+            ${{ runner.temp }}/web.log
+          retention-days: 7
