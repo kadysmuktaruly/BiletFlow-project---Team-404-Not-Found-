@@ -75,6 +75,9 @@ export function MyTicketsPage() {
                   </p>
                   {ticket.status === "valid" && <p className="text-xs text-gray-600">{t("tickets.showAtDoor")}</p>}
                   <TicketPdfButton ticketId={ticket.id} ticketNumber={ticket.ticket_number} />
+                  <Link href={{ pathname: "/support/new", query: { ticket: ticket.id } }} className="text-sm font-medium text-gray-900 underline">
+                    {t("support.getHelp")}
+                  </Link>
                 </li>
               ))}
             </ul>

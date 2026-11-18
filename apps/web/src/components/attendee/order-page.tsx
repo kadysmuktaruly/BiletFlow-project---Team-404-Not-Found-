@@ -76,6 +76,9 @@ export function OrderPage() {
         {order.status === "cancelled" && order.tickets.length > 0 && (
           <p className="text-sm text-gray-800">{t("order.cancelledNote")}</p>
         )}
+        <Link href={{ pathname: "/support/new", query: { order: order.id } }} className="text-sm font-medium text-gray-900 underline">
+          {t("support.getHelp")}
+        </Link>
         {order.payment_required && (
           <Link href={`/checkout/${order.id}`} className="font-medium text-gray-900 underline">
             {t("order.payNow")}

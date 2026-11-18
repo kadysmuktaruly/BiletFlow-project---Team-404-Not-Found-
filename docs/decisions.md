@@ -63,6 +63,10 @@ changes, update this file in the same PR.
   valid or checked-in ticket, notified once each however many tickets they hold.
 - `notifications.action_path` (migration 0002) stores the web path an in-app notification
   links to, because support cases have no column on the table to derive it from.
+- **Support cases.** Attendee cases are answered by the event's organizer and its event admins
+  (check-in staff don't do support); organizer cases by Platform Admins, who can also open any
+  attendee case for escalation. An attendee case always has an event, derived from the order
+  or ticket. A requester's reply reopens a waiting or resolved case. No attachments (SRS §12).
 - **Refunds are full and organizer-only** (SRS 4.9 "full refunds", "authorized organizers").
   Event admins can't refund. Refunded and cancelled tickets go back on sale unless the event is
   cancelled. A promo redemption stays counted after a refund (it was used).
