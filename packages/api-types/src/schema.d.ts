@@ -891,6 +891,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/organizer/analytics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Sales, revenue, campaign and attendance figures for your events
+         * @description All your events, or one (`event_id`), optionally one ticket type. `date_from` / `date_to` (inclusive, the event's time zone) default to the last 30 days and apply to order-based figures; capacity and attendance are current. DEMO money. Read-only: never blocks checkout.
+         */
+        get: operations["analytics_api_v1_organizer_analytics_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/organizer/events": {
         parameters: {
             query?: never;
@@ -1789,6 +1809,52 @@ export interface components {
             /** Truncated */
             truncated: boolean;
         };
+        /** AnalyticsFilters */
+        AnalyticsFilters: {
+            /**
+             * Date From
+             * Format: date
+             */
+            date_from: string;
+            /**
+             * Date To
+             * Format: date
+             */
+            date_to: string;
+            /** Event Id */
+            event_id: string | null;
+            /** Ticket Type Id */
+            ticket_type_id: string | null;
+            /** Timezone */
+            timezone: string;
+        };
+        /** AnalyticsRead */
+        AnalyticsRead: {
+            attendance: components["schemas"]["AttendanceFigures"];
+            /** By Ticket Type */
+            by_ticket_type: components["schemas"]["TicketTypeFigures"][];
+            /** Campaigns */
+            campaigns: components["schemas"]["CampaignFigures"][];
+            capacity: components["schemas"]["CapacityFigures"];
+            filters: components["schemas"]["AnalyticsFilters"];
+            revenue: components["schemas"]["RevenueFigures"];
+            /** Sales Over Time */
+            sales_over_time: components["schemas"]["DayPoint"][];
+        };
+        /**
+         * AttendanceFigures
+         * @description Current state. `absent` = issued tickets not (yet) checked in.
+         */
+        AttendanceFigures: {
+            /** Absent */
+            absent: number;
+            /** Checked In */
+            checked_in: number;
+            /** Issued */
+            issued: number;
+            /** Percent Checked In */
+            percent_checked_in: number;
+        };
         /** AttendeeInput */
         AttendeeInput: {
             /** Email */
@@ -1825,6 +1891,30 @@ export interface components {
             starts_at?: string | null;
             /** Ticket Type Ids */
             ticket_type_ids?: string[];
+        };
+        /** CampaignFigures */
+        CampaignFigures: {
+            /**
+             * Campaign Id
+             * Format: uuid
+             */
+            campaign_id: string;
+            /** Code */
+            code: string | null;
+            /** Discount Kzt */
+            discount_kzt: number;
+            /** Gross Kzt */
+            gross_kzt: number;
+            /** Name */
+            name: string;
+            /** Net Kzt */
+            net_kzt: number;
+            /** Orders */
+            orders: number;
+            /** Redemptions */
+            redemptions: number;
+            /** Tickets */
+            tickets: number;
         };
         /** CampaignRead */
         CampaignRead: {
@@ -1943,6 +2033,20 @@ export interface components {
         CancelRegistrationRequest: {
             /** Reason */
             reason?: string | null;
+        };
+        /**
+         * CapacityFigures
+         * @description Current state, not limited to the date range.
+         */
+        CapacityFigures: {
+            /** Capacity */
+            capacity: number;
+            /** Percent Sold */
+            percent_sold: number;
+            /** Remaining */
+            remaining: number;
+            /** Sold */
+            sold: number;
         };
         /** CaseContext */
         CaseContext: {
@@ -2155,6 +2259,18 @@ export interface components {
              * @constant
              */
             confirm: true;
+        };
+        /** DayPoint */
+        DayPoint: {
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+            /** Revenue Kzt */
+            revenue_kzt: number;
+            /** Tickets */
+            tickets: number;
         };
         /**
          * DiscountType
@@ -3132,6 +3248,34 @@ export interface components {
             /** Token */
             token: string;
         };
+        /**
+         * RevenueFigures
+         * @description Orders confirmed in the date range (refunded ones included as refunds).
+         */
+        RevenueFigures: {
+            /**
+             * Demo
+             * @default true
+             * @constant
+             */
+            demo: true;
+            /** Discounts Kzt */
+            discounts_kzt: number;
+            /** Estimated Payout Kzt */
+            estimated_payout_kzt: number;
+            /** Gross Kzt */
+            gross_kzt: number;
+            /** Net Kzt */
+            net_kzt: number;
+            /** Processing Fees Kzt */
+            processing_fees_kzt: number;
+            /** Refunds Kzt */
+            refunds_kzt: number;
+            /** Tickets Refunded */
+            tickets_refunded: number;
+            /** Tickets Sold */
+            tickets_sold: number;
+        };
         /** ScanRequest */
         ScanRequest: {
             /**
@@ -3320,6 +3464,33 @@ export interface components {
             sales_end_at?: string | null;
             /** Sales Start At */
             sales_start_at?: string | null;
+        };
+        /** TicketTypeFigures */
+        TicketTypeFigures: {
+            /** Capacity */
+            capacity: number;
+            /** Checked In */
+            checked_in: number;
+            /**
+             * Event Id
+             * Format: uuid
+             */
+            event_id: string;
+            /** Name */
+            name: string;
+            /** Price Kzt */
+            price_kzt: number;
+            /** Revenue Kzt */
+            revenue_kzt: number;
+            /** Sold */
+            sold: number;
+            /**
+             * Ticket Type Id
+             * Format: uuid
+             */
+            ticket_type_id: string;
+            /** Tickets In Range */
+            tickets_in_range: number;
         };
         /**
          * TicketTypeRead
@@ -3532,15 +3703,20 @@ export type SchemaAdminReportList = components['schemas']['AdminReportList'];
 export type SchemaAdminSummary = components['schemas']['AdminSummary'];
 export type SchemaAdminUser = components['schemas']['AdminUser'];
 export type SchemaAdminUserList = components['schemas']['AdminUserList'];
+export type SchemaAnalyticsFilters = components['schemas']['AnalyticsFilters'];
+export type SchemaAnalyticsRead = components['schemas']['AnalyticsRead'];
+export type SchemaAttendanceFigures = components['schemas']['AttendanceFigures'];
 export type SchemaAttendeeInput = components['schemas']['AttendeeInput'];
 export type SchemaAttendeeSearchResult = components['schemas']['AttendeeSearchResult'];
 export type SchemaCampaignCreate = components['schemas']['CampaignCreate'];
+export type SchemaCampaignFigures = components['schemas']['CampaignFigures'];
 export type SchemaCampaignRead = components['schemas']['CampaignRead'];
 export type SchemaCampaignReport = components['schemas']['CampaignReport'];
 export type SchemaCampaignResolution = components['schemas']['CampaignResolution'];
 export type SchemaCampaignUpdate = components['schemas']['CampaignUpdate'];
 export type SchemaCancelEventRequest = components['schemas']['CancelEventRequest'];
 export type SchemaCancelRegistrationRequest = components['schemas']['CancelRegistrationRequest'];
+export type SchemaCapacityFigures = components['schemas']['CapacityFigures'];
 export type SchemaCaseContext = components['schemas']['CaseContext'];
 export type SchemaCaseCreate = components['schemas']['CaseCreate'];
 export type SchemaCaseRead = components['schemas']['CaseRead'];
@@ -3551,6 +3727,7 @@ export type SchemaCheckInMethod = components['schemas']['CheckInMethod'];
 export type SchemaCheckInStats = components['schemas']['CheckInStats'];
 export type SchemaCheckInTicket = components['schemas']['CheckInTicket'];
 export type SchemaConfirmRequest = components['schemas']['ConfirmRequest'];
+export type SchemaDayPoint = components['schemas']['DayPoint'];
 export type SchemaDiscountType = components['schemas']['DiscountType'];
 export type SchemaEmailRequest = components['schemas']['EmailRequest'];
 export type SchemaErrorBody = components['schemas']['ErrorBody'];
@@ -3609,6 +3786,7 @@ export type SchemaReportCreate = components['schemas']['ReportCreate'];
 export type SchemaReportCreated = components['schemas']['ReportCreated'];
 export type SchemaReportReview = components['schemas']['ReportReview'];
 export type SchemaResetPasswordRequest = components['schemas']['ResetPasswordRequest'];
+export type SchemaRevenueFigures = components['schemas']['RevenueFigures'];
 export type SchemaScanRequest = components['schemas']['ScanRequest'];
 export type SchemaScanResult = components['schemas']['ScanResult'];
 export type SchemaSeatingMode = components['schemas']['SeatingMode'];
@@ -3624,6 +3802,7 @@ export type SchemaSuspendRequest = components['schemas']['SuspendRequest'];
 export type SchemaTicketRead = components['schemas']['TicketRead'];
 export type SchemaTicketStatus = components['schemas']['TicketStatus'];
 export type SchemaTicketTypeCreate = components['schemas']['TicketTypeCreate'];
+export type SchemaTicketTypeFigures = components['schemas']['TicketTypeFigures'];
 export type SchemaTicketTypeRead = components['schemas']['TicketTypeRead'];
 export type SchemaTicketTypeUpdate = components['schemas']['TicketTypeUpdate'];
 export type SchemaTokenResponse = components['schemas']['TokenResponse'];
@@ -6232,6 +6411,67 @@ export interface operations {
             };
             /** @description Conflict */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    analytics_api_v1_organizer_analytics_get: {
+        parameters: {
+            query?: {
+                date_from?: string | null;
+                date_to?: string | null;
+                event_id?: string | null;
+                ticket_type_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnalyticsRead"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

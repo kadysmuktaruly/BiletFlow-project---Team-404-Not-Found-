@@ -1,6 +1,7 @@
 """/organizer: the signed-in organizer's profile, payout account and events (SRS 4.1, 4.2)."""
 
 import uuid
+from datetime import date
 from typing import Annotated
 
 from fastapi import APIRouter, BackgroundTasks, Query, Response, status
@@ -9,6 +10,7 @@ from app.deps import CurrentOrganizer, OrganizerUser, OwnedEvent, SessionDep
 from app.enums import OrderStatus, TicketStatus
 from app.errors import AppError, error_responses
 from app.models import Event, OrganizerProfile, PayoutAccount
+from app.schemas.analytics import AnalyticsRead
 from app.schemas.checkin import OrganizerAttendeeList
 from app.schemas.event import (
     CancelEventRequest,
@@ -33,6 +35,7 @@ from app.schemas.refund import (
 )
 from app.schemas.staff import StaffAssign, StaffRead
 from app.schemas.ticket_type import TicketTypeCreate, TicketTypeRead, TicketTypeUpdate
+from app.services import analytics as analytics_service
 from app.services import checkin as checkin_service
 from app.services import events as event_service
 from app.services import organizer as organizer_service
@@ -400,3 +403,36 @@ async def cancel_registration(
     schedule(background, outbound)
     (read,) = await refund_service.order_reads(session, event, [order])
     return read
+
+
+# --- analytics (SRS 4.15) -------------------------------------------------------------------
+
+
+@router.get(
+    "/analytics",
+    response_model=AnalyticsRead,
+    responses=error_responses(404, 422),
+    summary="Sales, revenue, campaign and attendance figures for your events",
+    description=(
+        "All your events, or one (`event_id`), optionally one ticket type. `date_from` / "
+        "`date_to` (inclusive, the event's time zone) default to the last 30 days and apply "
+        "to order-based figures; capacity and attendance are current. DEMO money. Read-only: "
+        "never blocks checkout."
+    ),
+)
+async def analytics(
+    organizer: CurrentOrganizer,
+    session: SessionDep,
+    event_id: uuid.UUID | None = None,
+    ticket_type_id: uuid.UUID | None = None,
+    date_from: date | None = None,
+    date_to: date | None = None,
+) -> AnalyticsRead:
+    return await analytics_service.compute(
+        session,
+        organizer,
+        event_id=event_id,
+        ticket_type_id=ticket_type_id,
+        date_from=date_from,
+        date_to=date_to,
+    )

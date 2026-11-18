@@ -40,7 +40,8 @@
     "unread": "{count} unread",
     "myOrders": "My orders",
     "support": "Support",
-    "admin": "Admin"
+    "admin": "Admin",
+    "analytics": "Analytics"
   },
   "home": {
     "title": "Find events and get your tickets in seconds",
@@ -138,7 +139,8 @@
         "preview": "Preview",
         "campaigns": "Campaigns",
         "attendees": "Attendees",
-        "orders": "Orders"
+        "orders": "Orders",
+        "analytics": "Analytics"
       },
       "publish": "Publish",
       "unpublish": "Unpublish",
@@ -477,7 +479,8 @@
     "activation_not_found": "This event has no paid-sales record.",
     "report_already_open": "You've already reported this event. We're on it.",
     "report_already_reviewed": "This report has already been reviewed.",
-    "report_not_found": "Report not found."
+    "report_not_found": "Report not found.",
+    "invalid_date_range": "Pick a range of at most a year, with the end after the start."
   },
   "events": {
     "title": "Upcoming events",
@@ -773,5 +776,55 @@
       "save": "Save",
       "saved": "Saved."
     }
+  },
+  "analytics": {
+    "title": "Analytics",
+    "lead": "Figures come from BiletFlow's own orders, tickets, campaigns, refunds and check-ins. Money is DEMO: no real money moved.",
+    "event": "Event",
+    "allEvents": "All my events",
+    "from": "From",
+    "to": "To",
+    "ticketType": "Ticket type",
+    "allTypes": "All ticket types",
+    "rangeNote": "Sales figures cover orders confirmed in this range ({timezone}). Capacity and attendance are as of now.",
+    "kpi": {
+      "sold": "Tickets sold",
+      "soldOf": "{sold} of {capacity} ({percent}%)",
+      "remaining": "{count} left",
+      "gross": "Gross sales",
+      "discounts": "Discounts",
+      "refunds": "Refunds",
+      "net": "Net revenue",
+      "fees": "Processing fees",
+      "payout": "Estimated payout",
+      "checkedIn": "Checked in",
+      "checkedInOf": "{checkedIn} of {issued} ({percent}%)",
+      "absent": "{count} not checked in"
+    },
+    "overTime": "Sales over time",
+    "byType": "Sales by ticket type",
+    "metric": "Show",
+    "tickets": "Tickets",
+    "revenue": "Revenue",
+    "showTable": "Show as a table",
+    "hideTable": "Hide table",
+    "date": "Date",
+    "name": "Ticket type",
+    "capacity": "Capacity",
+    "soldNow": "Sold (all time)",
+    "inRange": "Sold in range",
+    "checked": "Checked in",
+    "campaigns": "Campaigns",
+    "noCampaigns": "No campaigns for these events.",
+    "campaign": "Campaign",
+    "code": "Code",
+    "redemptions": "Redemptions",
+    "orders": "Orders",
+    "gross": "Gross",
+    "discount": "Discount",
+    "net": "Net",
+    "noData": "No ticket types yet.",
+    "chartSummaryTickets": "{total} tickets sold over {days} days.",
+    "chartSummaryRevenue": "{total} in sales over {days} days."
   }
 }

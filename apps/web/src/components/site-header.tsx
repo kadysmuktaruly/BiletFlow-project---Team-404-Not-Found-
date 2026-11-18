@@ -52,6 +52,9 @@ export function SiteHeader() {
               <Link href="/organizer/events" className="text-gray-700 hover:text-gray-900">
                 {t("myEvents")}
               </Link>
+              <Link href="/organizer/analytics" className="text-gray-700 hover:text-gray-900">
+                {t("analytics")}
+              </Link>
               <Link href="/organizer/profile" className="text-gray-700 hover:text-gray-900">
                 {t("profile")}
               </Link>

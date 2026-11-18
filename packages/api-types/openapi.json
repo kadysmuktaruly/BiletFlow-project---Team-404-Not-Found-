@@ -791,6 +791,134 @@
         "title": "AdminUserList",
         "type": "object"
       },
+      "AnalyticsFilters": {
+        "properties": {
+          "date_from": {
+            "format": "date",
+            "title": "Date From",
+            "type": "string"
+          },
+          "date_to": {
+            "format": "date",
+            "title": "Date To",
+            "type": "string"
+          },
+          "event_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Id"
+          },
+          "ticket_type_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ticket Type Id"
+          },
+          "timezone": {
+            "title": "Timezone",
+            "type": "string"
+          }
+        },
+        "required": [
+          "event_id",
+          "ticket_type_id",
+          "date_from",
+          "date_to",
+          "timezone"
+        ],
+        "title": "AnalyticsFilters",
+        "type": "object"
+      },
+      "AnalyticsRead": {
+        "properties": {
+          "attendance": {
+            "$ref": "#/components/schemas/AttendanceFigures"
+          },
+          "by_ticket_type": {
+            "items": {
+              "$ref": "#/components/schemas/TicketTypeFigures"
+            },
+            "title": "By Ticket Type",
+            "type": "array"
+          },
+          "campaigns": {
+            "items": {
+              "$ref": "#/components/schemas/CampaignFigures"
+            },
+            "title": "Campaigns",
+            "type": "array"
+          },
+          "capacity": {
+            "$ref": "#/components/schemas/CapacityFigures"
+          },
+          "filters": {
+            "$ref": "#/components/schemas/AnalyticsFilters"
+          },
+          "revenue": {
+            "$ref": "#/components/schemas/RevenueFigures"
+          },
+          "sales_over_time": {
+            "items": {
+              "$ref": "#/components/schemas/DayPoint"
+            },
+            "title": "Sales Over Time",
+            "type": "array"
+          }
+        },
+        "required": [
+          "filters",
+          "capacity",
+          "revenue",
+          "sales_over_time",
+          "by_ticket_type",
+          "campaigns",
+          "attendance"
+        ],
+        "title": "AnalyticsRead",
+        "type": "object"
+      },
+      "AttendanceFigures": {
+        "description": "Current state. `absent` = issued tickets not (yet) checked in.",
+        "properties": {
+          "absent": {
+            "title": "Absent",
+            "type": "integer"
+          },
+          "checked_in": {
+            "title": "Checked In",
+            "type": "integer"
+          },
+          "issued": {
+            "title": "Issued",
+            "type": "integer"
+          },
+          "percent_checked_in": {
+            "title": "Percent Checked In",
+            "type": "number"
+          }
+        },
+        "required": [
+          "issued",
+          "checked_in",
+          "absent",
+          "percent_checked_in"
+        ],
+        "title": "AttendanceFigures",
+        "type": "object"
+      },
       "AttendeeInput": {
         "properties": {
           "email": {
@@ -963,6 +1091,67 @@
           "name"
         ],
         "title": "CampaignCreate",
+        "type": "object"
+      },
+      "CampaignFigures": {
+        "properties": {
+          "campaign_id": {
+            "format": "uuid",
+            "title": "Campaign Id",
+            "type": "string"
+          },
+          "code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code"
+          },
+          "discount_kzt": {
+            "title": "Discount Kzt",
+            "type": "integer"
+          },
+          "gross_kzt": {
+            "title": "Gross Kzt",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "net_kzt": {
+            "title": "Net Kzt",
+            "type": "integer"
+          },
+          "orders": {
+            "title": "Orders",
+            "type": "integer"
+          },
+          "redemptions": {
+            "title": "Redemptions",
+            "type": "integer"
+          },
+          "tickets": {
+            "title": "Tickets",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "campaign_id",
+          "name",
+          "code",
+          "redemptions",
+          "orders",
+          "tickets",
+          "gross_kzt",
+          "discount_kzt",
+          "net_kzt"
+        ],
+        "title": "CampaignFigures",
         "type": "object"
       },
       "CampaignRead": {
@@ -1330,6 +1519,35 @@
           }
         },
         "title": "CancelRegistrationRequest",
+        "type": "object"
+      },
+      "CapacityFigures": {
+        "description": "Current state, not limited to the date range.",
+        "properties": {
+          "capacity": {
+            "title": "Capacity",
+            "type": "integer"
+          },
+          "percent_sold": {
+            "title": "Percent Sold",
+            "type": "number"
+          },
+          "remaining": {
+            "title": "Remaining",
+            "type": "integer"
+          },
+          "sold": {
+            "title": "Sold",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "capacity",
+          "sold",
+          "remaining",
+          "percent_sold"
+        ],
+        "title": "CapacityFigures",
         "type": "object"
       },
       "CaseContext": {
@@ -1907,6 +2125,30 @@
           "confirm"
         ],
         "title": "ConfirmRequest",
+        "type": "object"
+      },
+      "DayPoint": {
+        "properties": {
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "revenue_kzt": {
+            "title": "Revenue Kzt",
+            "type": "integer"
+          },
+          "tickets": {
+            "title": "Tickets",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "date",
+          "tickets",
+          "revenue_kzt"
+        ],
+        "title": "DayPoint",
         "type": "object"
       },
       "DiscountType": {
@@ -4646,6 +4888,61 @@
         "title": "ResetPasswordRequest",
         "type": "object"
       },
+      "RevenueFigures": {
+        "description": "Orders confirmed in the date range (refunded ones included as refunds).",
+        "properties": {
+          "demo": {
+            "const": true,
+            "default": true,
+            "title": "Demo",
+            "type": "boolean"
+          },
+          "discounts_kzt": {
+            "title": "Discounts Kzt",
+            "type": "integer"
+          },
+          "estimated_payout_kzt": {
+            "title": "Estimated Payout Kzt",
+            "type": "integer"
+          },
+          "gross_kzt": {
+            "title": "Gross Kzt",
+            "type": "integer"
+          },
+          "net_kzt": {
+            "title": "Net Kzt",
+            "type": "integer"
+          },
+          "processing_fees_kzt": {
+            "title": "Processing Fees Kzt",
+            "type": "integer"
+          },
+          "refunds_kzt": {
+            "title": "Refunds Kzt",
+            "type": "integer"
+          },
+          "tickets_refunded": {
+            "title": "Tickets Refunded",
+            "type": "integer"
+          },
+          "tickets_sold": {
+            "title": "Tickets Sold",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "tickets_sold",
+          "tickets_refunded",
+          "gross_kzt",
+          "discounts_kzt",
+          "refunds_kzt",
+          "net_kzt",
+          "processing_fees_kzt",
+          "estimated_payout_kzt"
+        ],
+        "title": "RevenueFigures",
+        "type": "object"
+      },
       "ScanRequest": {
         "properties": {
           "device_label": {
@@ -5124,6 +5421,61 @@
           "quantity_total"
         ],
         "title": "TicketTypeCreate",
+        "type": "object"
+      },
+      "TicketTypeFigures": {
+        "properties": {
+          "capacity": {
+            "title": "Capacity",
+            "type": "integer"
+          },
+          "checked_in": {
+            "title": "Checked In",
+            "type": "integer"
+          },
+          "event_id": {
+            "format": "uuid",
+            "title": "Event Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "price_kzt": {
+            "title": "Price Kzt",
+            "type": "integer"
+          },
+          "revenue_kzt": {
+            "title": "Revenue Kzt",
+            "type": "integer"
+          },
+          "sold": {
+            "title": "Sold",
+            "type": "integer"
+          },
+          "ticket_type_id": {
+            "format": "uuid",
+            "title": "Ticket Type Id",
+            "type": "string"
+          },
+          "tickets_in_range": {
+            "title": "Tickets In Range",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "ticket_type_id",
+          "event_id",
+          "name",
+          "price_kzt",
+          "capacity",
+          "sold",
+          "tickets_in_range",
+          "revenue_kzt",
+          "checked_in"
+        ],
+        "title": "TicketTypeFigures",
         "type": "object"
       },
       "TicketTypeRead": {
@@ -9459,6 +9811,143 @@
         "summary": "Pay for an order through the DEMO payment simulation",
         "tags": [
           "orders"
+        ]
+      }
+    },
+    "/api/v1/organizer/analytics": {
+      "get": {
+        "description": "All your events, or one (`event_id`), optionally one ticket type. `date_from` / `date_to` (inclusive, the event's time zone) default to the last 30 days and apply to order-based figures; capacity and attendance are current. DEMO money. Read-only: never blocks checkout.",
+        "operationId": "analytics_api_v1_organizer_analytics_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "event_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Event Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "ticket_type_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Ticket Type Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "date_from",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date From"
+            }
+          },
+          {
+            "in": "query",
+            "name": "date_to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date To"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalyticsRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Sales, revenue, campaign and attendance figures for your events",
+        "tags": [
+          "organizer"
         ]
       }
     },
