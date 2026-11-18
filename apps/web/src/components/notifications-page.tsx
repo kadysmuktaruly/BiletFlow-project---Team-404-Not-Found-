@@ -4,7 +4,7 @@ import type { Schemas } from "@biletflow/api-types";
 import { useFormatter, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
-import { Alert, Button, PageTitle } from "@/components/ui";
+import { Alert, Button, EmptyState, PageTitle } from "@/components/ui";
 import { Link } from "@/i18n/navigation";
 import { api, unwrap } from "@/lib/api";
 import { useErrorMessage } from "@/lib/use-error-message";
@@ -65,13 +65,13 @@ export function NotificationsPage() {
         )}
       </div>
       {error ? <Alert kind="error">{errorMessage(error)}</Alert> : null}
-      {!inbox && !error && <p className="text-gray-600">{tc("loading")}</p>}
+      {!inbox && !error && <p className="text-ink-muted">{tc("loading")}</p>}
       {inbox && (
-        <p className="text-sm text-gray-700" aria-live="polite">
+        <p className="text-sm text-ink-muted" aria-live="polite">
           {t("unreadCount", { count: inbox.unread_count })}
         </p>
       )}
-      {inbox?.items.length === 0 && <p className="text-gray-600">{t("empty")}</p>}
+      {inbox?.items.length === 0 && <EmptyState>{t("empty")}</EmptyState>}
       {inbox && inbox.items.length > 0 && (
         <ul className="space-y-3">
           {inbox.items.map((n) => {
@@ -79,30 +79,30 @@ export function NotificationsPage() {
             return (
               <li
                 key={n.id}
-                className={`rounded-lg border p-4 ${unread ? "border-gray-900 bg-white" : "border-gray-200 bg-gray-50"}`}
+                className={`rounded-card border p-5 ${unread ? "border-line border-l-4 border-l-ink bg-surface" : "border-line bg-surface/60"}`}
               >
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
-                  <h2 className="font-semibold text-gray-900">
-                    {unread && <span className="mr-2 rounded bg-gray-900 px-1.5 py-0.5 text-xs font-bold text-white">{t("new")}</span>}
+                  <h2 className="font-semibold text-ink">
+                    {unread && <span className="mr-2 rounded-full bg-sun px-2 py-0.5 text-xs font-bold text-ink">{t("new")}</span>}
                     {n.subject}
                   </h2>
-                  <time dateTime={n.created_at} className="text-sm text-gray-600">
+                  <time dateTime={n.created_at} className="text-sm text-ink-muted">
                     {format.dateTime(new Date(n.created_at), { dateStyle: "medium", timeStyle: "short" })}
                   </time>
                 </div>
-                <p className="mt-1 text-gray-800">{n.body}</p>
+                <p className="mt-1 text-ink">{n.body}</p>
                 <div className="mt-2 flex flex-wrap gap-4 text-sm">
                   {n.action_path && (
                     <Link
                       href={n.action_path}
                       onClick={() => unread && void markRead(n.id)}
-                      className="font-medium text-gray-900 underline"
+                      className="font-semibold text-sky-ink underline decoration-1 underline-offset-4 hover:decoration-2"
                     >
                       {t("open")}
                     </Link>
                   )}
                   {unread && (
-                    <button type="button" onClick={() => void markRead(n.id)} className="text-gray-700 underline">
+                    <button type="button" onClick={() => void markRead(n.id)} className="text-ink-muted underline decoration-1 underline-offset-4 hover:text-ink">
                       {t("markRead")}
                     </button>
                   )}

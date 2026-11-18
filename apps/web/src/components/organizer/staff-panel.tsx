@@ -4,7 +4,7 @@ import type { Schemas } from "@biletflow/api-types";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
-import { Alert, Button, Card, Field, Select } from "@/components/ui";
+import { Alert, Button, Card, EmptyState, Field, Select } from "@/components/ui";
 import { api, unwrap } from "@/lib/api";
 import { useErrorMessage } from "@/lib/use-error-message";
 
@@ -79,17 +79,17 @@ export function StaffPanel() {
 
   return (
     <div className="space-y-6">
-      <p className="text-gray-700">{t("lead")}</p>
+      <p className="text-ink-muted">{t("lead")}</p>
       {error ? <Alert kind="error">{errorMessage(error)}</Alert> : null}
-      {staff === null && !error && <p className="text-gray-600">{tc("loading")}</p>}
-      {staff?.length === 0 && <p className="text-gray-600">{t("empty")}</p>}
+      {staff === null && !error && <p className="text-ink-muted">{tc("loading")}</p>}
+      {staff?.length === 0 && <EmptyState>{t("empty")}</EmptyState>}
       {staff && staff.length > 0 && (
-        <ul className="divide-y divide-gray-200 rounded-lg border border-gray-200 bg-white">
+        <ul className="divide-y divide-line rounded-card border border-line bg-surface">
           {staff.map((s) => (
             <li key={s.id} className="flex flex-wrap items-center gap-4 px-4 py-3">
               <div className="min-w-0 flex-1">
-                <p className="font-medium text-gray-900">{s.full_name}</p>
-                <p className="text-sm text-gray-600">
+                <p className="font-medium text-ink">{s.full_name}</p>
+                <p className="text-sm text-ink-muted">
                   {s.email} · {t(`roles.${s.role}`)}
                 </p>
               </div>
@@ -113,7 +113,7 @@ export function StaffPanel() {
             {t("add")}
           </Button>
         </form>
-        {added && <p className="mt-3 text-sm text-green-800">{t("added")}</p>}
+        {added && <p className="mt-3 text-sm text-success">{t("added")}</p>}
       </Card>
     </div>
   );

@@ -98,12 +98,12 @@ export function CasePage() {
   }
 
   if (error && !item) return <Alert kind="error">{errorMessage(error)}</Alert>;
-  if (!item) return <p className="text-gray-600">{tc("loading")}</p>;
+  if (!item) return <p className="text-ink-muted">{tc("loading")}</p>;
 
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <Link href="/support" className="text-sm text-gray-600 underline">
+        <Link href="/support" className="text-sm text-ink-muted underline decoration-1 underline-offset-4 hover:text-ink">
           {tc("back")}
         </Link>
         <div className="flex flex-wrap items-center gap-3">
@@ -113,11 +113,11 @@ export function CasePage() {
             {t(`status.${item.status}`)}
           </span>
         </div>
-        <p className="text-sm text-gray-700">
+        <p className="text-sm text-ink-muted">
           <span className="font-mono">{item.reference}</span> · {t(`kind.${item.kind}`)} · {t(`category.${item.category}`)} ·{" "}
           {contextLine(t, item.context)}
         </p>
-        <p className="text-sm text-gray-700">
+        <p className="text-sm text-ink-muted">
           {t("thread.requester")}: {item.requester.full_name} · {t("thread.assignedTo")}:{" "}
           {item.assigned_to?.full_name ?? t("thread.nobody")}
         </p>
@@ -127,36 +127,36 @@ export function CasePage() {
         {item.messages.map((m) => (
           <li
             key={m.id}
-            className={`rounded-lg border p-4 ${
+            className={`rounded-card border p-4 ${
               m.internal
-                ? "border-dashed border-amber-400 bg-amber-50"
+                ? "border-dashed border-sun bg-demo-soft"
                 : m.from_staff
-                  ? "border-gray-300 bg-white"
-                  : "border-gray-200 bg-gray-50"
+                  ? "border-line-strong bg-surface"
+                  : "border-line bg-paper"
             }`}
           >
-            <p className="text-sm font-semibold text-gray-900">
+            <p className="text-sm font-semibold text-ink">
               {m.author.full_name}
-              {m.from_staff && <span className="ml-2 font-normal text-gray-600">({t("thread.staff")})</span>}
+              {m.from_staff && <span className="ml-2 font-normal text-ink-muted">({t("thread.staff")})</span>}
               {m.internal && (
-                <span className="ml-2 rounded bg-amber-200 px-1.5 py-0.5 text-xs font-bold text-amber-950">{t("thread.internal")}</span>
+                <span className="ml-2 rounded-full bg-sun px-2 py-0.5 text-xs font-bold text-ink">{t("thread.internal")}</span>
               )}
             </p>
-            <p className="mt-1 whitespace-pre-line text-gray-800">{m.body}</p>
-            <time dateTime={m.created_at} className="mt-1 block text-xs text-gray-600">
+            <p className="mt-1 whitespace-pre-line text-ink">{m.body}</p>
+            <time dateTime={m.created_at} className="mt-1 block text-xs text-ink-muted">
               {format.dateTime(new Date(m.created_at), { dateStyle: "medium", timeStyle: "short" })}
             </time>
           </li>
         ))}
       </ol>
-      <p className="text-xs text-gray-600">{t("thread.refreshNote")}</p>
+      <p className="text-xs text-ink-muted">{t("thread.refreshNote")}</p>
 
       {actionError ? <Alert kind="error">{errorMessage(actionError)}</Alert> : null}
       <Card>
         <form onSubmit={reply} className="space-y-3">
           <TextArea name="body" label={t("thread.reply")} required maxLength={5000} rows={4} />
           {item.can_manage && (
-            <label className="flex items-center gap-2 text-sm text-gray-900">
+            <label className="flex items-center gap-2 text-sm text-ink">
               <input type="checkbox" name="internal" className="h-4 w-4" />
               {t("thread.internalNote")}
             </label>
@@ -169,7 +169,7 @@ export function CasePage() {
 
       {item.can_manage && (
         <Card>
-          <h2 className="mb-3 text-lg font-semibold text-gray-900">{t("thread.manage")}</h2>
+          <h2 className="font-display mb-3 text-xl text-ink">{t("thread.manage")}</h2>
           <form onSubmit={manage} className="grid gap-4 sm:grid-cols-2">
             <Select
               name="status"

@@ -29,7 +29,7 @@ export function TicketQr({ ticketId, ticketNumber }: { ticketId: string; ticketN
   }, [ticketId]);
 
   return (
-    <div className="flex h-48 w-48 items-center justify-center rounded-md border border-gray-200 bg-white">
+    <div className="flex h-48 w-48 items-center justify-center rounded-field bg-surface p-2 ring-1 ring-line">
       {src ? (
         // eslint-disable-next-line @next/next/no-img-element -- inline SVG data URL
         <img src={src} alt={t("qrAlt", { number: ticketNumber })} className="h-full w-full" />

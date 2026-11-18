@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { ConfirmDialog } from "@/components/confirm-dialog";
-import { Alert, Button, Card, DemoBadge, Field, PageTitle, Select } from "@/components/ui";
+import { Alert, Button, Card, DemoBadge, EmptyState, Field, PageTitle, Select, TAB_BAR, tabClass, Toast } from "@/components/ui";
 import { Link } from "@/i18n/navigation";
 import { api, unwrap } from "@/lib/api";
 import { saveDownload } from "@/lib/download";
@@ -26,14 +26,14 @@ export function AdminPortal() {
   return (
     <div className="space-y-6">
       <PageTitle>{t("title")}</PageTitle>
-      <nav aria-label={t("title")} className="border-b border-gray-200">
-        <ul className="-mb-px flex flex-wrap gap-4 text-sm">
+      <nav aria-label={t("title")} className="border-b border-line pb-3">
+        <ul className={TAB_BAR}>
           {TABS.map((name) => (
             <li key={name}>
               <Link
                 href={{ pathname: "/admin", query: { tab: name } }}
                 aria-current={tab === name ? "page" : undefined}
-                className={`inline-block border-b-2 px-1 py-2 font-medium ${tab === name ? "border-gray-900 text-gray-900" : "border-transparent text-gray-600 hover:text-gray-900"}`}
+                className={tabClass(tab === name)}
               >
                 {t(`tabs.${name}`)}
               </Link>
@@ -112,11 +112,11 @@ function Toolbar({ query, setQuery, children, exportKind }: {
 
 function Table({ head, children, empty }: { head: string[]; children: React.ReactNode; empty: boolean }) {
   const t = useTranslations("admin");
-  if (empty) return <p className="text-gray-600">{t("empty")}</p>;
+  if (empty) return <EmptyState>{t("empty")}</EmptyState>;
   return (
-    <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
-      <table className="min-w-full divide-y divide-gray-200 text-sm">
-        <thead className="bg-gray-50 text-left text-gray-700">
+    <div className="overflow-x-auto rounded-card border border-line bg-surface">
+      <table className="min-w-full divide-y divide-line text-sm">
+        <thead className="bg-paper text-left text-[0.8125rem] text-ink-muted">
           <tr>
             {head.map((h) => (
               <th key={h} scope="col" className="px-3 py-2 font-semibold">
@@ -125,7 +125,7 @@ function Table({ head, children, empty }: { head: string[]; children: React.Reac
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-100 text-gray-900">{children}</tbody>
+        <tbody className="divide-y divide-line text-ink">{children}</tbody>
       </table>
     </div>
   );
@@ -136,8 +136,8 @@ function ListState({ error, loading, truncated }: { error: unknown; loading: boo
   const tc = useTranslations("common");
   const errorMessage = useErrorMessage();
   if (error) return <Alert kind="error">{errorMessage(error)}</Alert>;
-  if (loading) return <p className="text-gray-600">{tc("loading")}</p>;
-  return truncated ? <p className="text-sm text-gray-600">{t("truncated")}</p> : null;
+  if (loading) return <p className="text-ink-muted">{tc("loading")}</p>;
+  return truncated ? <p className="text-sm text-ink-muted">{t("truncated")}</p> : null;
 }
 
 type Pending = { title: string; text: string; confirm: string; reasonRequired?: boolean; run: (reason: string | null) => Promise<unknown> };
@@ -189,9 +189,9 @@ function Overview() {
   return (
     <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
       {(Object.keys(data) as (keyof typeof data)[]).map((key) => (
-        <div key={key} className="rounded-lg border border-gray-200 bg-white p-4">
-          <dt className="text-sm text-gray-600">{t(key)}</dt>
-          <dd className="text-2xl font-bold text-gray-900">{data[key]}</dd>
+        <div key={key} className="rounded-card border border-line bg-surface p-4">
+          <dt className="text-sm text-ink-muted">{t(key)}</dt>
+          <dd className="font-display mt-1 text-3xl text-ink tabular-nums">{data[key]}</dd>
         </div>
       ))}
     </dl>
@@ -273,10 +273,10 @@ function Events() {
           {list.data.items.map((e) => (
             <tr key={e.id}>
               <th scope="row" className="px-3 py-2 text-left font-medium">
-                <Link href={`/events/${e.slug}`} className="underline">{e.title}</Link>
+                <Link href={`/events/${e.slug}`} className="font-semibold text-sky-ink underline decoration-1 underline-offset-4 hover:decoration-2">{e.title}</Link>
               </th>
-              <td className="px-3 py-2">{e.organizer_name}<span className="block text-xs text-gray-600">{e.organizer_email}</span></td>
-              <td className="px-3 py-2">{te(e.status)}{e.is_suspended && <span className="block text-xs font-semibold text-red-800">{t("suspended")}</span>}</td>
+              <td className="px-3 py-2">{e.organizer_name}<span className="block text-xs text-ink-muted">{e.organizer_email}</span></td>
+              <td className="px-3 py-2">{te(e.status)}{e.is_suspended && <span className="block text-xs font-semibold text-danger">{t("suspended")}</span>}</td>
               <td className="px-3 py-2">{format.dateTime(new Date(e.starts_at), { dateStyle: "short" })}</td>
               <td className="px-3 py-2">{e.paid_sales ? ta(e.paid_sales) : "—"}</td>
               <td className="px-3 py-2">{e.open_reports}</td>
@@ -326,7 +326,7 @@ function Orders() {
               <th scope="row" className="px-3 py-2 text-left font-mono font-medium">{o.reference}</th>
               <td className="px-3 py-2">{o.event_title}</td>
               <td className="px-3 py-2">{o.buyer_email}</td>
-              <td className="px-3 py-2">{money(o.total_kzt)}{o.refunded_kzt > 0 && <span className="block text-xs text-gray-600">−{money(o.refunded_kzt)}</span>}</td>
+              <td className="px-3 py-2">{money(o.total_kzt)}{o.refunded_kzt > 0 && <span className="block text-xs text-ink-muted">−{money(o.refunded_kzt)}</span>}</td>
               <td className="px-3 py-2">{to(o.status)}</td>
               <td className="px-3 py-2">{format.dateTime(new Date(o.created_at), { dateStyle: "short", timeStyle: "short" })}</td>
             </tr>
@@ -352,7 +352,7 @@ function Payments() {
   const statuses: Schemas["PaymentStatus"][] = ["succeeded", "failed", "refunded", "pending"];
   return (
     <div className="space-y-4">
-      <p className="flex items-center gap-2 text-sm text-gray-700"><DemoBadge label={tc("demo")} /> {t("demoNote")}</p>
+      <p className="flex items-center gap-2 text-sm text-ink-muted"><DemoBadge label={tc("demo")} /> {t("demoNote")}</p>
       <Toolbar query={query} setQuery={setQuery} exportKind="payments">
         <Select label={t("col.status")} value={status} onChange={(e) => setStatus(e.target.value as Schemas["PaymentStatus"] | "")} options={[{ value: "", label: t("all") }, ...statuses.map((s) => ({ value: s, label: t(`paymentStatus.${s}`) }))]} />
       </Toolbar>
@@ -361,7 +361,7 @@ function Payments() {
           {list.data.items.map((p) => (
             <tr key={p.id}>
               <th scope="row" className="px-3 py-2 text-left font-medium">{t(`purpose.${p.purpose}`)}</th>
-              <td className="px-3 py-2">{t(`paymentStatus.${p.status}`)}{p.failure_reason && <span className="block text-xs text-gray-600">{p.failure_reason}</span>}</td>
+              <td className="px-3 py-2">{t(`paymentStatus.${p.status}`)}{p.failure_reason && <span className="block text-xs text-ink-muted">{p.failure_reason}</span>}</td>
               <td className="px-3 py-2">{money(p.amount_kzt)}</td>
               <td className="px-3 py-2">{p.user_email}</td>
               <td className="px-3 py-2">{p.event_title ?? "—"}</td>
@@ -426,12 +426,12 @@ function Reports() {
           {list.data.items.map((r) => (
             <tr key={r.id}>
               <th scope="row" className="px-3 py-2 text-left font-medium">
-                <Link href={`/events/${r.event_slug}`} className="underline">{r.event_title}</Link>
-                {r.event_suspended && <span className="block text-xs font-semibold text-red-800">{t("suspended")}</span>}
+                <Link href={`/events/${r.event_slug}`} className="font-semibold text-sky-ink underline decoration-1 underline-offset-4 hover:decoration-2">{r.event_title}</Link>
+                {r.event_suspended && <span className="block text-xs font-semibold text-danger">{t("suspended")}</span>}
               </th>
-              <td className="px-3 py-2">{tr(r.reason)}{r.details && <span className="block text-xs text-gray-600">{r.details}</span>}</td>
+              <td className="px-3 py-2">{tr(r.reason)}{r.details && <span className="block text-xs text-ink-muted">{r.details}</span>}</td>
               <td className="px-3 py-2">{r.reporter_email}</td>
-              <td className="px-3 py-2">{t(`reportStatus.${r.status}`)}{r.review_note && <span className="block text-xs text-gray-600">{r.review_note}</span>}</td>
+              <td className="px-3 py-2">{t(`reportStatus.${r.status}`)}{r.review_note && <span className="block text-xs text-ink-muted">{r.review_note}</span>}</td>
               <td className="px-3 py-2">{format.dateTime(new Date(r.created_at), { dateStyle: "short", timeStyle: "short" })}</td>
               <td className="space-y-1 px-3 py-2">
                 {r.status === "open" && (
@@ -477,10 +477,10 @@ function Settings() {
       >
         {saveError ? <Alert kind="error">{errorMessage(saveError)}</Alert> : null}
         <Field key={data.activation_fee_kzt} name="fee" type="number" min={0} step={1} label={t("fee")} hint={t("feeHint")} defaultValue={data.activation_fee_kzt} required />
-        <p className="text-sm text-gray-600">{data.customized ? t("customized") : t("default")}</p>
+        <p className="text-sm text-ink-muted">{data.customized ? t("customized") : t("default")}</p>
         <div className="flex items-center gap-3">
           <Button type="submit">{t("save")}</Button>
-          {saved && <span className="text-sm text-green-800">{t("saved")}</span>}
+          {saved && <Toast>{t("saved")}</Toast>}
         </div>
       </form>
     </Card>

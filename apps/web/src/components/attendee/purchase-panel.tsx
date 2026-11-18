@@ -5,7 +5,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
 import type { PublicEvent } from "@/components/event-view";
-import { Alert, Button, Field } from "@/components/ui";
+import { Alert, Button, Field, INLINE_SELECT, LINK, PriceTag } from "@/components/ui";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { api, unwrap } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
@@ -133,9 +133,9 @@ export function PurchasePanel({
   }
 
   const totals = (
-    <div className="space-y-1 border-t border-gray-100 pt-3">
+    <div className="space-y-2 border-t-2 border-ink pt-4">
       {quote && quote.discount_kzt > 0 && (
-        <dl className="space-y-1 text-sm text-gray-700">
+        <dl className="space-y-1 text-sm text-ink-muted">
           <div className="flex justify-between">
             <dt>{t("purchase.subtotal")}</dt>
             <dd>{money(quote.subtotal_kzt)}</dd>
@@ -146,9 +146,9 @@ export function PurchasePanel({
           </div>
         </dl>
       )}
-      <div className="flex items-center justify-between font-semibold text-gray-900">
-        <span>{t("purchase.total")}</span>
-        <span>{total === 0 ? t("event.view.free") : money(total)}</span>
+      <div className="flex items-baseline justify-between gap-3 text-ink">
+        <span className="font-semibold">{t("purchase.total")}</span>
+        <PriceTag size="lg">{total === 0 ? t("event.view.free") : money(total)}</PriceTag>
       </div>
     </div>
   );
@@ -163,8 +163,8 @@ export function PurchasePanel({
         </Alert>
       )}
       {promoCode ? (
-        <div className="flex flex-wrap items-center justify-between gap-2 text-sm" aria-live="polite">
-          <span className="text-gray-800">
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-field bg-info-soft px-3 py-2.5 text-sm" aria-live="polite">
+          <span className="font-semibold text-ink">
             {checkingPromo
               ? t("purchase.promoChecking")
               : quote
@@ -175,7 +175,7 @@ export function PurchasePanel({
           </span>
           <button
             type="button"
-            className="font-medium text-gray-900 underline"
+            className={LINK}
             onClick={() => {
               setPromoCode(null);
               setPromoInput("");
@@ -220,13 +220,13 @@ export function PurchasePanel({
 
   if (step === "attendees") {
     return (
-      <form onSubmit={placeOrder} className="space-y-4 rounded-lg border border-gray-200 bg-white p-4">
-        <h3 className="font-semibold text-gray-900">{t("purchase.attendeesTitle")}</h3>
-        <p className="text-sm text-gray-600">{t("purchase.attendeesLead")}</p>
+      <form onSubmit={placeOrder} className="space-y-4">
+        <h3 className="text-lg font-bold text-ink">{t("purchase.attendeesTitle")}</h3>
+        <p className="text-sm text-ink-muted">{t("purchase.attendeesLead")}</p>
         {errorText && <Alert kind="error">{errorText}</Alert>}
         {slots.map((tt, i) => (
-          <fieldset key={i} className="space-y-2 border-t border-gray-100 pt-3">
-            <legend className="text-sm font-medium text-gray-900">
+          <fieldset key={i} className="space-y-3 rounded-field border border-line p-4">
+            <legend className="px-1 text-sm font-semibold text-ink">
               {t("purchase.attendee", { number: i + 1, type: tt.name })}
             </legend>
             <Field
@@ -251,7 +251,7 @@ export function PurchasePanel({
         ))}
         {totals}
         <div className="flex flex-col gap-2">
-          <Button type="submit" disabled={busy}>
+          <Button type="submit" disabled={busy} className="min-h-12 text-base">
             {total === 0 ? t("purchase.placeOrder") : t("purchase.reserve")}
           </Button>
           <Button type="button" variant="secondary" onClick={() => setStep("select")}>
@@ -264,20 +264,20 @@ export function PurchasePanel({
 
   return (
     <div className="space-y-3">
-      {event.ticket_types.length === 0 && <p className="text-gray-600">{t("event.view.noTickets")}</p>}
+      {event.ticket_types.length === 0 && <p className="text-ink-muted">{t("event.view.noTickets")}</p>}
       {event.ticket_types.map((tt) => {
         const paidBlocked = !tt.is_free && !event.paid_sales_enabled;
         const max = Math.min(tt.max_per_order, tt.quantity_available);
         const disabled = !tt.on_sale || max === 0 || paidBlocked;
         return (
-          <div key={tt.id} className="rounded-md border border-gray-200 bg-white p-3">
+          <div key={tt.id} className="border-b border-line pb-3">
             <div className="flex items-baseline justify-between gap-2">
-              <span className="font-medium text-gray-900">{tt.name}</span>
-              <span className="font-semibold text-gray-900">{tt.is_free ? t("event.view.free") : money(tt.price_kzt)}</span>
+              <span className="font-semibold text-ink">{tt.name}</span>
+              <PriceTag>{tt.is_free ? t("event.view.free") : money(tt.price_kzt)}</PriceTag>
             </div>
-            {tt.description && <p className="text-sm text-gray-600">{tt.description}</p>}
+            {tt.description && <p className="text-sm text-ink-muted">{tt.description}</p>}
             <div className="mt-2 flex items-center justify-between gap-2">
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-ink-muted">
                 {paidBlocked
                   ? t("event.view.paidNotEnabled")
                   : tt.quantity_available === 0
@@ -292,7 +292,7 @@ export function PurchasePanel({
                   value={quantities[tt.id] ?? 0}
                   disabled={disabled}
                   onChange={(e) => setQuantities((q) => ({ ...q, [tt.id]: Number(e.target.value) }))}
-                  className="rounded-md border border-gray-300 bg-white px-2 py-1 disabled:opacity-50"
+                  className={`${INLINE_SELECT} w-16`}
                 >
                   {Array.from({ length: (disabled ? 0 : max) + 1 }, (_, n) => (
                     <option key={n} value={n}>
@@ -308,7 +308,7 @@ export function PurchasePanel({
       {promoBox}
       {errorText && <Alert kind="error">{errorText}</Alert>}
       {totals}
-      <Button className="w-full" onClick={toAttendees}>
+      <Button className="min-h-12 w-full text-base" onClick={toAttendees}>
         {status === "authenticated" ? t("purchase.continue") : t("purchase.signInToContinue")}
       </Button>
     </div>

@@ -27,12 +27,12 @@ export function LocaleSwitcher() {
   }
 
   return (
-    <label className="flex items-center gap-2 text-sm text-gray-700">
+    <label className="flex shrink-0 items-center gap-2 text-sm text-ink">
       <span className="sr-only">{t("language")}</span>
       <select
         value={locale}
         onChange={(e) => void change(e.target.value as Locale)}
-        className="rounded-md border border-gray-300 bg-white px-2 py-1 text-sm"
+        className="h-9 rounded-full border border-line-strong bg-surface pl-3 pr-2 text-sm font-semibold hover:border-ink"
       >
         {routing.locales.map((l) => (
           <option key={l} value={l} lang={l}>

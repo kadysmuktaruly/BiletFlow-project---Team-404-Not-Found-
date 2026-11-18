@@ -4,7 +4,7 @@ import type { Schemas } from "@biletflow/api-types";
 import { useFormatter, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
-import { Alert, PageTitle } from "@/components/ui";
+import { Alert, Badge, EmptyState, PageTitle } from "@/components/ui";
 import { Link } from "@/i18n/navigation";
 import { api, unwrap } from "@/lib/api";
 import { useEventDateTime, useMoney } from "@/lib/format";
@@ -31,27 +31,29 @@ export function MyOrdersPage() {
   }, []);
 
   if (error) return <Alert kind="error">{errorMessage(error)}</Alert>;
-  if (!orders) return <p className="text-gray-600">{t("common.loading")}</p>;
+  if (!orders) return <p className="text-ink-muted">{t("common.loading")}</p>;
   return (
     <div className="space-y-6">
       <PageTitle>{t("orders.title")}</PageTitle>
       {orders.length === 0 && (
-        <p className="text-gray-600">
+        <EmptyState>
           {t("orders.empty")}{" "}
-          <Link href="/events" className="font-medium text-gray-900 underline">
+          <Link href="/events" className="font-semibold text-sky-ink underline decoration-1 underline-offset-4 hover:decoration-2">
             {t("tickets.findEvents")}
           </Link>
-        </p>
+        </EmptyState>
       )}
       <ul className="space-y-3">
         {orders.map((o) => (
-          <li key={o.id} className="rounded-lg border border-gray-200 bg-white p-4">
-            <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <h2 className="font-semibold text-gray-900">{o.event.title}</h2>
-              <span className="text-sm font-medium text-gray-800">{t(`order.status.${o.status}`)}</span>
+          <li key={o.id} className="rounded-card border border-line bg-surface p-5">
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <h2 className="font-display text-xl text-ink">{o.event.title}</h2>
+              <Badge tone={o.status === "confirmed" ? "success" : o.status === "awaiting_payment" ? "warning" : "neutral"}>
+                {t(`order.status.${o.status}`)}
+              </Badge>
             </div>
-            <p className="text-sm text-gray-700">{when(o.event.starts_at, o.event.timezone)}</p>
-            <p className="mt-1 text-sm text-gray-700">
+            <p className="text-sm font-semibold text-sky-ink">{when(o.event.starts_at, o.event.timezone)}</p>
+            <p className="mt-1 text-sm text-ink-muted">
               <span className="font-mono">{o.reference}</span>
               {" · "}
               {t("orders.tickets", { count: o.tickets.length || o.items.reduce((n, i) => n + i.quantity, 0) })}
@@ -59,10 +61,10 @@ export function MyOrdersPage() {
               {o.total_kzt === 0 ? t("order.free") : money(o.total_kzt)}
               {o.refunded_kzt > 0 && ` · ${t("order.refunded", { amount: money(o.refunded_kzt) })}`}
             </p>
-            <p className="text-xs text-gray-600">
+            <p className="text-xs text-ink-muted">
               {t("orders.placed", { date: format.dateTime(new Date(o.created_at), { dateStyle: "medium", timeStyle: "short" }) })}
             </p>
-            <Link href={`/orders/${o.id}`} className="mt-2 inline-block text-sm font-medium text-gray-900 underline">
+            <Link href={`/orders/${o.id}`} className="mt-2 inline-block text-sm font-semibold text-sky-ink underline decoration-1 underline-offset-4 hover:decoration-2">
               {t("orders.view")}
             </Link>
           </li>

@@ -44,7 +44,7 @@ export function TicketPdfButton({ ticketId, ticketNumber }: { ticketId: string; 
         {t("downloadPdf")}
       </Button>
       {error ? (
-        <p role="alert" className="text-sm text-red-700">
+        <p role="alert" className="text-sm text-danger">
           {errorMessage(error)}
         </p>
       ) : null}

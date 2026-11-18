@@ -4,7 +4,7 @@ import type { Schemas } from "@biletflow/api-types";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
-import { Alert, Button, Card, DemoBadge, Field, Select } from "@/components/ui";
+import { Alert, Button, Card, DemoBadge, EmptyState, Field, Select } from "@/components/ui";
 import { api, ApiError, unwrap } from "@/lib/api";
 import { saveDownload } from "@/lib/download";
 import { useMoney } from "@/lib/format";
@@ -18,11 +18,11 @@ type TicketType = Schemas["TicketTypeRead"];
 const blankToNull = (v: FormDataEntryValue | null) => (v && String(v).trim() ? String(v).trim() : null);
 
 const STATUS_STYLE: Record<Campaign["status"], string> = {
-  active: "border-green-300 bg-green-50 text-green-900",
-  scheduled: "border-blue-300 bg-blue-50 text-blue-900",
-  expired: "border-gray-300 bg-gray-100 text-gray-800",
-  exhausted: "border-amber-400 bg-amber-50 text-amber-950",
-  disabled: "border-gray-300 bg-gray-100 text-gray-800",
+  active: "border-success/30 bg-success-soft text-success",
+  scheduled: "border-sky/40 bg-info-soft text-sky-ink",
+  expired: "border-line-strong bg-paper text-ink",
+  exhausted: "border-sun bg-demo-soft text-ink",
+  disabled: "border-line-strong bg-paper text-ink",
 };
 
 /** Promo campaigns and their Campaign QR codes (SRS 4.14). Every number comes from the
@@ -158,11 +158,11 @@ export function CampaignsPanel() {
 
   return (
     <div className="space-y-6">
-      <p className="text-gray-600">{t("lead")}</p>
+      <p className="text-ink-muted">{t("lead")}</p>
       {error ? <Alert kind="error">{errorMessage(error)}</Alert> : null}
       {notice && <Alert kind="success">{notice}</Alert>}
-      {campaigns === null && !error && <p className="text-gray-600">{tc("loading")}</p>}
-      {campaigns?.length === 0 && <p className="text-gray-600">{t("empty")}</p>}
+      {campaigns === null && !error && <p className="text-ink-muted">{tc("loading")}</p>}
+      {campaigns?.length === 0 && <EmptyState>{t("empty")}</EmptyState>}
 
       {campaigns && campaigns.length > 0 && (
         <ul className="space-y-4">
@@ -171,15 +171,15 @@ export function CampaignsPanel() {
               <Card className="space-y-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="space-y-1">
-                    <h3 className="text-lg font-semibold text-gray-900">{c.name}</h3>
-                    <p className="text-gray-800">
+                    <h3 className="font-display text-xl text-ink">{c.name}</h3>
+                    <p className="text-ink">
                       <span className="font-mono text-base font-bold tracking-wider">{c.code}</span>
                       {" · "}
                       {c.discount_type === "percentage"
                         ? t("percentOff", { value: c.discount_percent ?? 0 })
                         : t("amountOff", { amount: money(c.discount_kzt ?? 0) })}
                     </p>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-ink-muted">
                       {c.ticket_type_ids.length === 0 ? t("allTypes") : c.ticket_type_ids.map(typeName).join(", ")}
                       {" · "}
                       {c.max_redemptions === null
@@ -208,17 +208,17 @@ export function CampaignsPanel() {
                         ] as const
                       ).map(([key, value]) => (
                         <div key={key}>
-                          <dt className="text-gray-600">{t(`report.${key}`)}</dt>
-                          <dd className="font-medium text-gray-900">{value}</dd>
+                          <dt className="text-ink-muted">{t(`report.${key}`)}</dt>
+                          <dd className="font-medium text-ink">{value}</dd>
                         </div>
                       ))}
                     </dl>
-                    <p className="flex items-center gap-2 text-xs text-gray-600">
+                    <p className="flex items-center gap-2 text-xs text-ink-muted">
                       <DemoBadge label={tc("demo")} /> {t("demoNote")}
                     </p>
                     <p className="break-all text-sm">
-                      <span className="text-gray-600">{t("link")}: </span>
-                      <span className="font-mono text-gray-900">{c.campaign_url}</span>
+                      <span className="text-ink-muted">{t("link")}: </span>
+                      <span className="font-mono text-ink">{c.campaign_url}</span>
                     </p>
                     <div className="flex flex-wrap gap-2">
                       <Button variant="secondary" onClick={() => void copyLink(c)}>
@@ -246,7 +246,7 @@ export function CampaignsPanel() {
 
       {!closed && (
         <Card>
-          <h2 className="mb-4 text-lg font-semibold text-gray-900">{t("add")}</h2>
+          <h2 className="font-display mb-4 text-xl text-ink">{t("add")}</h2>
           <form onSubmit={create} className="grid gap-4 sm:grid-cols-2" noValidate>
             {formError ? (
               <div className="sm:col-span-2">
@@ -295,11 +295,11 @@ export function CampaignsPanel() {
             <Field name="description" label={`${t("description")} (${tc("optional")})`} maxLength={2000} />
             {types.length > 0 && (
               <fieldset className="sm:col-span-2">
-                <legend className="mb-1 text-sm font-medium text-gray-900">{t("eligibleTypes")}</legend>
-                <p className="mb-2 text-sm text-gray-600">{t("eligibleHint")}</p>
+                <legend className="mb-1 text-sm font-medium text-ink">{t("eligibleTypes")}</legend>
+                <p className="mb-2 text-sm text-ink-muted">{t("eligibleHint")}</p>
                 <div className="flex flex-wrap gap-4">
                   {types.map((tt) => (
-                    <label key={tt.id} className="flex items-center gap-2 text-sm text-gray-900">
+                    <label key={tt.id} className="flex items-center gap-2 text-sm text-ink">
                       <input type="checkbox" name="ticket_type_ids" value={tt.id} className="h-4 w-4" />
                       {tt.name}
                     </label>
@@ -353,13 +353,13 @@ function CampaignQr({
   }, [eventId, campaign.id, lang]);
   return (
     <figure className="w-40">
-      <div className="flex aspect-[3/4] items-center justify-center rounded-md border border-dashed border-violet-500 bg-white">
+      <div className="flex aspect-[3/4] items-center justify-center rounded-field border border-dashed border-promo bg-surface">
         {src ? (
           // eslint-disable-next-line @next/next/no-img-element -- inline SVG data URL
           <img src={src} alt={alt} className="h-full w-full object-contain" />
         ) : null}
       </div>
-      <figcaption className="mt-1 text-center text-xs font-semibold uppercase tracking-wide text-violet-800">
+      <figcaption className="mt-1 text-center text-xs font-semibold uppercase tracking-wide text-promo">
         {label}
       </figcaption>
     </figure>

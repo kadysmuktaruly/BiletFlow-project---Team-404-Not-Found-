@@ -4,7 +4,7 @@ import type { Schemas } from "@biletflow/api-types";
 import { useFormatter, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
-import { Alert, Field, Select } from "@/components/ui";
+import { Alert, EmptyState, Field, Select } from "@/components/ui";
 import { api, unwrap } from "@/lib/api";
 import { useErrorMessage } from "@/lib/use-error-message";
 
@@ -52,7 +52,7 @@ export function AttendeesPanel() {
   const list = result?.list;
   return (
     <div className="space-y-4">
-      <p className="text-gray-600">{t("lead")}</p>
+      <p className="text-ink-muted">{t("lead")}</p>
       <div className="grid gap-3 sm:grid-cols-[1fr_12rem]">
         <Field
           type="search"
@@ -70,18 +70,18 @@ export function AttendeesPanel() {
         />
       </div>
       {result?.error ? <Alert kind="error">{errorMessage(result.error)}</Alert> : null}
-      {!result && <p className="text-gray-600">{tc("loading")}</p>}
+      {!result && <p className="text-ink-muted">{tc("loading")}</p>}
       {list && (
         <>
-          <p className="text-sm font-medium text-gray-900" aria-live="polite">
+          <p className="text-sm font-medium text-ink" aria-live="polite">
             {t("counts", { registered: list.stats.registered, checkedIn: list.stats.checked_in })}
           </p>
           {list.attendees.length === 0 ? (
-            <p className="text-gray-600">{t("empty")}</p>
+            <EmptyState>{t("empty")}</EmptyState>
           ) : (
-            <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
-              <table className="min-w-full divide-y divide-gray-200 text-sm">
-                <thead className="bg-gray-50 text-left text-gray-700">
+            <div className="overflow-x-auto rounded-card border border-line bg-surface">
+              <table className="min-w-full divide-y divide-line text-sm">
+                <thead className="bg-paper text-left text-[0.8125rem] text-ink-muted">
                   <tr>
                     {(["name", "email", "type", "number", "order", "status", "checkedIn"] as const).map((col) => (
                       <th key={col} scope="col" className="px-3 py-2 font-semibold">
@@ -90,7 +90,7 @@ export function AttendeesPanel() {
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100 text-gray-900">
+                <tbody className="divide-y divide-line text-ink">
                   {list.attendees.map((a) => (
                     <tr key={a.id}>
                       <th scope="row" className="px-3 py-2 text-left font-medium">
@@ -116,7 +116,7 @@ export function AttendeesPanel() {
               </table>
             </div>
           )}
-          {list.truncated && <p className="text-sm text-gray-600">{t("truncated")}</p>}
+          {list.truncated && <p className="text-sm text-ink-muted">{t("truncated")}</p>}
         </>
       )}
     </div>

@@ -64,7 +64,7 @@ export function ActivationPanel() {
   }
 
   if (!state) {
-    return error ? <Alert kind="error">{errorMessage(error)}</Alert> : <p className="text-gray-600">{tc("loading")}</p>;
+    return error ? <Alert kind="error">{errorMessage(error)}</Alert> : <p className="text-ink-muted">{tc("loading")}</p>;
   }
 
   const confirm = { confirm: true as const };
@@ -73,7 +73,7 @@ export function ActivationPanel() {
       key: "paidTicket",
       done: state.has_paid_ticket_type,
       action: (
-        <Link href={`/organizer/events/${event.id}/tickets`} className="text-sm font-medium text-gray-900 underline">
+        <Link href={`/organizer/events/${event.id}/tickets`} className="text-sm font-semibold text-sky-ink underline decoration-1 underline-offset-4 hover:decoration-2">
           {t("goToTickets")}
         </Link>
       ),
@@ -109,7 +109,7 @@ export function ActivationPanel() {
           >
             {t("connect")}
           </Button>
-          <Link href="/organizer/profile" className="text-sm text-gray-700 underline">
+          <Link href="/organizer/profile" className="text-sm text-ink-muted underline decoration-1 underline-offset-4 hover:text-ink">
             {t("goToProfile")}
           </Link>
         </div>
@@ -149,11 +149,11 @@ export function ActivationPanel() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center gap-3">
-        <p className="text-gray-700">{t("lead")}</p>
+        <p className="text-ink-muted">{t("lead")}</p>
         <DemoBadge label={tc("demo")} />
       </div>
       <Alert kind="demo">{t("demoNotice")}</Alert>
-      <p className="font-medium text-gray-900">{t("statusLabel", { status: t(`status.${state.status}`) })}</p>
+      <p className="font-medium text-ink">{t("statusLabel", { status: t(`status.${state.status}`) })}</p>
       {state.paid_sales_enabled && <Alert kind="success">{t("enabled")}</Alert>}
       {state.status === "suspended" && <Alert kind="error">{t("suspended")}</Alert>}
       {error ? <Alert kind="error">{errorMessage(error)}</Alert> : null}
@@ -163,15 +163,15 @@ export function ActivationPanel() {
           <li key={step.key}>
             <Card className="flex flex-wrap items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
-                <p className="font-semibold text-gray-900">
+                <p className="font-semibold text-ink">
                   {i + 1}. {t(`steps.${step.key}.title`)}
                 </p>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-ink-muted">
                   {t(`steps.${step.key}.text`, { amount: money(state.activation_fee_kzt) })}
                 </p>
               </div>
               {step.done ? (
-                <span className="rounded-full bg-green-100 px-3 py-1 text-sm font-semibold text-green-900">
+                <span className="rounded-full bg-success-soft px-3 py-1 text-sm font-semibold text-success">
                   ✓ {t("done")}
                 </span>
               ) : (

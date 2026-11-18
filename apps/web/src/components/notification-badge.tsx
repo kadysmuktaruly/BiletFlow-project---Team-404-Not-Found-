@@ -15,7 +15,7 @@ export function notifyUnreadChanged(): void {
 }
 
 /** "Notifications" link with the unread count, refreshed by polling (no sockets needed). */
-export function NotificationLink() {
+export function NotificationLink({ className = "" }: { className?: string }) {
   const t = useTranslations("nav");
   const [count, setCount] = useState(0);
 
@@ -36,10 +36,10 @@ export function NotificationLink() {
   }, []);
 
   return (
-    <Link href="/notifications" className="inline-flex items-center gap-1.5 text-gray-700 hover:text-gray-900">
+    <Link href="/notifications" className={className}>
       {t("notifications")}
       {count > 0 && (
-        <span className="rounded-full bg-red-700 px-1.5 py-0.5 text-xs font-bold leading-none text-white">
+        <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-sun px-1.5 py-0.5 text-xs font-extrabold leading-none text-ink">
           <span aria-hidden="true">{count}</span>
           <span className="sr-only">{t("unread", { count })}</span>
         </span>

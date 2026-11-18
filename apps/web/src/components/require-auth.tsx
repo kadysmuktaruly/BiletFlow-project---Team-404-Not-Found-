@@ -28,7 +28,7 @@ export function RequireAuth({
   }, [status, router, pathname]);
 
   if (status !== "authenticated" || !user) {
-    return <p className="text-gray-600">{t("common.loading")}</p>;
+    return <p className="text-ink-muted">{t("common.loading")}</p>;
   }
   if (role && user.role !== role) {
     return <Alert kind="error">{t("auth.required.organizer")}</Alert>;

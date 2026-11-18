@@ -7,7 +7,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 
 import { EventView, type PublicEvent } from "@/components/event-view";
-import { Alert } from "@/components/ui";
+import { Alert, LINK } from "@/components/ui";
 import { api, unwrap } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { useErrorMessage } from "@/lib/use-error-message";
@@ -37,7 +37,7 @@ export function EventPage() {
   }, [slug, status]);
 
   if (error) return <Alert kind="error">{errorMessage(error)}</Alert>;
-  if (!event) return <p className="text-gray-600">{t("loading")}</p>;
+  if (!event) return <p className="text-ink-muted">{t("loading")}</p>;
   return (
     <EventView
       event={event}
@@ -45,10 +45,10 @@ export function EventPage() {
         <>
           <PurchasePanel event={event} initialPromo={promo} campaignRejection={promoRejected} />
           {status === "authenticated" && (
-            <div className="mt-3 space-y-2">
+            <div className="space-y-2 border-t border-line pt-4">
               <Link
                 href={{ pathname: "/support/new", query: { event: event.id } }}
-                className="inline-block text-sm font-medium text-gray-900 underline"
+                className={`inline-block text-sm ${LINK}`}
               >
                 {ts("getHelp")}
               </Link>

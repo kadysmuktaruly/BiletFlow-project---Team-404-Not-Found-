@@ -4,7 +4,7 @@ import type { Schemas } from "@biletflow/api-types";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
-import { Alert, Button, Card, Field, Select, TextArea } from "@/components/ui";
+import { Alert, Button, Card, Field, Select, TextArea, Toast } from "@/components/ui";
 import { ApiError } from "@/lib/api";
 import { useErrorMessage } from "@/lib/use-error-message";
 
@@ -87,7 +87,7 @@ export function EventForm({
     <form onSubmit={handle} className="space-y-6" noValidate>
       {error ? <Alert kind="error">{errorMessage(error)}</Alert> : null}
       <Card className="space-y-4">
-        <h2 className="text-lg font-semibold text-gray-900">{t("details")}</h2>
+        <h2 className="font-display text-xl text-ink">{t("details")}</h2>
         <Field
           name="title"
           label={t("title")}
@@ -121,7 +121,7 @@ export function EventForm({
       </Card>
 
       <Card className="space-y-4">
-        <h2 className="text-lg font-semibold text-gray-900">{t("venue")}</h2>
+        <h2 className="font-display text-xl text-ink">{t("venue")}</h2>
         <Field
           name="venue_name"
           label={t("venueName")}
@@ -148,7 +148,7 @@ export function EventForm({
       </Card>
 
       <Card className="space-y-4">
-        <h2 className="text-lg font-semibold text-gray-900">{t("when")}</h2>
+        <h2 className="font-display text-xl text-ink">{t("when")}</h2>
         <div className="grid gap-4 sm:grid-cols-3">
           <Field
             name="starts_at"
@@ -177,7 +177,7 @@ export function EventForm({
       </Card>
 
       <Card className="space-y-4">
-        <h2 className="text-lg font-semibold text-gray-900">{t("settings")}</h2>
+        <h2 className="font-display text-xl text-ink">{t("settings")}</h2>
         <Select
           name="visibility"
           label={t("visibility")}
@@ -220,7 +220,7 @@ export function EventForm({
             maxLength={2000}
             defaultValue={event?.refund_policy ?? ""}
           />
-          <p className="mt-1 text-sm text-gray-600">{t("refundPolicyHint")}</p>
+          <p className="mt-1 text-sm text-ink-muted">{t("refundPolicyHint")}</p>
         </div>
       </Card>
 
@@ -228,7 +228,7 @@ export function EventForm({
         <Button type="submit" disabled={busy}>
           {busy ? tc("saving") : submitLabel}
         </Button>
-        {saved && <span className="text-sm text-green-800">{tc("saved")}</span>}
+        {saved && <Toast>{tc("saved")}</Toast>}
       </div>
     </form>
   );

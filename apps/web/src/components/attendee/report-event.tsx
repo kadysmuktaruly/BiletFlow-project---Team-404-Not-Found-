@@ -22,14 +22,14 @@ export function ReportEvent({ slug }: { slug: string }) {
   if (sent) return <Alert kind="success">{t("sent")}</Alert>;
   if (!open) {
     return (
-      <button type="button" onClick={() => setOpen(true)} className="text-sm text-gray-700 underline">
+      <button type="button" onClick={() => setOpen(true)} className="text-sm text-ink-muted underline decoration-1 underline-offset-4 hover:text-ink">
         {t("open")}
       </button>
     );
   }
   return (
     <form
-      className="space-y-3 rounded-lg border border-gray-200 bg-white p-4"
+      className="space-y-3 rounded-card border border-line bg-surface p-4"
       aria-labelledby="report-title"
       onSubmit={async (e) => {
         e.preventDefault();
@@ -54,10 +54,10 @@ export function ReportEvent({ slug }: { slug: string }) {
         }
       }}
     >
-      <h2 id="report-title" className="font-semibold text-gray-900">
+      <h2 id="report-title" className="font-semibold text-ink">
         {t("title")}
       </h2>
-      <p className="text-sm text-gray-700">{t("lead")}</p>
+      <p className="text-sm text-ink-muted">{t("lead")}</p>
       {error ? <Alert kind="error">{errorMessage(error)}</Alert> : null}
       <Select name="reason" label={t("reason")} options={REASONS.map((r) => ({ value: r, label: t(`reasons.${r}`) }))} />
       <TextArea name="details" label={t("details")} rows={3} maxLength={2000} />

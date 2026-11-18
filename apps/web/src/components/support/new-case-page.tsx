@@ -71,7 +71,7 @@ export function NewCasePage() {
       <Card>
         <form onSubmit={submit} className="space-y-4" noValidate>
           {error ? <Alert kind="error">{errorMessage(error)}</Alert> : null}
-          <p className="text-sm text-gray-700">
+          <p className="text-sm text-ink-muted">
             <span className="font-medium">{t("form.context")}:</span>{" "}
             {about ?? (kind === "organizer" ? t("kind.organizer") : t("context.none"))}
           </p>
@@ -89,7 +89,7 @@ export function NewCasePage() {
             error={fields.subject && errorMessage(error)}
           />
           <TextArea name="message" label={t("form.message")} required maxLength={5000} rows={6} />
-          <p className="text-sm text-gray-600">{t("form.noAttachments")}</p>
+          <p className="text-sm text-ink-muted">{t("form.noAttachments")}</p>
           <Button type="submit" disabled={busy}>
             {t("form.submit")}
           </Button>
