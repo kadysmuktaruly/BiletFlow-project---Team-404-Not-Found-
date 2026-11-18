@@ -111,6 +111,33 @@ and pytest against a Postgres 16 service.
   relies on
 - [`docs/plan-reports-3-4.md`](docs/plan-reports-3-4.md): build plan for Reports 3 and 4
 
+## API
+
+The API is served under `/api/v1`. Interactive OpenAPI docs are at
+http://localhost:8000/docs when the stack is running. Every error uses one shape:
+`{"error": {"code", "message", "details"}}`, where `code` is a stable identifier that
+clients translate.
+
+### Accounts and sign-in (SRS 4.1)
+
+| Endpoint | Purpose |
+|---|---|
+| `POST /auth/register` | Create an `attendee` or `organizer` account and email a verification link. `platform_admin` cannot be self-assigned. |
+| `POST /auth/verify-email` | Confirm the email with the token from that link. |
+| `POST /auth/resend-verification` | Send the link again. |
+| `POST /auth/login` | Returns a 15-minute access token. Browsers get the refresh token as an httpOnly `bf_refresh` cookie; clients sending `X-Client: scanner` get it in the body. |
+| `POST /auth/refresh`, `POST /auth/logout` | Rotate the session, or clear the cookie. |
+| `POST /auth/forgot-password`, `POST /auth/reset-password` | Email a single-use reset link, then set a new password. Resetting signs out every other session. |
+| `GET /me`, `PATCH /me` | The signed-in user. Name, phone and language can be changed; role and email cannot. |
+
+Register, resend-verification, forgot-password and login never reveal whether an email is
+registered. Passwords are hashed with Argon2. In development every email lands in Mailpit at
+http://localhost:8025.
+
+Role checks are reusable dependencies in `app/deps.py` (`CurrentUser`, `require_role`,
+`OrganizerUser`, `PlatformAdminUser`). Being an Event Admin is a per-event
+`StaffAssignment`, not a platform role.
+
 ## Data model conventions
 
 - **UUID primary keys** everywhere, generated both in Python and by the database (`gen_random_uuid()`).

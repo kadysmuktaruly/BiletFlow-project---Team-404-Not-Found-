@@ -55,6 +55,7 @@ from app.config import get_settings  # noqa: E402
 from app.db import SessionLocal, engine  # noqa: E402
 from app.main import create_app  # noqa: E402
 from app.models import Base  # noqa: E402
+from app.services.mail import OutgoingEmail, outbox  # noqa: E402
 
 get_settings.cache_clear()
 assert get_settings().database_url.rsplit("/", 1)[-1].endswith("_test")
@@ -96,7 +97,14 @@ async def db() -> AsyncIterator[None]:
     """Empty tables. Request this (or `client`) in any test that touches the database."""
     async with engine.begin() as conn:
         await conn.execute(text(f"TRUNCATE {_TABLES} RESTART IDENTITY CASCADE"))
+    outbox().clear()
     yield
+
+
+@pytest.fixture
+def mail(db: None) -> list[OutgoingEmail]:
+    """Emails the app has "sent" during this test (EMAIL_BACKEND=memory), oldest first."""
+    return outbox()
 
 
 @pytest.fixture

@@ -2,6 +2,7 @@
 
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 
 from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -45,6 +46,9 @@ class Settings(BaseSettings):
     smtp_host: str = "localhost"
     smtp_port: int = 1025
     smtp_from: str = "BiletFlow <no-reply@biletflow.local>"
+    # "smtp" sends through SMTP_HOST (Mailpit in development). "memory" keeps messages in an
+    # in-process outbox instead; the test suite uses it to assert on what would be sent.
+    email_backend: Literal["smtp", "memory"] = "smtp"
 
     # SRS 4.3.1: a seat hold expires and releases the seat when checkout is abandoned.
     seat_hold_ttl_seconds: int = 600
