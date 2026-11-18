@@ -5,14 +5,17 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { Alert, Button, Card, Field, PageTitle } from "@/components/ui";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { api, unwrap } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 import { useErrorMessage } from "@/lib/use-error-message";
 
 export function VerifyEmailForm() {
   const t = useTranslations("auth");
   const tn = useTranslations("nav");
   const errorMessage = useErrorMessage();
+  const { startSession } = useAuth();
+  const router = useRouter();
   const token = useSearchParams().get("token");
   const [state, setState] = useState<"working" | "done" | "failed">(token ? "working" : "failed");
   const [error, setError] = useState<unknown>(null);
@@ -23,12 +26,17 @@ export function VerifyEmailForm() {
     if (!token || started.current) return;
     started.current = true; // React strict mode runs effects twice in development
     unwrap(api.POST("/api/v1/auth/verify-email", { body: { token } }))
-      .then(() => setState("done"))
+      .then(({ session }) => {
+        // Only the first confirmation signs in; an already-used link just says "confirmed".
+        if (!session) return setState("done");
+        startSession(session);
+        router.replace(session.user.role === "organizer" ? "/organizer/events" : "/");
+      })
       .catch((err: unknown) => {
         setError(err);
         setState("failed");
       });
-  }, [token]);
+  }, [token, startSession, router]);
 
   async function resend(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();

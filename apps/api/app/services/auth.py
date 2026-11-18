@@ -96,6 +96,10 @@ async def authenticate(session: AsyncSession, email: str, password: str) -> User
         raise AppError(401, "invalid_credentials", "The email or password is incorrect.")
     if user.is_suspended:
         raise AppError(403, "account_suspended", "This account has been suspended.")
+    # Checked only after the password matched, so it never reveals whether an email is
+    # registered.
+    if not user.is_email_verified:
+        raise AppError(403, "email_not_confirmed", "Confirm your email address before signing in.")
     return user
 
 
@@ -114,23 +118,30 @@ async def user_from_refresh_token(session: AsyncSession, token: str) -> User:
     if (
         user is None
         or user.is_suspended
+        or not user.is_email_verified
         or claims.get("pwd") != password_fingerprint(user.hashed_password)
     ):
         raise AppError(401, "unauthorized", "The session has ended. Please sign in again.")
     return user
 
 
-async def verify_email(session: AsyncSession, token: str) -> User:
+async def verify_email(session: AsyncSession, token: str) -> tuple[User, bool]:
+    """Confirm the address. Returns the user and whether this call confirmed it.
+
+    Only the first confirmation signs the user in, so an old link from the inbox can't be
+    used as a standing sign-in link.
+    """
     claims = decode_token(token, TokenType.VERIFY_EMAIL)
     user = await session.get(User, uuid.UUID(claims["sub"]))
     # The link is bound to the address it was sent to.
     if user is None or claims.get("email") != user.email.lower():
         raise AppError(400, "invalid_token", "The token is invalid.")
-    if not user.is_email_verified:
-        user.is_email_verified = True
-        user.email_verified_at = datetime.now(UTC)
-        await session.commit()
-    return user
+    if user.is_email_verified:
+        return user, False
+    user.is_email_verified = True
+    user.email_verified_at = datetime.now(UTC)
+    await session.commit()
+    return user, True
 
 
 async def resend_verification(session: AsyncSession, email: str) -> Outbound:

@@ -12,6 +12,8 @@ type AuthState = {
   status: "loading" | "authenticated" | "anonymous";
   user: User | null;
   login: (email: string, password: string) => Promise<User>;
+  /** Start a session the API already issued, e.g. on first email confirmation. */
+  startSession: (session: Session) => void;
   logout: () => Promise<void>;
   setUser: (user: User) => void;
 };
@@ -70,8 +72,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [end]);
 
   const value = useMemo(
-    () => ({ status, user, login, logout, setUser }),
-    [status, user, login, logout],
+    () => ({ status, user, login, startSession: start, logout, setUser }),
+    [status, user, login, start, logout],
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

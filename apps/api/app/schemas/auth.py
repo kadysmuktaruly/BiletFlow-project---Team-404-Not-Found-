@@ -54,6 +54,13 @@ class TokenResponse(BaseModel):
     refresh_token: str | None = None
 
 
+class VerifyEmailResponse(BaseModel):
+    user: UserRead
+    # Set only when this request confirmed the address: the user is signed in. A link that was
+    # already used returns null here, and the user signs in with their password.
+    session: TokenResponse | None = None
+
+
 class AcceptedResponse(BaseModel):
     """Returned by register, resend-verification and forgot-password whatever the email,
     so the response never reveals whether an account exists."""

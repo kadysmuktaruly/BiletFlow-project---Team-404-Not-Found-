@@ -435,7 +435,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Confirm an email address with the token from the verification email */
+        /**
+         * Confirm an email address with the token from the verification email
+         * @description The first confirmation also signs the user in (`session`, plus the refresh cookie). Opening the same link again only confirms; `session` is then null.
+         */
         post: operations["verify_email_api_v1_auth_verify_email_post"];
         delete?: never;
         options?: never;
@@ -3768,6 +3771,11 @@ export interface components {
             /** Token */
             token: string;
         };
+        /** VerifyEmailResponse */
+        VerifyEmailResponse: {
+            session?: components["schemas"]["TokenResponse"] | null;
+            user: components["schemas"]["UserRead"];
+        };
     };
     responses: never;
     parameters: never;
@@ -3905,6 +3913,7 @@ export type SchemaUserUpdate = components['schemas']['UserUpdate'];
 export type SchemaVenueInput = components['schemas']['VenueInput'];
 export type SchemaVenueRead = components['schemas']['VenueRead'];
 export type SchemaVerifyEmailRequest = components['schemas']['VerifyEmailRequest'];
+export type SchemaVerifyEmailResponse = components['schemas']['VerifyEmailResponse'];
 export type $defs = Record<string, never>;
 export interface operations {
     activations_api_v1_admin_activations_get: {
@@ -5128,7 +5137,9 @@ export interface operations {
     verify_email_api_v1_auth_verify_email_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "x-client"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -5144,7 +5155,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UserRead"];
+                    "application/json": components["schemas"]["VerifyEmailResponse"];
                 };
             };
             /** @description Bad Request */

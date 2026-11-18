@@ -87,7 +87,8 @@ const ROUTES: Route[] = [
       await expect(heading(page, en.auth.register.title)).toBeVisible();
       await expect(page.getByLabel(en.auth.fullName)).toBeVisible();
       await expect(page.getByLabel(en.auth.email)).toBeVisible();
-      await expect(page.getByLabel(en.auth.password)).toBeVisible();
+      await expect(page.getByLabel(en.auth.password, { exact: true })).toBeVisible();
+      await expect(page.getByLabel(en.auth.confirmPassword)).toBeVisible();
       await expect(page.getByRole("button", { name: en.auth.register.submit })).toBeVisible();
     },
   },
@@ -387,11 +388,46 @@ test("register: the header's Create account link shows a fresh form after signin
   await page.goto("/en/register");
   await page.getByLabel(en.auth.fullName).fill("Smoke Register");
   await page.getByLabel(en.auth.email).fill(`smoke-register-${Date.now()}@example.com`);
-  await page.getByLabel(en.auth.password).fill(PASSWORD);
+  await page.getByLabel(en.auth.password, { exact: true }).fill(PASSWORD);
+  await page.getByLabel(en.auth.confirmPassword).fill(PASSWORD);
   await page.getByRole("button", { name: en.auth.register.submit }).click();
   await expect(heading(page, en.auth.register.doneTitle)).toBeVisible();
 
   await page.getByRole("link", { name: en.nav.register }).click();
   await expect(heading(page, en.auth.register.title)).toBeVisible();
   await expect(page.getByRole("button", { name: en.auth.register.submit })).toBeVisible();
+});
+
+test("register: passwords must match, and Show password reveals both", async ({ page }) => {
+  await page.goto("/en/register");
+  const password = page.getByLabel(en.auth.password, { exact: true });
+  const confirm = page.getByLabel(en.auth.confirmPassword);
+  await expect(password).toHaveAttribute("type", "password");
+  await page.getByLabel(en.auth.showPassword).check();
+  await expect(password).toHaveAttribute("type", "text");
+  await expect(confirm).toHaveAttribute("type", "text");
+
+  await page.getByLabel(en.auth.fullName).fill("Smoke Mismatch");
+  await page.getByLabel(en.auth.email).fill(`smoke-mismatch-${Date.now()}@example.com`);
+  await password.fill(PASSWORD);
+  await confirm.fill(`${PASSWORD}-typo`);
+  await page.getByRole("button", { name: en.auth.register.submit }).click();
+  await expect(page.getByText(en.auth.passwordMismatch)).toBeVisible();
+  await expect(heading(page, en.auth.register.title)).toBeVisible();
+});
+
+test("login: an unconfirmed account can't sign in and can ask for a new link", async ({ page, request }) => {
+  const email = `smoke-unconfirmed-${Date.now()}@example.com`;
+  const created = await request.post(`${API}/api/v1/auth/register`, {
+    data: { email, password: PASSWORD, full_name: "Smoke Unconfirmed", role: "attendee", locale: "en" },
+  });
+  expect(created.status()).toBe(202);
+
+  await page.goto("/en/login");
+  await page.getByLabel(en.auth.email).fill(email);
+  await page.getByLabel(en.auth.password).fill(PASSWORD);
+  await page.getByRole("button", { name: en.auth.login.submit }).click();
+  await expect(page.getByText(en.errors.email_not_confirmed)).toBeVisible();
+  await page.getByRole("button", { name: en.auth.verify.resend }).click();
+  await expect(page.getByText(en.auth.verify.resent)).toBeVisible();
 });
