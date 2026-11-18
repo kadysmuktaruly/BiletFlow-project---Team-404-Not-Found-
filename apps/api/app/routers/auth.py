@@ -20,7 +20,7 @@ from app.schemas.auth import (
 )
 from app.schemas.user import UserRead
 from app.services import auth as auth_service
-from app.services.mail import Outbound, deliver
+from app.services.mail import schedule
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -30,11 +30,6 @@ SCANNER_CLIENT = "scanner"
 # Scoped to /api/v1/auth, so the refresh token only travels to refresh and logout.
 REFRESH_COOKIE = "bf_refresh"
 COOKIE_PATH = "/api/v1/auth"
-
-
-def _schedule(background: BackgroundTasks, outbound: Outbound) -> None:
-    for msg, notification_id in outbound:
-        background.add_task(deliver, msg, notification_id)
 
 
 def _session_response(user: User, response: Response, x_client: str | None) -> TokenResponse:
@@ -70,7 +65,7 @@ def _session_response(user: User, response: Response, x_client: str | None) -> T
 async def register(
     data: RegisterRequest, session: SessionDep, background: BackgroundTasks
 ) -> AcceptedResponse:
-    _schedule(background, await auth_service.register(session, data))
+    schedule(background, await auth_service.register(session, data))
     return AcceptedResponse()
 
 
@@ -93,7 +88,7 @@ async def verify_email(data: VerifyEmailRequest, session: SessionDep) -> User:
 async def resend_verification(
     data: EmailRequest, session: SessionDep, background: BackgroundTasks
 ) -> AcceptedResponse:
-    _schedule(background, await auth_service.resend_verification(session, data.email))
+    schedule(background, await auth_service.resend_verification(session, data.email))
     return AcceptedResponse()
 
 
@@ -159,7 +154,7 @@ async def logout(response: Response) -> None:
 async def forgot_password(
     data: EmailRequest, session: SessionDep, background: BackgroundTasks
 ) -> AcceptedResponse:
-    _schedule(background, await auth_service.forgot_password(session, data.email))
+    schedule(background, await auth_service.forgot_password(session, data.email))
     return AcceptedResponse()
 
 

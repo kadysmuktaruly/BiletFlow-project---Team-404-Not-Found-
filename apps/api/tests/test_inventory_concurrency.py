@@ -14,7 +14,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.main import API_PREFIX
 from app.models import Order, Ticket, TicketType
-from tests.factories import bearer, make_published_event, make_ticket_type, make_user
+from tests.factories import (
+    bearer,
+    enable_paid_sales,
+    make_published_event,
+    make_ticket_type,
+    make_user,
+)
 
 CONCURRENT_BUYERS = 10
 
@@ -25,6 +31,7 @@ async def test_last_ticket_sold_once_under_concurrency(
 ) -> None:
     event = await make_published_event(session)
     last = await make_ticket_type(session, event, quantity_total=1, price_kzt=price_kzt)
+    await enable_paid_sales(session, event)
     buyers = [await make_user(session) for _ in range(CONCURRENT_BUYERS)]
     await session.commit()
 

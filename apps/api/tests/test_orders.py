@@ -14,7 +14,13 @@ from app.main import API_PREFIX
 from app.models import Event, Order, Ticket, TicketType, User
 from app.services.orders import sweep_expired
 from app.tickets.tokens import parse_admission_token
-from tests.factories import bearer, make_published_event, make_ticket_type, make_user
+from tests.factories import (
+    bearer,
+    enable_paid_sales,
+    make_published_event,
+    make_ticket_type,
+    make_user,
+)
 
 ORDERS = f"{API_PREFIX}/orders"
 
@@ -75,6 +81,7 @@ async def test_paid_order_has_no_tickets_until_paid(
 ) -> None:
     event = await make_published_event(session)
     paid = await make_ticket_type(session, event, price_kzt=7500, quantity_total=10)
+    await enable_paid_sales(session, event)
     buyer = await _buyer(session)
     await session.commit()
 
@@ -99,6 +106,7 @@ async def test_client_cannot_set_prices_or_totals(
 ) -> None:
     event = await make_published_event(session)
     paid = await make_ticket_type(session, event, price_kzt=7500)
+    await enable_paid_sales(session, event)
     buyer = await _buyer(session)
     await session.commit()
     response = await client.post(
@@ -119,6 +127,7 @@ async def test_expired_reservation_releases_stock(
 ) -> None:
     event = await make_published_event(session)
     last = await make_ticket_type(session, event, price_kzt=5000, quantity_total=1)
+    await enable_paid_sales(session, event)
     first, second = await _buyer(session), await _buyer(session)
     await session.commit()
 
@@ -146,6 +155,7 @@ async def test_background_sweep_expires_orders(
 ) -> None:
     event = await make_published_event(session)
     tt = await make_ticket_type(session, event, price_kzt=5000, quantity_total=5)
+    await enable_paid_sales(session, event)
     buyer = await _buyer(session)
     await session.commit()
     created = await client.post(ORDERS, headers=bearer(buyer), json=_order(event, (tt, 3)))

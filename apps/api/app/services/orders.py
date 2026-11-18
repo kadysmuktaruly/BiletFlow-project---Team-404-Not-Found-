@@ -51,6 +51,8 @@ from app.schemas.order import (
     OrderRead,
     TicketRead,
 )
+from app.services import order_emails
+from app.services.mail import Outbound
 from app.tickets.numbers import order_reference, ticket_number
 from app.tickets.tokens import sign_admission_token
 
@@ -107,7 +109,9 @@ async def ensure_on_sale(session: AsyncSession, event: Event, user: User, now: d
 # --- creating orders ----------------------------------------------------------------------
 
 
-async def create_order(session: AsyncSession, user: User, data: OrderCreate) -> Order:
+async def create_order(
+    session: AsyncSession, user: User, data: OrderCreate
+) -> tuple[Order, Outbound]:
     now = datetime.now(UTC)
     event = await session.scalar(
         select(Event).where(Event.id == data.event_id).with_for_update(of=Event)
@@ -136,6 +140,11 @@ async def create_order(session: AsyncSession, user: User, data: OrderCreate) -> 
             raise AppError(409, "sales_ended", "Sales for this ticket have ended.")
         if qty > tt.max_per_order:
             raise AppError(422, "max_per_order_exceeded", f"At most {tt.max_per_order} per order.")
+
+    if any(types[tt_id].price_kzt > 0 for tt_id in requested):
+        from app.services.activation import ensure_paid_sales_enabled
+
+        await ensure_paid_sales_enabled(session, event.id)
 
     total_quantity = sum(requested.values())
     attendees = _attendees_for(user, data.attendees, total_quantity)
@@ -211,14 +220,21 @@ async def create_order(session: AsyncSession, user: User, data: OrderCreate) -> 
     order.total_kzt = subtotal - order.discount_kzt
     await session.flush()
 
+    # SRS 3.3: processing charges come out of the organizer's payout, never the attendee's
+    # total. Recorded for the organizer's estimated-payout figures.
+    order.processing_fee_kzt = order.total_kzt * get_settings().processing_fee_bps // 10_000
+
+    outbound: Outbound = []
     if order.total_kzt == 0:
-        # SRS 4.4: a free registration is a zero-total order, confirmed at once.
+        # SRS 4.4: a free registration is a zero-total order, confirmed at once, with a
+        # confirmation email carrying the QR tickets.
         await confirm_order(session, order, now)
+        outbound = await order_emails.confirmation(session, order)
     else:
         order.status = OrderStatus.AWAITING_PAYMENT
         order.expires_at = now + timedelta(seconds=get_settings().order_reservation_ttl_seconds)
     await session.commit()
-    return order
+    return order, outbound
 
 
 def _attendees_for(user: User, given: list[AttendeeInput], quantity: int) -> list[AttendeeInput]:
@@ -398,7 +414,7 @@ def _event_summary(event: Event) -> EventSummary:
     )
 
 
-async def _tickets_read(session: AsyncSession, tickets: Sequence[Ticket]) -> list[TicketRead]:
+async def tickets_read(session: AsyncSession, tickets: Sequence[Ticket]) -> list[TicketRead]:
     if not tickets:
         return []
     names = dict(
@@ -484,7 +500,7 @@ async def order_read(session: AsyncSession, order: Order) -> OrderRead:
             )
             for i in items
         ],
-        tickets=await _tickets_read(session, tickets),
+        tickets=await tickets_read(session, tickets),
     )
 
 
@@ -520,7 +536,7 @@ async def list_own_tickets(session: AsyncSession, user: User) -> list[MyTicketRe
         .all()
     )
     tickets = [t for t, _ in rows]
-    reads = await _tickets_read(session, tickets)
+    reads = await tickets_read(session, tickets)
     events = (
         {
             e.id: e

@@ -275,6 +275,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/orders/{order_id}/abandon": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Leave the DEMO payment step and release the reserved tickets */
+        post: operations["abandon_order_api_v1_orders__order_id__abandon_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orders/{order_id}/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Pay for an order through the DEMO payment simulation
+         * @description **DEMO: no real money moves.** `outcome` chooses what the simulated provider does. `succeed` confirms the order, issues the tickets and emails them. `fail` releases the tickets and emails a failure notice. Send a unique `Idempotency-Key` per attempt; repeating it returns the original result (200, `replayed: true`) instead of charging again. Reusing it for a different order is `409 idempotency_key_reused`.
+         */
+        post: operations["pay_order_api_v1_orders__order_id__payments_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/organizer/events": {
         parameters: {
             query?: never;
@@ -312,6 +349,97 @@ export interface paths {
         head?: never;
         /** Edit an event */
         patch: operations["update_event_api_v1_organizer_events__event_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/organizer/events/{event_id}/activation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The event's paid-sales checklist
+         * @description Paid checkout opens only when every step is done: a paid ticket type, the simulated identity check, a connected payout account, the DEMO activation fee and the terms.
+         */
+        get: operations["read_checklist_api_v1_organizer_events__event_id__activation_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/organizer/events/{event_id}/activation/fee-payment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Pay the activation fee through the DEMO payment simulation
+         * @description **DEMO: no real money moves.** Charges `ACTIVATION_FEE_KZT` once per event; the fee is non-refundable. Uses the same `Idempotency-Key` rules as ticket payments.
+         */
+        post: operations["pay_fee_api_v1_organizer_events__event_id__activation_fee_payment_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/organizer/events/{event_id}/activation/identity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Complete the simulated identity check (DEMO; no documents are collected) */
+        post: operations["verify_identity_api_v1_organizer_events__event_id__activation_identity_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/organizer/events/{event_id}/activation/payout-account": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Connect your simulated payout account to this event */
+        post: operations["connect_payout_account_api_v1_organizer_events__event_id__activation_payout_account_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/organizer/events/{event_id}/activation/terms": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Accept the paid-event terms */
+        post: operations["accept_terms_api_v1_organizer_events__event_id__activation_terms_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/v1/organizer/events/{event_id}/ticket-types": {
@@ -409,6 +537,55 @@ export interface components {
              */
             status: "accepted";
         };
+        /**
+         * ActivationRead
+         * @description SRS 3.2 / 4.5: the paid-sales checklist for one event.
+         */
+        ActivationRead: {
+            /** Activated At */
+            activated_at: string | null;
+            /** Activation Fee Kzt */
+            activation_fee_kzt: number;
+            /** Activation Fee Paid */
+            activation_fee_paid: boolean;
+            activation_payment: components["schemas"]["PaymentRead"] | null;
+            /**
+             * Demo
+             * @default true
+             * @constant
+             */
+            demo: true;
+            /**
+             * Event Id
+             * Format: uuid
+             */
+            event_id: string;
+            /**
+             * Fee Refundable
+             * @default false
+             * @constant
+             */
+            fee_refundable: false;
+            /** Has Paid Ticket Type */
+            has_paid_ticket_type: boolean;
+            /** Identity Verified */
+            identity_verified: boolean;
+            /** Paid Sales Enabled */
+            paid_sales_enabled: boolean;
+            /** Payout Account Connected */
+            payout_account_connected: boolean;
+            status: components["schemas"]["ActivationStatus"];
+            /** Suspended At */
+            suspended_at: string | null;
+            /** Terms Accepted */
+            terms_accepted: boolean;
+        };
+        /**
+         * ActivationStatus
+         * @description SRS 4.5. `SUSPENDED` exists because 4.5 lets Platform Admins stop paid sales.
+         * @enum {string}
+         */
+        ActivationStatus: "not_started" | "in_progress" | "pending_review" | "active" | "suspended";
         /** AttendeeInput */
         AttendeeInput: {
             /** Email */
@@ -417,6 +594,18 @@ export interface components {
             full_name: string;
             /** Phone */
             phone?: string | null;
+        };
+        /**
+         * ConfirmRequest
+         * @description For checklist steps that are a simple confirmation.
+         */
+        ConfirmRequest: {
+            /**
+             * Confirm
+             * @description Must be true.
+             * @constant
+             */
+            confirm: true;
         };
         /** EmailRequest */
         EmailRequest: {
@@ -718,6 +907,13 @@ export interface components {
             /** Unit Price Kzt */
             unit_price_kzt: number;
         };
+        /** OrderPaymentResult */
+        OrderPaymentResult: {
+            order: components["schemas"]["OrderRead"];
+            payment: components["schemas"]["PaymentRead"];
+            /** Replayed */
+            replayed: boolean;
+        };
         /** OrderRead */
         OrderRead: {
             /** Confirmed At */
@@ -797,6 +993,56 @@ export interface components {
             /** Website Url */
             website_url?: string | null;
         };
+        /**
+         * PaymentPurpose
+         * @description SRS 3.2: the two things money is ever collected for.
+         * @enum {string}
+         */
+        PaymentPurpose: "activation_fee" | "ticket_order";
+        /** PaymentRead */
+        PaymentRead: {
+            /** Amount Kzt */
+            amount_kzt: number;
+            /** Card Brand */
+            card_brand: string | null;
+            /** Card Last4 */
+            card_last4: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Currency */
+            currency: string;
+            /**
+             * Demo
+             * @default true
+             * @constant
+             */
+            demo: true;
+            /** Failure Reason */
+            failure_reason: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Simulated */
+            is_simulated: boolean;
+            /** Provider */
+            provider: string;
+            /** Provider Reference */
+            provider_reference: string | null;
+            purpose: components["schemas"]["PaymentPurpose"];
+            status: components["schemas"]["PaymentStatus"];
+            /** Succeeded At */
+            succeeded_at: string | null;
+        };
+        /**
+         * PaymentStatus
+         * @enum {string}
+         */
+        PaymentStatus: "pending" | "succeeded" | "failed" | "refunded";
         /**
          * PayoutAccountRead
          * @description A simulated payout account. Only the last four digits are ever stored (SRS 7).
@@ -884,6 +1130,17 @@ export interface components {
          * @enum {string}
          */
         SeatingMode: "general_admission" | "assigned_seating";
+        /**
+         * SimulatedPaymentRequest
+         * @description The DEMO checkout screen lets the attendee choose what the simulated provider does.
+         */
+        SimulatedPaymentRequest: {
+            /**
+             * Outcome
+             * @enum {string}
+             */
+            outcome: "succeed" | "fail";
+        };
         /** TicketRead */
         TicketRead: {
             /** Attendee Email */
@@ -1133,7 +1390,10 @@ export interface components {
     pathItems: never;
 }
 export type SchemaAcceptedResponse = components['schemas']['AcceptedResponse'];
+export type SchemaActivationRead = components['schemas']['ActivationRead'];
+export type SchemaActivationStatus = components['schemas']['ActivationStatus'];
 export type SchemaAttendeeInput = components['schemas']['AttendeeInput'];
+export type SchemaConfirmRequest = components['schemas']['ConfirmRequest'];
 export type SchemaEmailRequest = components['schemas']['EmailRequest'];
 export type SchemaErrorBody = components['schemas']['ErrorBody'];
 export type SchemaErrorResponse = components['schemas']['ErrorResponse'];
@@ -1150,10 +1410,14 @@ export type SchemaMyTicketRead = components['schemas']['MyTicketRead'];
 export type SchemaOrderCreate = components['schemas']['OrderCreate'];
 export type SchemaOrderItemInput = components['schemas']['OrderItemInput'];
 export type SchemaOrderItemRead = components['schemas']['OrderItemRead'];
+export type SchemaOrderPaymentResult = components['schemas']['OrderPaymentResult'];
 export type SchemaOrderRead = components['schemas']['OrderRead'];
 export type SchemaOrderStatus = components['schemas']['OrderStatus'];
 export type SchemaOrganizerProfileRead = components['schemas']['OrganizerProfileRead'];
 export type SchemaOrganizerProfileUpdate = components['schemas']['OrganizerProfileUpdate'];
+export type SchemaPaymentPurpose = components['schemas']['PaymentPurpose'];
+export type SchemaPaymentRead = components['schemas']['PaymentRead'];
+export type SchemaPaymentStatus = components['schemas']['PaymentStatus'];
 export type SchemaPayoutAccountRead = components['schemas']['PayoutAccountRead'];
 export type SchemaPayoutAccountStatus = components['schemas']['PayoutAccountStatus'];
 export type SchemaPayoutAccountUpsert = components['schemas']['PayoutAccountUpsert'];
@@ -1161,6 +1425,7 @@ export type SchemaRefreshRequest = components['schemas']['RefreshRequest'];
 export type SchemaRegisterRequest = components['schemas']['RegisterRequest'];
 export type SchemaResetPasswordRequest = components['schemas']['ResetPasswordRequest'];
 export type SchemaSeatingMode = components['schemas']['SeatingMode'];
+export type SchemaSimulatedPaymentRequest = components['schemas']['SimulatedPaymentRequest'];
 export type SchemaTicketRead = components['schemas']['TicketRead'];
 export type SchemaTicketStatus = components['schemas']['TicketStatus'];
 export type SchemaTicketTypeCreate = components['schemas']['TicketTypeCreate'];
@@ -1897,6 +2162,156 @@ export interface operations {
             };
         };
     };
+    abandon_order_api_v1_orders__order_id__abandon_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderRead"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    pay_order_api_v1_orders__order_id__payments_post: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A unique value per payment attempt, e.g. a UUID. Reuse it to retry safely. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SimulatedPaymentRequest"];
+            };
+        };
+        responses: {
+            /** @description Replay of an earlier attempt */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderPaymentResult"];
+                };
+            };
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderPaymentResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     list_events_api_v1_organizer_events_get: {
         parameters: {
             query?: never;
@@ -2106,6 +2521,333 @@ export interface operations {
             };
             /** @description Conflict */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    read_checklist_api_v1_organizer_events__event_id__activation_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivationRead"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    pay_fee_api_v1_organizer_events__event_id__activation_fee_payment_post: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A unique value per payment attempt, e.g. a UUID. Reuse it to retry safely. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SimulatedPaymentRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivationRead"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    verify_identity_api_v1_organizer_events__event_id__activation_identity_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfirmRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivationRead"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    connect_payout_account_api_v1_organizer_events__event_id__activation_payout_account_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfirmRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivationRead"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    accept_terms_api_v1_organizer_events__event_id__activation_terms_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfirmRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivationRead"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

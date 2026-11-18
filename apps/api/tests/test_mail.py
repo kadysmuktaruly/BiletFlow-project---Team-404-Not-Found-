@@ -37,3 +37,6 @@ def test_mime_has_text_html_inline_image_and_attachment() -> None:
     assert "application/pdf" in types
     inline = next(p for p in mime.walk() if p.get_content_type() == "image/png")
     assert inline["Content-ID"] == "<qr-1>"
+    assert inline.get_content_disposition() == "inline"
+    pdf = next(p for p in mime.walk() if p.get_content_type() == "application/pdf")
+    assert pdf.get_content_disposition() == "attachment"

@@ -135,3 +135,18 @@ def test_cors_origin_list_includes_public_base_url_and_extras() -> None:
         _env_file=None,
     )
     assert settings.cors_origin_list == ["http://localhost:3000", "http://192.168.1.20:3000"]
+
+
+async def test_cors_allows_the_idempotency_key_header() -> None:
+    """Browsers preflight POST /orders/{id}/payments because of this header."""
+    async with _client() as client:
+        response = await client.options(
+            f"{API_PREFIX}/orders/x/payments",
+            headers={
+                "Origin": "http://localhost:3000",
+                "Access-Control-Request-Method": "POST",
+                "Access-Control-Request-Headers": "authorization,content-type,idempotency-key",
+            },
+        )
+    assert response.status_code == 200
+    assert "idempotency-key" in response.headers["access-control-allow-headers"].lower()
