@@ -30,3 +30,6 @@ backups/
 # Playwright output
 test-results/
 playwright-report/
+
+# Redesign before/after screenshots (apps/web/e2e/smoke.spec.ts with SHOTS_DIR)
+.screenshots/
