@@ -47,6 +47,13 @@ class Settings(BaseSettings):
     smtp_host: str = "localhost"
     smtp_port: int = 1025
     smtp_from: str = "BiletFlow <no-reply@biletflow.local>"
+    # Login for a real mail provider (Gmail, Brevo, Resend, ...). Empty means no login, which
+    # is what Mailpit expects.
+    smtp_username: str = ""
+    smtp_password: str = ""
+    # "auto" upgrades with STARTTLS when the server offers it (Mailpit doesn't), "starttls"
+    # requires it (port 587), and "ssl" connects over TLS from the start (port 465).
+    smtp_security: Literal["auto", "starttls", "ssl"] = "auto"
     # "smtp" sends through SMTP_HOST (Mailpit in development). "memory" keeps messages in an
     # in-process outbox instead; the test suite uses it to assert on what would be sent.
     email_backend: Literal["smtp", "memory"] = "smtp"

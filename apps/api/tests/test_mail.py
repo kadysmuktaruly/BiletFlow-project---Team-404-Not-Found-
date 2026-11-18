@@ -1,5 +1,12 @@
 """Email rendering and MIME assembly. Delivery to Mailpit is checked in the demo docs."""
 
+from typing import Any
+
+import aiosmtplib
+import pytest
+
+from app.config import get_settings
+from app.services import mail
 from app.services.mail import Attachment, _to_mime, render
 
 
@@ -40,3 +47,52 @@ def test_mime_has_text_html_inline_image_and_attachment() -> None:
     assert inline.get_content_disposition() == "inline"
     pdf = next(p for p in mime.walk() if p.get_content_type() == "application/pdf")
     assert pdf.get_content_disposition() == "attachment"
+
+
+def _capture_send(monkeypatch: pytest.MonkeyPatch) -> dict[str, Any]:
+    seen: dict[str, Any] = {}
+
+    async def fake_send(message: object, **kwargs: Any) -> None:
+        seen.update(kwargs)
+
+    monkeypatch.setattr(aiosmtplib, "send", fake_send)
+    monkeypatch.setattr(get_settings(), "email_backend", "smtp")
+    return seen
+
+
+def _message() -> mail.OutgoingEmail:
+    return mail.OutgoingEmail(to="a@example.com", subject="Hi", text="Hi", html="<p>Hi</p>")
+
+
+async def test_smtp_defaults_send_without_login_for_mailpit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    seen = _capture_send(monkeypatch)
+    await mail.send_email(_message())
+    assert seen["username"] is None
+    assert seen["password"] is None
+    assert seen["use_tls"] is False
+    assert seen["start_tls"] is None
+
+
+async def test_smtp_login_and_starttls_for_a_real_provider(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    seen = _capture_send(monkeypatch)
+    settings = get_settings()
+    monkeypatch.setattr(settings, "smtp_username", "sender@example.com")
+    monkeypatch.setattr(settings, "smtp_password", "app-password")
+    monkeypatch.setattr(settings, "smtp_security", "starttls")
+    await mail.send_email(_message())
+    assert seen["username"] == "sender@example.com"
+    assert seen["password"] == "app-password"
+    assert seen["start_tls"] is True
+    assert seen["use_tls"] is False
+
+
+async def test_smtp_ssl_connects_over_tls(monkeypatch: pytest.MonkeyPatch) -> None:
+    seen = _capture_send(monkeypatch)
+    monkeypatch.setattr(get_settings(), "smtp_security", "ssl")
+    await mail.send_email(_message())
+    assert seen["use_tls"] is True
+    assert seen["start_tls"] is None
