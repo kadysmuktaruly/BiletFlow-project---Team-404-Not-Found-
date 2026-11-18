@@ -91,7 +91,8 @@ export function Select({ label, hint, options, className, ...select }: SelectPro
   );
 }
 
-type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
+// React 19 passes `ref` as an ordinary prop, so it reaches the <button> through the spread.
+type ButtonProps = React.ComponentProps<"button"> & {
   variant?: "primary" | "secondary" | "danger";
 };
 

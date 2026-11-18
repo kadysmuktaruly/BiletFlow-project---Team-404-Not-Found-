@@ -73,6 +73,7 @@ export function EventForm({
         registration_opens_at: blankToNull(f.get("registration_opens_at")),
         registration_closes_at: blankToNull(f.get("registration_closes_at")),
         capacity: f.get("capacity") ? Number(f.get("capacity")) : null,
+        refund_policy: blankToNull(f.get("refund_policy")),
       });
       setSaved(true);
     } catch (err) {
@@ -211,6 +212,16 @@ export function EventForm({
           error={fieldError("capacity")}
           className="sm:max-w-xs"
         />
+        <div>
+          <TextArea
+            name="refund_policy"
+            label={`${t("refundPolicy")} (${tc("optional")})`}
+            rows={3}
+            maxLength={2000}
+            defaultValue={event?.refund_policy ?? ""}
+          />
+          <p className="mt-1 text-sm text-gray-600">{t("refundPolicyHint")}</p>
+        </div>
       </Card>
 
       <div className="flex items-center gap-4">

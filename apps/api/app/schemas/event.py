@@ -63,6 +63,8 @@ class _EventFields(BaseModel):
     registration_opens_at: datetime | None = None
     registration_closes_at: datetime | None = None
     capacity: int | None = Field(default=None, ge=1, le=1_000_000)
+    # SRS 4.9: "Organizers shall be able to define a refund policy." Shown on the event page.
+    refund_policy: str | None = Field(default=None, max_length=2000)
 
 
 class EventCreate(_EventFields):
@@ -102,6 +104,8 @@ class EventUpdate(BaseModel):
     registration_opens_at: datetime | None = None
     registration_closes_at: datetime | None = None
     capacity: int | None = Field(default=None, ge=1, le=1_000_000)
+    # SRS 4.9: "Organizers shall be able to define a refund policy." Shown on the event page.
+    refund_policy: str | None = Field(default=None, max_length=2000)
 
 
 class CancelEventRequest(BaseModel):
@@ -131,6 +135,7 @@ class EventRead(BaseModel):
     registration_opens_at: datetime | None
     registration_closes_at: datetime | None
     capacity: int | None
+    refund_policy: str | None
     published_at: datetime | None
     cancelled_at: datetime | None
     created_at: datetime
@@ -186,6 +191,7 @@ class PublicEventRead(BaseModel):
     timezone: str
     registration_opens_at: datetime | None
     registration_closes_at: datetime | None
+    refund_policy: str | None = None
     # Whether registration is open right now (published, not suspended, inside the window).
     registration_open: bool
     # Whether paid tickets can be bought (SRS 4.5). Free tickets don't depend on it.

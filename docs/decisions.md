@@ -63,5 +63,8 @@ changes, update this file in the same PR.
   valid or checked-in ticket, notified once each however many tickets they hold.
 - `notifications.action_path` (migration 0002) stores the web path an in-app notification
   links to, because support cases have no column on the table to derive it from.
-- Cancelling an event cancels its valid tickets and pending orders. Automatic refunds of paid
-  orders are Report 5 work (SRS §4.9).
+- **Refunds are full and organizer-only** (SRS 4.9 "full refunds", "authorized organizers").
+  Event admins can't refund. Refunded and cancelled tickets go back on sale unless the event is
+  cancelled. A promo redemption stays counted after a refund (it was used).
+- Cancelling an event cancels its valid tickets and pending orders and refunds every paid order
+  in full, each with the fixed idempotency key `event-cancel:<order id>`.

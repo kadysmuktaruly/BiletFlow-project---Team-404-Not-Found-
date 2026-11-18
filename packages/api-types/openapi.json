@@ -652,6 +652,24 @@
         "title": "CancelEventRequest",
         "type": "object"
       },
+      "CancelRegistrationRequest": {
+        "properties": {
+          "reason": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "title": "CancelRegistrationRequest",
+        "type": "object"
+      },
       "CheckInEvent": {
         "description": "An event the signed-in user may check attendees in at.",
         "properties": {
@@ -937,6 +955,18 @@
             "title": "Ends At",
             "type": "string"
           },
+          "refund_policy": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refund Policy"
+          },
           "registration_closes_at": {
             "anyOf": [
               {
@@ -1085,6 +1115,17 @@
             ],
             "title": "Published At"
           },
+          "refund_policy": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refund Policy"
+          },
           "registration_closes_at": {
             "anyOf": [
               {
@@ -1198,6 +1239,7 @@
           "registration_opens_at",
           "registration_closes_at",
           "capacity",
+          "refund_policy",
           "published_at",
           "cancelled_at",
           "created_at",
@@ -1352,6 +1394,18 @@
               }
             ],
             "title": "Ends At"
+          },
+          "refund_policy": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refund Policy"
           },
           "registration_closes_at": {
             "anyOf": [
@@ -2011,6 +2065,11 @@
             "title": "Reference",
             "type": "string"
           },
+          "refunded_kzt": {
+            "default": 0,
+            "title": "Refunded Kzt",
+            "type": "integer"
+          },
           "status": {
             "$ref": "#/components/schemas/OrderStatus"
           },
@@ -2169,6 +2228,145 @@
           "truncated"
         ],
         "title": "OrganizerAttendeeList",
+        "type": "object"
+      },
+      "OrganizerOrderList": {
+        "properties": {
+          "orders": {
+            "items": {
+              "$ref": "#/components/schemas/OrganizerOrderRead"
+            },
+            "title": "Orders",
+            "type": "array"
+          },
+          "truncated": {
+            "title": "Truncated",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "orders",
+          "truncated"
+        ],
+        "title": "OrganizerOrderList",
+        "type": "object"
+      },
+      "OrganizerOrderRead": {
+        "description": "One order of the organizer's event. Buyer contact details are shown to the organizer\nbecause they need them to run the event (SRS 4.4 attendee list, 4.9 refunds).",
+        "properties": {
+          "buyer_email": {
+            "title": "Buyer Email",
+            "type": "string"
+          },
+          "buyer_name": {
+            "title": "Buyer Name",
+            "type": "string"
+          },
+          "can_cancel": {
+            "title": "Can Cancel",
+            "type": "boolean"
+          },
+          "can_refund": {
+            "title": "Can Refund",
+            "type": "boolean"
+          },
+          "cancelled_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cancelled At"
+          },
+          "confirmed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confirmed At"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "discount_kzt": {
+            "title": "Discount Kzt",
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "processing_fee_kzt": {
+            "title": "Processing Fee Kzt",
+            "type": "integer"
+          },
+          "promo_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Promo Code"
+          },
+          "reference": {
+            "title": "Reference",
+            "type": "string"
+          },
+          "refunded_kzt": {
+            "title": "Refunded Kzt",
+            "type": "integer"
+          },
+          "status": {
+            "$ref": "#/components/schemas/OrderStatus"
+          },
+          "subtotal_kzt": {
+            "title": "Subtotal Kzt",
+            "type": "integer"
+          },
+          "tickets": {
+            "title": "Tickets",
+            "type": "integer"
+          },
+          "total_kzt": {
+            "title": "Total Kzt",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "reference",
+          "status",
+          "buyer_name",
+          "buyer_email",
+          "tickets",
+          "subtotal_kzt",
+          "discount_kzt",
+          "total_kzt",
+          "refunded_kzt",
+          "processing_fee_kzt",
+          "promo_code",
+          "created_at",
+          "confirmed_at",
+          "cancelled_at",
+          "can_refund",
+          "can_cancel"
+        ],
+        "title": "OrganizerOrderRead",
         "type": "object"
       },
       "OrganizerProfileRead": {
@@ -2790,6 +2988,17 @@
             "title": "Preview",
             "type": "boolean"
           },
+          "refund_policy": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refund Policy"
+          },
           "registration_closes_at": {
             "anyOf": [
               {
@@ -2982,6 +3191,142 @@
         },
         "title": "RefreshRequest",
         "type": "object"
+      },
+      "RefundRead": {
+        "properties": {
+          "amount_kzt": {
+            "title": "Amount Kzt",
+            "type": "integer"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "demo": {
+            "const": true,
+            "default": true,
+            "title": "Demo",
+            "type": "boolean"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_simulated": {
+            "title": "Is Simulated",
+            "type": "boolean"
+          },
+          "order_id": {
+            "format": "uuid",
+            "title": "Order Id",
+            "type": "string"
+          },
+          "provider_reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider Reference"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "status": {
+            "$ref": "#/components/schemas/RefundStatus"
+          },
+          "succeeded_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Succeeded At"
+          }
+        },
+        "required": [
+          "id",
+          "order_id",
+          "status",
+          "amount_kzt",
+          "currency",
+          "reason",
+          "is_simulated",
+          "provider_reference",
+          "created_at",
+          "succeeded_at"
+        ],
+        "title": "RefundRead",
+        "type": "object"
+      },
+      "RefundRequest": {
+        "properties": {
+          "reason": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "title": "RefundRequest",
+        "type": "object"
+      },
+      "RefundResult": {
+        "properties": {
+          "order": {
+            "$ref": "#/components/schemas/OrganizerOrderRead"
+          },
+          "refund": {
+            "$ref": "#/components/schemas/RefundRead"
+          },
+          "replayed": {
+            "title": "Replayed",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "order",
+          "refund",
+          "replayed"
+        ],
+        "title": "RefundResult",
+        "type": "object"
+      },
+      "RefundStatus": {
+        "enum": [
+          "pending",
+          "succeeded",
+          "failed"
+        ],
+        "title": "RefundStatus",
+        "type": "string"
       },
       "RegisterRequest": {
         "properties": {
@@ -7726,7 +8071,7 @@
     },
     "/api/v1/organizer/events/{event_id}/cancel": {
       "post": {
-        "description": "Cancels every valid ticket (they fail at check-in), releases unpaid orders and notifies every ticket holder by email and in-app.",
+        "description": "Cancels every valid ticket (they fail at check-in), releases unpaid orders, **refunds every paid order in full (DEMO)** and notifies every ticket holder by email and in-app.",
         "operationId": "cancel_event_api_v1_organizer_events__event_id__cancel_post",
         "parameters": [
           {
@@ -7818,6 +8163,360 @@
           }
         ],
         "summary": "Cancel an event",
+        "tags": [
+          "organizer"
+        ]
+      }
+    },
+    "/api/v1/organizer/events/{event_id}/orders": {
+      "get": {
+        "description": "Newest first. `q` matches the order reference, buyer name or email; `status` filters. `can_refund` / `can_cancel` say which action applies. Up to 200 rows.",
+        "operationId": "list_orders_api_v1_organizer_events__event_id__orders_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 200,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/OrderStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizerOrderList"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "This event's orders",
+        "tags": [
+          "organizer"
+        ]
+      }
+    },
+    "/api/v1/organizer/events/{event_id}/orders/{order_id}/cancel": {
+      "post": {
+        "description": "Free orders only (paid orders are refunded). The tickets become invalid at once and go back on sale; the attendee is notified.",
+        "operationId": "cancel_registration_api_v1_organizer_events__event_id__orders__order_id__cancel_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "order_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Order Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelRegistrationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizerOrderRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Cancel a free registration",
+        "tags": [
+          "organizer"
+        ]
+      }
+    },
+    "/api/v1/organizer/events/{event_id}/orders/{order_id}/refund": {
+      "post": {
+        "description": "**DEMO: no real money moves.** Refunds the whole order through the payment simulation. Its tickets become invalid at once and go back on sale, the buyer is notified, and the refund is audited. Send a unique `Idempotency-Key`; repeating it returns the original refund (200, `replayed: true`). `409 order_not_refundable` for free or unpaid orders, `409 order_already_refunded` if it was refunded already.",
+        "operationId": "refund_order_api_v1_organizer_events__event_id__orders__order_id__refund_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "order_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Order Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "A unique value per payment attempt, e.g. a UUID. Reuse it to retry safely.",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "description": "A unique value per payment attempt, e.g. a UUID. Reuse it to retry safely.",
+              "maxLength": 80,
+              "minLength": 8,
+              "pattern": "^[A-Za-z0-9_\\-:.]+$",
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefundRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefundResult"
+                }
+              }
+            },
+            "description": "Replay of an earlier request"
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefundResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Refund a paid order in full (DEMO)",
         "tags": [
           "organizer"
         ]

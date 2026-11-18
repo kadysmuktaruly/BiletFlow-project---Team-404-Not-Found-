@@ -510,6 +510,7 @@ async def order_read(session: AsyncSession, order: Order) -> OrderRead:
         subtotal_kzt=order.subtotal_kzt,
         discount_kzt=order.discount_kzt,
         total_kzt=order.total_kzt,
+        refunded_kzt=order.refunded_kzt,
         currency=order.currency,
         promo_code=promo_code,
         campaign_name=campaign_name,

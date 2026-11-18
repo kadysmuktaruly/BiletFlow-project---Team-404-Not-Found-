@@ -70,6 +70,12 @@ export function OrderPage() {
           {order.total_kzt === 0 ? t("order.free") : `${t("order.total")}: ${money(order.total_kzt)}`}
         </p>
         {order.total_kzt > 0 && confirmed && <p className="text-sm text-amber-900">{t("order.demoPaid")}</p>}
+        {order.refunded_kzt > 0 && (
+          <p className="text-sm font-medium text-amber-900">{t("order.refunded", { amount: money(order.refunded_kzt) })}</p>
+        )}
+        {order.status === "cancelled" && order.tickets.length > 0 && (
+          <p className="text-sm text-gray-800">{t("order.cancelledNote")}</p>
+        )}
         {order.payment_required && (
           <Link href={`/checkout/${order.id}`} className="font-medium text-gray-900 underline">
             {t("order.payNow")}

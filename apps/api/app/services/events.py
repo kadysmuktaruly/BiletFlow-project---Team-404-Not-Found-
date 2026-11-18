@@ -81,6 +81,7 @@ async def create_draft(
             registration_opens_at=data.registration_opens_at,
             registration_closes_at=data.registration_closes_at,
             capacity=data.capacity,
+            refund_policy=data.refund_policy,
         )
         try:
             async with session.begin_nested():
@@ -339,8 +340,8 @@ async def unpublish(session: AsyncSession, event: Event, user: User) -> Event:
 async def cancel(
     session: AsyncSession, event: Event, user: User, reason: str | None
 ) -> tuple[Event, Outbound]:
-    """Cancels the event, every valid ticket, and every unpaid order, and tells every ticket
-    holder (SRS 4.10). Refunds of paid orders: SRS 4.9."""
+    """Cancels the event, every valid ticket and every unpaid order, refunds every paid order
+    in full (SRS 4.9, DEMO), and tells every ticket holder (SRS 4.10)."""
     from app.services.orders import OPEN_STATUSES, release_order
 
     if event.status not in EDITABLE_STATUSES:
@@ -372,8 +373,12 @@ async def cancel(
         + (f". Reason: {reason}" if reason else ""),
     )
     await session.flush()
+    # SRS 4.9: every paid order is refunded in full (DEMO), each buyer told.
+    from app.services.refunds import refund_for_event_cancel
+
+    outbound = await refund_for_event_cancel(session, user, event)
     await session.refresh(event, ["venue"])
-    outbound = await _notify_holders(session, event, "event_cancelled", holders=holders)
+    outbound += await _notify_holders(session, event, "event_cancelled", holders=holders)
     await session.commit()
     await session.refresh(event)
     return event, outbound
@@ -421,6 +426,7 @@ async def public_read(
         timezone=event.timezone,
         registration_opens_at=event.registration_opens_at,
         registration_closes_at=event.registration_closes_at,
+        refund_policy=event.refund_policy,
         registration_open=registration_open,
         paid_sales_enabled=activation is ActivationStatus.ACTIVE,
         organizer=OrganizerSummary.model_validate(organizer, from_attributes=True),

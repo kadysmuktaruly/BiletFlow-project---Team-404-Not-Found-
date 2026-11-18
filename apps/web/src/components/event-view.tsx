@@ -77,6 +77,14 @@ export function EventView({
         {event.description && (
           <div className="whitespace-pre-line leading-relaxed text-gray-800">{event.description}</div>
         )}
+        {event.refund_policy && (
+          <section aria-labelledby="refund-policy" className="rounded-md border border-gray-200 bg-white p-4">
+            <h2 id="refund-policy" className="mb-1 font-semibold text-gray-900">
+              {t("refundPolicy")}
+            </h2>
+            <p className="whitespace-pre-line text-gray-800">{event.refund_policy}</p>
+          </section>
+        )}
       </div>
 
       <aside aria-labelledby="tickets-heading" className="space-y-3">
