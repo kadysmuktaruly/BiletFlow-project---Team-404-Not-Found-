@@ -382,3 +382,16 @@ for (const role of ["anonymous", "attendee", "organizer", "admin"] as const) {
     await page.close();
   });
 }
+
+test("register: the header's Create account link shows a fresh form after signing up", async ({ page }) => {
+  await page.goto("/en/register");
+  await page.getByLabel(en.auth.fullName).fill("Smoke Register");
+  await page.getByLabel(en.auth.email).fill(`smoke-register-${Date.now()}@example.com`);
+  await page.getByLabel(en.auth.password).fill(PASSWORD);
+  await page.getByRole("button", { name: en.auth.register.submit }).click();
+  await expect(heading(page, en.auth.register.doneTitle)).toBeVisible();
+
+  await page.getByRole("link", { name: en.nav.register }).click();
+  await expect(heading(page, en.auth.register.title)).toBeVisible();
+  await expect(page.getByRole("button", { name: en.auth.register.submit })).toBeVisible();
+});

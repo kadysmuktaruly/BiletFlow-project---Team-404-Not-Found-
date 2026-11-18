@@ -1,10 +1,11 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { Alert, Button, Card, Field, PageTitle } from "@/components/ui";
-import { Link } from "@/i18n/navigation";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { api, ApiError, unwrap } from "@/lib/api";
 import { useErrorMessage } from "@/lib/use-error-message";
@@ -13,6 +14,11 @@ export function RegisterForm() {
   const t = useTranslations("auth");
   const locale = useLocale() as Locale;
   const errorMessage = useErrorMessage();
+  const router = useRouter();
+  const pathname = usePathname();
+  // The "check your inbox" state is kept in the URL, so following any link to /register
+  // (the header's "Create account") drops the flag and shows a fresh form.
+  const sent = useSearchParams().get("sent") === "1";
   const [role, setRole] = useState<"attendee" | "organizer">("attendee");
   const [sentTo, setSentTo] = useState<string | null>(null);
   const [error, setError] = useState<unknown>(null);
@@ -37,6 +43,7 @@ export function RegisterForm() {
         }),
       );
       setSentTo(email);
+      router.replace(`${pathname}?sent=1`);
     } catch (err) {
       setError(err);
     } finally {
@@ -44,7 +51,7 @@ export function RegisterForm() {
     }
   }
 
-  if (sentTo) {
+  if (sent && sentTo) {
     return (
       <Card>
         <PageTitle>{t("register.doneTitle")}</PageTitle>
