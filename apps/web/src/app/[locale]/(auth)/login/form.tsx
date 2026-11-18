@@ -6,6 +6,7 @@ import { useState } from "react";
 
 import { Alert, Button, Card, Field, PageTitle } from "@/components/ui";
 import { Link, useRouter } from "@/i18n/navigation";
+import { api, ApiError } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { useErrorMessage } from "@/lib/use-error-message";
 
@@ -23,12 +24,22 @@ export function LoginForm() {
   const next = safeNext(useSearchParams().get("next"));
   const [error, setError] = useState<unknown>(null);
   const [busy, setBusy] = useState(false);
+  const [email, setEmail] = useState("");
+  const [resent, setResent] = useState(false);
+  const unconfirmed = error instanceof ApiError && error.code === "email_not_confirmed";
+
+  async function resend() {
+    await api.POST("/api/v1/auth/resend-verification", { body: { email } });
+    setResent(true);
+  }
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
     setBusy(true);
     setError(null);
+    setResent(false);
+    setEmail(String(form.get("email")));
     try {
       const user = await login(String(form.get("email")), String(form.get("password")));
       router.replace(next ?? (user.role === "organizer" ? "/organizer/events" : "/"));
@@ -44,6 +55,14 @@ export function LoginForm() {
       <form onSubmit={onSubmit} className="space-y-4">
         {next && !error ? <Alert kind="info">{t("required.signIn")}</Alert> : null}
         {error ? <Alert kind="error">{errorMessage(error)}</Alert> : null}
+        {unconfirmed &&
+          (resent ? (
+            <Alert kind="success">{t("verify.resent")}</Alert>
+          ) : (
+            <Button type="button" variant="secondary" onClick={resend} className="w-full">
+              {t("verify.resend")}
+            </Button>
+          ))}
         <Field name="email" type="email" label={t("email")} autoComplete="email" required />
         <Field
           name="password"

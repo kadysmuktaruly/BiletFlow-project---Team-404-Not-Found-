@@ -23,11 +23,19 @@ export function RegisterForm() {
   const [sentTo, setSentTo] = useState<string | null>(null);
   const [error, setError] = useState<unknown>(null);
   const [busy, setBusy] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [mismatch, setMismatch] = useState(false);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
     const email = String(form.get("email"));
+    const password = String(form.get("password"));
+    if (password !== String(form.get("password_confirm"))) {
+      setMismatch(true);
+      return;
+    }
+    setMismatch(false);
     setBusy(true);
     setError(null);
     try {
@@ -35,7 +43,7 @@ export function RegisterForm() {
         api.POST("/api/v1/auth/register", {
           body: {
             email,
-            password: String(form.get("password")),
+            password,
             full_name: String(form.get("full_name")),
             role,
             locale,
@@ -84,7 +92,7 @@ export function RegisterForm() {
         />
         <Field
           name="password"
-          type="password"
+          type={showPassword ? "text" : "password"}
           label={t("password")}
           hint={t("passwordHint")}
           autoComplete="new-password"
@@ -92,6 +100,24 @@ export function RegisterForm() {
           minLength={8}
           error={fields.password && t("passwordHint")}
         />
+        <Field
+          name="password_confirm"
+          type={showPassword ? "text" : "password"}
+          label={t("confirmPassword")}
+          autoComplete="new-password"
+          required
+          minLength={8}
+          error={mismatch ? t("passwordMismatch") : undefined}
+        />
+        <label className="flex items-center gap-2 text-sm text-ink">
+          <input
+            type="checkbox"
+            checked={showPassword}
+            onChange={(e) => setShowPassword(e.target.checked)}
+            className="h-4 w-4"
+          />
+          {t("showPassword")}
+        </label>
         <fieldset>
           <legend className="mb-1 text-sm font-medium text-ink">{t("register.role")}</legend>
           <div className="grid grid-cols-2 gap-2">
