@@ -87,7 +87,8 @@ const ROUTES: Route[] = [
       await expect(heading(page, en.auth.register.title)).toBeVisible();
       await expect(page.getByLabel(en.auth.fullName)).toBeVisible();
       await expect(page.getByLabel(en.auth.email)).toBeVisible();
-      await expect(page.getByLabel(en.auth.password)).toBeVisible();
+      await expect(page.getByLabel(en.auth.password, { exact: true })).toBeVisible();
+      await expect(page.getByLabel(en.auth.confirmPassword)).toBeVisible();
       await expect(page.getByRole("button", { name: en.auth.register.submit })).toBeVisible();
     },
   },
