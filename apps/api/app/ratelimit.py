@@ -9,6 +9,7 @@ The email limit counts every attempt for that address whether or not it's regist
 429 never reveals that an account exists (CLAUDE.md).
 """
 
+import hmac
 import time
 from collections import deque
 from dataclasses import dataclass
@@ -60,7 +61,20 @@ def _hit(rule_name: str, key: str, now: float) -> int | None:
     return None
 
 
+# Set by the web app's same-origin proxy (apps/web/src/proxy.ts).
+PROXY_SECRET_HEADER = "x-biletflow-proxy-secret"
+PROXY_CLIENT_IP_HEADER = "x-biletflow-client-ip"
+
+
 def client_ip(request: Request) -> str:
+    """The visitor's address. Behind the web app's proxy every request comes from the proxy,
+    so its forwarded address is used, but only when the shared secret proves the proxy sent it.
+    """
+    secret = get_settings().trusted_proxy_secret
+    forwarded = request.headers.get(PROXY_CLIENT_IP_HEADER, "").strip()
+    sent = request.headers.get(PROXY_SECRET_HEADER, "")
+    if secret and forwarded and hmac.compare_digest(sent.encode(), secret.encode()):
+        return forwarded
     return request.client.host if request.client else "unknown"
 
 
