@@ -28,5 +28,52 @@
     "account_suspended": "This account has been suspended.",
     "unauthorized": "Please sign in again.",
     "validation_error": "Enter a valid email and password."
+  },
+  "events": {
+    "title": "Your events",
+    "lead": "Only events you're assigned to are shown.",
+    "empty": "You're not assigned to any upcoming events. Ask the organizer to add you as staff.",
+    "refresh": "Refresh",
+    "roles": {
+      "owner": "Organizer",
+      "event_admin": "Event admin",
+      "check_in_staff": "Check-in staff"
+    },
+    "scan": "Scan tickets",
+    "previewResults": "Preview result screens"
+  },
+  "scan": {
+    "title": "Scan",
+    "aim": "Point the camera at the ticket's QR code.",
+    "permissionNeeded": "Allow camera access to scan tickets."
+  },
+  "result": {
+    "valid": {
+      "title": "Valid",
+      "text": "Admit this person. The ticket is now checked in."
+    },
+    "invalid": {
+      "title": "Invalid",
+      "text": "This is not a valid ticket for this event. Do not admit."
+    },
+    "cancelled": {
+      "title": "Cancelled",
+      "text": "This ticket was cancelled. Do not admit."
+    },
+    "refunded": {
+      "title": "Refunded",
+      "text": "This ticket was refunded. Do not admit."
+    },
+    "already_used": {
+      "title": "Already used",
+      "text": "This ticket was already checked in. Do not admit again."
+    },
+    "campaign": "This is a promo QR code, not a ticket.",
+    "attendee": "Attendee",
+    "ticketType": "Ticket type",
+    "ticketNumber": "Ticket",
+    "checkedInAt": "Checked in at",
+    "scanNext": "Scan next ticket",
+    "mockNotice": "Preview: live check-in isn't connected yet, so this result is simulated."
   }
 }

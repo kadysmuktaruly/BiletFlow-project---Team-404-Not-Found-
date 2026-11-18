@@ -152,6 +152,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/checkin/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Events you can check attendees in at
+         * @description Only events you organize or are assigned to as staff (SRS 4.8: 'view only assigned events'), while published or unpublished and until a day after they end.
+         */
+        get: operations["list_events_api_v1_checkin_events_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/events": {
         parameters: {
             query?: never;
@@ -754,6 +774,41 @@ export interface components {
         CancelEventRequest: {
             /** Reason */
             reason?: string | null;
+        };
+        /**
+         * CheckInEvent
+         * @description An event the signed-in user may check attendees in at.
+         */
+        CheckInEvent: {
+            /** Can Undo */
+            can_undo: boolean;
+            /**
+             * Ends At
+             * Format: date-time
+             */
+            ends_at: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "owner" | "event_admin" | "check_in_staff";
+            /**
+             * Starts At
+             * Format: date-time
+             */
+            starts_at: string;
+            status: components["schemas"]["EventStatus"];
+            /** Timezone */
+            timezone: string;
+            /** Title */
+            title: string;
+            /** Venue Name */
+            venue_name: string | null;
         };
         /**
          * ConfirmRequest
@@ -1715,6 +1770,7 @@ export type SchemaActivationRead = components['schemas']['ActivationRead'];
 export type SchemaActivationStatus = components['schemas']['ActivationStatus'];
 export type SchemaAttendeeInput = components['schemas']['AttendeeInput'];
 export type SchemaCancelEventRequest = components['schemas']['CancelEventRequest'];
+export type SchemaCheckInEvent = components['schemas']['CheckInEvent'];
 export type SchemaConfirmRequest = components['schemas']['ConfirmRequest'];
 export type SchemaEmailRequest = components['schemas']['EmailRequest'];
 export type SchemaErrorBody = components['schemas']['ErrorBody'];
@@ -2058,6 +2114,53 @@ export interface operations {
             };
             /** @description Bad Request */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_events_api_v1_checkin_events_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CheckInEvent"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
