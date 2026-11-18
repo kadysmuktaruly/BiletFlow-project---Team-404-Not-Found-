@@ -306,6 +306,34 @@ In the web app, each event has its own area at `/organizer/events/{id}`, with ta
 (including visibility, registration window and capacity), ticket types with live counts, the
 paid-sales checklist (DEMO), staff, and a preview, plus Publish, Unpublish and Cancel.
 
+### Check-in (SRS 4.8)
+
+For the scanner app. Every endpoint below needs the event's owner or an active staff
+assignment; anyone else, including a Platform Admin, gets 404.
+
+| Endpoint | Purpose |
+|---|---|
+| `GET /checkin/events` | Events you organize or are assigned to. |
+| `POST /checkin/events/{id}/scan` | Body `{"payload": "<raw QR text>"}`. Always 200 with `result`: `valid`, `invalid`, `cancelled`, `refunded` or `already_used`, the ticket (number, attendee, type, status) and live counts. |
+| `POST /checkin/events/{id}/tickets/{ticket_id}/check-in` | The same check-in for a ticket found by manual search. |
+| `POST /checkin/events/{id}/tickets/{ticket_id}/undo` | Owners and event admins only (`403 checkin_undo_forbidden` for check-in staff). The ticket is valid again; the reversal stays in the history and the audit log. |
+| `GET /checkin/events/{id}/stats` | `registered` (valid plus checked-in tickets) and `checked_in`. |
+| `GET /checkin/events/{id}/attendees?q=` | Manual search by attendee name, email or ticket number, case-insensitive, up to 50 results. |
+
+**One admission per ticket.** A check-in is one conditional
+`UPDATE tickets … WHERE status = 'valid'`, so when two devices scan the same ticket at the same
+moment, exactly one gets `valid` and the other `already_used`
+(`tests/test_checkin.py::test_double_scan_concurrent_one_checkin`). `uq_checkin_active_ticket`
+backs it up in the database.
+
+**Status is read live.** The QR token only names the ticket, so a ticket cancelled or refunded
+after it was emailed fails at the door. `invalid` comes with a `reason`: `unrecognized` (not a
+BiletFlow ticket, or a bad signature), `wrong_event`, or `campaign_qr_not_admission`. A Campaign
+QR (`BFC1.…`, or a `/c/BFC1.…` link) is never accepted as a ticket.
+
+Check-ins and reversals are written to the audit log for the event timeline (SRS 4.16).
+`test_checkin_under_2s` checks the two-second target (SRS 7) for 30 scans.
+
 ### Attendee web pages (SRS 4.2, 4.4, 4.6, 4.7)
 
 `/events` lists upcoming public events. `/events/{slug}` is the event page with ticket

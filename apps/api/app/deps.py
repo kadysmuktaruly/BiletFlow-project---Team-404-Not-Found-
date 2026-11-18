@@ -9,7 +9,8 @@ outsider cannot tell a private event from one that does not exist.
 
 import uuid
 from collections.abc import Awaitable, Callable
-from typing import Annotated
+from dataclasses import dataclass
+from typing import Annotated, Literal
 
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -17,9 +18,9 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db import get_session
-from app.enums import UserRole
+from app.enums import StaffRole, UserRole
 from app.errors import AppError
-from app.models import Event, OrganizerProfile, User
+from app.models import Event, OrganizerProfile, StaffAssignment, User
 from app.security import TokenType, decode_token
 
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
@@ -109,3 +110,52 @@ async def get_owned_event(
 
 
 OwnedEvent = Annotated[Event, Depends(get_owned_event)]
+
+
+@dataclass(frozen=True)
+class StaffAccess:
+    """Why the signed-in user may work an event's door (SRS 4.8)."""
+
+    event: Event
+    user: User
+    role: Literal["owner", "event_admin", "check_in_staff"]
+
+    @property
+    def can_undo(self) -> bool:
+        """SRS 4.8 "Undo an accidental check-in where authorized": owners and event admins.
+        Check-in staff scan only."""
+        return self.role != "check_in_staff"
+
+
+async def require_event_staff(
+    event_id: uuid.UUID, session: SessionDep, user: CurrentUser
+) -> StaffAccess:
+    """The event's owner, or a user with an active StaffAssignment for it. A platform role
+    alone grants nothing here. Anyone else gets 404, so they can't probe which events exist.
+    """
+    event = await session.get(Event, event_id)
+    if event is not None:
+        owner_user_id = await session.scalar(
+            select(OrganizerProfile.user_id).where(
+                OrganizerProfile.id == event.organizer_profile_id
+            )
+        )
+        if owner_user_id == user.id:
+            return StaffAccess(event=event, user=user, role="owner")
+        role = await session.scalar(
+            select(StaffAssignment.role).where(
+                StaffAssignment.event_id == event.id,
+                StaffAssignment.user_id == user.id,
+                StaffAssignment.revoked_at.is_(None),
+            )
+        )
+        if role is not None:
+            return StaffAccess(
+                event=event,
+                user=user,
+                role="event_admin" if role is StaffRole.EVENT_ADMIN else "check_in_staff",
+            )
+    raise AppError(404, "event_not_found", "Event not found.")
+
+
+EventStaff = Annotated[StaffAccess, Depends(require_event_staff)]

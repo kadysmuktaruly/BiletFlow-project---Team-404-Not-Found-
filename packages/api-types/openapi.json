@@ -168,6 +168,26 @@
         "title": "AttendeeInput",
         "type": "object"
       },
+      "AttendeeSearchResult": {
+        "properties": {
+          "stats": {
+            "$ref": "#/components/schemas/CheckInStats"
+          },
+          "tickets": {
+            "items": {
+              "$ref": "#/components/schemas/CheckInTicket"
+            },
+            "title": "Tickets",
+            "type": "array"
+          }
+        },
+        "required": [
+          "tickets",
+          "stats"
+        ],
+        "title": "AttendeeSearchResult",
+        "type": "object"
+      },
       "CancelEventRequest": {
         "properties": {
           "reason": {
@@ -252,6 +272,81 @@
           "can_undo"
         ],
         "title": "CheckInEvent",
+        "type": "object"
+      },
+      "CheckInMethod": {
+        "description": "SRS 4.8 allows both a camera scan and a manual attendee search.",
+        "enum": [
+          "qr_scan",
+          "manual_search"
+        ],
+        "title": "CheckInMethod",
+        "type": "string"
+      },
+      "CheckInStats": {
+        "description": "SRS 4.8: \"View the total number of registered and checked-in attendees.\"\n\n`registered` counts tickets that can still be used or already were (valid or checked\nin). Cancelled and refunded tickets aren't attendees any more.",
+        "properties": {
+          "checked_in": {
+            "title": "Checked In",
+            "type": "integer"
+          },
+          "registered": {
+            "title": "Registered",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "registered",
+          "checked_in"
+        ],
+        "title": "CheckInStats",
+        "type": "object"
+      },
+      "CheckInTicket": {
+        "description": "The ticket behind a scan or search result. No price or payment data.",
+        "properties": {
+          "attendee_name": {
+            "title": "Attendee Name",
+            "type": "string"
+          },
+          "checked_in_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Checked In At"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TicketStatus"
+          },
+          "ticket_number": {
+            "title": "Ticket Number",
+            "type": "string"
+          },
+          "ticket_type_name": {
+            "title": "Ticket Type Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "ticket_number",
+          "status",
+          "attendee_name",
+          "ticket_type_name",
+          "checked_in_at"
+        ],
+        "title": "CheckInTicket",
         "type": "object"
       },
       "ConfirmRequest": {
@@ -970,6 +1065,24 @@
           "password"
         ],
         "title": "LoginRequest",
+        "type": "object"
+      },
+      "ManualCheckInRequest": {
+        "properties": {
+          "device_label": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Device Label"
+          }
+        },
+        "title": "ManualCheckInRequest",
         "type": "object"
       },
       "MyTicketRead": {
@@ -2093,6 +2206,97 @@
         "title": "ResetPasswordRequest",
         "type": "object"
       },
+      "ScanRequest": {
+        "properties": {
+          "device_label": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Optional name of the scanning device.",
+            "title": "Device Label"
+          },
+          "payload": {
+            "description": "The raw text the camera read from the QR code.",
+            "maxLength": 2048,
+            "minLength": 1,
+            "title": "Payload",
+            "type": "string"
+          }
+        },
+        "required": [
+          "payload"
+        ],
+        "title": "ScanRequest",
+        "type": "object"
+      },
+      "ScanResult": {
+        "properties": {
+          "method": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CheckInMethod"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "How this check-in was recorded, when `result` is `valid`."
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "enum": [
+                  "unrecognized",
+                  "campaign_qr_not_admission",
+                  "wrong_event"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Set only when `result` is `invalid`.",
+            "title": "Reason"
+          },
+          "result": {
+            "enum": [
+              "valid",
+              "invalid",
+              "cancelled",
+              "refunded",
+              "already_used"
+            ],
+            "title": "Result",
+            "type": "string"
+          },
+          "stats": {
+            "$ref": "#/components/schemas/CheckInStats"
+          },
+          "ticket": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CheckInTicket"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "result",
+          "stats"
+        ],
+        "title": "ScanResult",
+        "type": "object"
+      },
       "SeatingMode": {
         "description": "SRS 4.3.1: general admission or assigned seating.",
         "enum": [
@@ -2651,6 +2855,40 @@
           "user"
         ],
         "title": "TokenResponse",
+        "type": "object"
+      },
+      "UndoCheckInRequest": {
+        "properties": {
+          "reason": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "title": "UndoCheckInRequest",
+        "type": "object"
+      },
+      "UndoResult": {
+        "properties": {
+          "stats": {
+            "$ref": "#/components/schemas/CheckInStats"
+          },
+          "ticket": {
+            "$ref": "#/components/schemas/CheckInTicket"
+          }
+        },
+        "required": [
+          "ticket",
+          "stats"
+        ],
+        "title": "UndoResult",
         "type": "object"
       },
       "UserRead": {
@@ -3416,6 +3654,491 @@
           }
         ],
         "summary": "Events you can check attendees in at",
+        "tags": [
+          "check-in"
+        ]
+      }
+    },
+    "/api/v1/checkin/events/{event_id}/attendees": {
+      "get": {
+        "description": "Matches attendee name, attendee email or ticket number, case-insensitively. At most 50 results. Without `q`, lists the first ones.",
+        "operationId": "search_attendees_api_v1_checkin_events__event_id__attendees_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 200,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttendeeSearchResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Search attendees for manual check-in",
+        "tags": [
+          "check-in"
+        ]
+      }
+    },
+    "/api/v1/checkin/events/{event_id}/scan": {
+      "post": {
+        "description": "Send the raw QR text. The result is always 200 with one of `valid`, `invalid`, `cancelled`, `refunded` or `already_used`. `valid` means this request recorded the check-in: if two devices scan one ticket at once, exactly one gets `valid` and the other `already_used`. Campaign QR codes are always `invalid` with reason `campaign_qr_not_admission`. Includes live registered and checked-in counts.",
+        "operationId": "scan_api_v1_checkin_events__event_id__scan_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScanRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScanResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Validate a scanned QR code and check the ticket in",
+        "tags": [
+          "check-in"
+        ]
+      }
+    },
+    "/api/v1/checkin/events/{event_id}/stats": {
+      "get": {
+        "operationId": "stats_api_v1_checkin_events__event_id__stats_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckInStats"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Registered and checked-in counts",
+        "tags": [
+          "check-in"
+        ]
+      }
+    },
+    "/api/v1/checkin/events/{event_id}/tickets/{ticket_id}/check-in": {
+      "post": {
+        "description": "The same atomic check-in and results as a scan, for a ticket found by search.",
+        "operationId": "manual_check_in_api_v1_checkin_events__event_id__tickets__ticket_id__check_in_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ticket_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Ticket Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/ManualCheckInRequest"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Data"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScanResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Check a ticket in from manual search",
+        "tags": [
+          "check-in"
+        ]
+      }
+    },
+    "/api/v1/checkin/events/{event_id}/tickets/{ticket_id}/undo": {
+      "post": {
+        "description": "Event owners and event admins only; check-in staff get `403 checkin_undo_forbidden`. The ticket becomes valid again, and the reversal is kept in the check-in history and the audit log. `409 not_checked_in` if there is nothing to undo.",
+        "operationId": "undo_api_v1_checkin_events__event_id__tickets__ticket_id__undo_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ticket_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Ticket Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/UndoCheckInRequest"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Data"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UndoResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Undo an accidental check-in",
         "tags": [
           "check-in"
         ]
