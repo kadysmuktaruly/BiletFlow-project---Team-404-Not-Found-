@@ -40,9 +40,11 @@ biletflow/
 │   │   │   └── i18n/           # Email strings in kk / ru / en
 │   │   ├── migrations/         # Alembic (async); 0001_initial_schema.py
 │   │   └── tests/              # pytest + httpx on a throwaway *_test database
-│   └── web/                    # Next.js app (App Router, Tailwind, next-intl)
-│       ├── messages/           # Every user-facing string, in kk.json / ru.json / en.json
-│       └── src/
+│   ├── web/                    # Next.js app (App Router, Tailwind, next-intl)
+│   │   ├── messages/           # Every user-facing string, in kk.json / ru.json / en.json
+│   │   └── src/
+│   └── scanner/                # Expo app for Event Admins (expo-router, expo-camera)
+│       └── src/locales/        # kk.json / ru.json / en.json
 ├── packages/api-types/         # TypeScript types generated from the API's OpenAPI schema
 ├── scripts/gen-api-types.sh    # Regenerates packages/api-types
 ├── docs/                       # SRS, decisions, plans, demo scripts
@@ -55,6 +57,7 @@ biletflow/
 - **API:** FastAPI, Pydantic v2, SQLAlchemy 2.0 (async only), asyncpg, Alembic
 - **Database:** PostgreSQL 16
 - **Web:** Next.js 16 (App Router, TypeScript, Tailwind CSS), next-intl, openapi-fetch
+- **Scanner:** Expo SDK 58 (React Native, TypeScript), expo-router, expo-camera, i18next
 - **Tooling:** [uv](https://docs.astral.sh/uv/), Ruff, mypy (strict), pytest, npm workspaces
 
 ## Getting started
@@ -105,6 +108,24 @@ hard-coded in components. API errors are shown by translating their `error.code`
 `errors.*`. The app talks to the API through a typed client (`src/lib/api.ts`). The access
 token is kept in memory, and the refresh token is the httpOnly cookie set by the API.
 
+### Scanner app
+
+The check-in app for Event Admins. It's in the same npm workspace, so `npm install` at the
+root covers it.
+
+```bash
+# The phone can't reach "localhost" on your laptop: use the laptop's LAN IP.
+echo "EXPO_PUBLIC_API_BASE_URL=http://192.168.1.20:8000" > apps/scanner/.env.local
+npm run start -w @biletflow/scanner      # scan the QR with Expo Go
+npm run lint -w @biletflow/scanner       # expo lint + kk/ru/en key check
+npm test -w @biletflow/scanner           # jest (jest-expo)
+```
+
+The scanner sends `X-Client: scanner`, so the API returns the refresh token in the response
+body. The app keeps it in the OS keychain or keystore (`expo-secure-store`). The camera is
+used only to read QR codes. Its strings live in `apps/scanner/src/locales/`, and the app uses
+the device language when it's kk, ru or en, otherwise Kazakh.
+
 ### API types
 
 `packages/api-types` is generated from the FastAPI OpenAPI schema. Never edit it by hand.
@@ -139,6 +160,7 @@ check covers.
 - **API:** ruff check, ruff format --check, strict mypy, `alembic upgrade head`,
   `alembic check`, and pytest against a Postgres 16 service.
 - **Web:** eslint, the kk/ru/en key check, `tsc` for every workspace, and a production build.
+- **Scanner:** `expo lint`, the kk/ru/en key check, `tsc`, and jest.
 - **API types:** regenerates `packages/api-types` and fails if it differs from what's committed.
 
 ### Project documents

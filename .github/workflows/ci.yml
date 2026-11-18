@@ -70,6 +70,23 @@ jobs:
       - name: Production build (catches prerender errors)
         run: npm run build -w @biletflow/web
 
+  scanner:
+    name: Scanner (expo lint, i18n keys, tsc, jest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Lint and check kk/ru/en locale keys match
+        run: npm run lint -w @biletflow/scanner
+      - name: Type check
+        run: npm run typecheck -w @biletflow/scanner
+      - name: Tests
+        run: npm test -w @biletflow/scanner -- --ci
+
   api-types:
     name: API types match the OpenAPI schema
     runs-on: ubuntu-latest
