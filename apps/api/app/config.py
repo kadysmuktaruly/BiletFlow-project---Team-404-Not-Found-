@@ -57,6 +57,10 @@ class Settings(BaseSettings):
     # "smtp" sends through SMTP_HOST (Mailpit in development). "memory" keeps messages in an
     # in-process outbox instead; the test suite uses it to assert on what would be sent.
     email_backend: Literal["smtp", "memory"] = "smtp"
+    # "background" sends after the response goes out. "inline" sends before responding, which
+    # serverless hosts such as Vercel need: they pause a function once it has responded, so a
+    # background send stops partway through the SMTP exchange.
+    email_delivery: Literal["background", "inline"] = "background"
 
     # SRS 4.3.1: a seat hold expires and releases the seat when checkout is abandoned.
     seat_hold_ttl_seconds: int = 600

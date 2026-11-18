@@ -7,9 +7,9 @@ Two backends, chosen by `EMAIL_BACKEND`:
 * `memory`: appends to an in-process outbox (`outbox()`). The test suite uses it.
 
 Services build an `OutgoingEmail` with `render(...)` and record a `Notification` row in the
-same transaction as the change that caused it. The router then schedules `deliver(...)` as a
-background task, so mail goes out only after that transaction has committed, and a slow or
-broken mail server never fails the request.
+same transaction as the change that caused it. Once that transaction has committed, the router
+hands the messages to `schedule(...)`, which runs `deliver(...)` as a background task (or inline,
+see `EMAIL_DELIVERY`). A slow or broken mail server never fails the request.
 """
 
 import html
@@ -193,7 +193,16 @@ async def deliver(msg: OutgoingEmail, notification_id: uuid.UUID | None = None) 
 Outbound = list[tuple[OutgoingEmail, uuid.UUID | None]]
 
 
-def schedule(background: BackgroundTasks, outbound: Outbound) -> None:
-    """Deliver after the response is sent, i.e. after the service has committed."""
+async def schedule(background: BackgroundTasks, outbound: Outbound) -> None:
+    """Deliver what a service returned; call it only after that service has committed.
+
+    With `EMAIL_DELIVERY=background` (the default) the messages go out after the response is
+    sent. With `inline` they go out before it, because a serverless host pauses a function
+    once it has responded. `deliver` never raises, so either way mail can't fail the request.
+    """
+    if get_settings().email_delivery == "inline":
+        for msg, notification_id in outbound:
+            await deliver(msg, notification_id)
+        return
     for msg, notification_id in outbound:
         background.add_task(deliver, msg, notification_id)

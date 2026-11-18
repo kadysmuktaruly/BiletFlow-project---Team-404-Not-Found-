@@ -67,7 +67,7 @@ async def register(
     data: RegisterRequest, session: SessionDep, background: BackgroundTasks, request: Request
 ) -> AcceptedResponse:
     ratelimit.enforce(request, "register")
-    schedule(background, await auth_service.register(session, data))
+    await schedule(background, await auth_service.register(session, data))
     return AcceptedResponse()
 
 
@@ -91,7 +91,7 @@ async def resend_verification(
     data: EmailRequest, session: SessionDep, background: BackgroundTasks, request: Request
 ) -> AcceptedResponse:
     ratelimit.enforce(request, "account-email", data.email)
-    schedule(background, await auth_service.resend_verification(session, data.email))
+    await schedule(background, await auth_service.resend_verification(session, data.email))
     return AcceptedResponse()
 
 
@@ -160,7 +160,7 @@ async def forgot_password(
     data: EmailRequest, session: SessionDep, background: BackgroundTasks, request: Request
 ) -> AcceptedResponse:
     ratelimit.enforce(request, "account-email", data.email)
-    schedule(background, await auth_service.forgot_password(session, data.email))
+    await schedule(background, await auth_service.forgot_password(session, data.email))
     return AcceptedResponse()
 
 

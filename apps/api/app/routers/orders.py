@@ -32,7 +32,7 @@ async def create_order(
     data: OrderCreate, user: CurrentUser, session: SessionDep, background: BackgroundTasks
 ) -> OrderRead:
     order, outbound = await order_service.create_order(session, user, data)
-    schedule(background, outbound)
+    await schedule(background, outbound)
     return await order_service.order_read(session, order)
 
 
@@ -76,7 +76,7 @@ async def pay_order(
     order, payment, replayed, outbound = await payment_service.pay_order(
         session, user, order_id, idempotency_key, data.outcome
     )
-    schedule(background, outbound)
+    await schedule(background, outbound)
     if replayed:
         response.status_code = status.HTTP_200_OK
     return OrderPaymentResult(

@@ -91,7 +91,7 @@ async def upsert_payout_account(
     background: BackgroundTasks,
 ) -> PayoutAccount:
     account, outbound = await organizer_service.upsert_payout_account(session, organizer, data)
-    schedule(background, outbound)
+    await schedule(background, outbound)
     return account
 
 
@@ -150,7 +150,7 @@ async def update_event(
     background: BackgroundTasks,
 ) -> Event:
     updated, outbound = await event_service.update(session, event, user, data)
-    schedule(background, outbound)
+    await schedule(background, outbound)
     return updated
 
 
@@ -198,7 +198,7 @@ async def cancel_event(
     background: BackgroundTasks,
 ) -> Event:
     cancelled, outbound = await event_service.cancel(session, event, user, data.reason)
-    schedule(background, outbound)
+    await schedule(background, outbound)
     return cancelled
 
 
@@ -384,7 +384,7 @@ async def refund_order(
     order, refund, replayed, outbound = await refund_service.refund_order(
         session, user, event, order_id, idempotency_key, data.reason
     )
-    schedule(background, outbound)
+    await schedule(background, outbound)
     if replayed:
         response.status_code = status.HTTP_200_OK
     (read,) = await refund_service.order_reads(session, event, [order])
@@ -412,7 +412,7 @@ async def cancel_registration(
     order, outbound = await refund_service.cancel_registration(
         session, user, event, order_id, data.reason
     )
-    schedule(background, outbound)
+    await schedule(background, outbound)
     (read,) = await refund_service.order_reads(session, event, [order])
     return read
 

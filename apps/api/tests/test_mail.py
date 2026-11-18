@@ -4,6 +4,7 @@ from typing import Any
 
 import aiosmtplib
 import pytest
+from fastapi import BackgroundTasks
 
 from app.config import get_settings
 from app.services import mail
@@ -96,3 +97,22 @@ async def test_smtp_ssl_connects_over_tls(monkeypatch: pytest.MonkeyPatch) -> No
     await mail.send_email(_message())
     assert seen["use_tls"] is True
     assert seen["start_tls"] is None
+
+
+async def test_background_delivery_waits_for_the_response(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(get_settings(), "email_delivery", "background")
+    background = BackgroundTasks()
+    before = len(mail.outbox())
+    await mail.schedule(background, [(_message(), None)])
+    assert len(mail.outbox()) == before
+    assert len(background.tasks) == 1
+
+
+async def test_inline_delivery_sends_before_the_response(monkeypatch: pytest.MonkeyPatch) -> None:
+    # Serverless hosts pause the function once it responds, so the send must finish first.
+    monkeypatch.setattr(get_settings(), "email_delivery", "inline")
+    background = BackgroundTasks()
+    before = len(mail.outbox())
+    await mail.schedule(background, [(_message(), None)])
+    assert len(mail.outbox()) == before + 1
+    assert background.tasks == []
