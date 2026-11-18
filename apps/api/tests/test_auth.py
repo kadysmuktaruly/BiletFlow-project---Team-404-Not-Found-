@@ -12,6 +12,7 @@ from app.enums import NotificationStatus, NotificationType, UserRole
 from app.main import API_PREFIX
 from app.models import Notification, OrganizerProfile, User
 from app.security import TokenType, create_token
+from app.services.auth import issue_tokens
 from app.services.mail import OutgoingEmail
 from tests.factories import DEFAULT_PASSWORD, bearer, make_user
 
@@ -115,12 +116,36 @@ async def test_verify_email_with_emailed_token(
     await _register(client)
     response = await client.post(f"{AUTH}/verify-email", json={"token": _token_from(mail[0])})
     assert response.status_code == 200
-    assert response.json()["is_email_verified"] is True
+    body = response.json()
+    assert body["user"]["is_email_verified"] is True
 
     user = (await session.execute(select(User))).scalar_one()
     await session.refresh(user)
     assert user.is_email_verified
     assert user.email_verified_at is not None
+
+    # The first confirmation signs the user in: an access token plus the refresh cookie.
+    assert body["session"]["user"]["id"] == str(user.id)
+    me = await client.get(
+        "/api/v1/me", headers={"Authorization": f"Bearer {body['session']['access_token']}"}
+    )
+    assert me.status_code == 200
+    assert "httponly" in response.headers["set-cookie"].lower()
+
+
+async def test_reusing_a_verification_link_confirms_but_does_not_sign_in(
+    client: httpx.AsyncClient, mail: list[OutgoingEmail]
+) -> None:
+    await _register(client)
+    token = _token_from(mail[0])
+    first = await client.post(f"{AUTH}/verify-email", json={"token": token})
+    assert first.json()["session"] is not None
+
+    again = await client.post(f"{AUTH}/verify-email", json={"token": token})
+    assert again.status_code == 200
+    assert again.json()["user"]["is_email_verified"] is True
+    assert again.json()["session"] is None
+    assert "set-cookie" not in again.headers
 
 
 async def test_verify_email_rejects_a_token_minted_for_another_purpose(
@@ -214,6 +239,37 @@ async def test_suspended_user_cannot_sign_in(
     )
     assert response.status_code == 403
     assert response.json()["error"]["code"] == "account_suspended"
+
+
+async def test_unconfirmed_user_cannot_sign_in(
+    client: httpx.AsyncClient, session: AsyncSession
+) -> None:
+    await make_user(session, email="pending@example.com", is_email_verified=False)
+    await session.commit()
+
+    right = await client.post(
+        f"{AUTH}/login", json={"email": "pending@example.com", "password": DEFAULT_PASSWORD}
+    )
+    assert right.status_code == 403
+    assert right.json()["error"]["code"] == "email_not_confirmed"
+    assert "set-cookie" not in right.headers
+
+    # A wrong password gets the usual answer, so the check reveals nothing to a guesser.
+    wrong = await client.post(
+        f"{AUTH}/login", json={"email": "pending@example.com", "password": "not-the-password"}
+    )
+    assert wrong.status_code == 401
+    assert wrong.json()["error"]["code"] == "invalid_credentials"
+
+
+async def test_refresh_rejects_an_unconfirmed_user(
+    client: httpx.AsyncClient, session: AsyncSession
+) -> None:
+    user = await make_user(session, is_email_verified=False)
+    await session.commit()
+    _, refresh = issue_tokens(user)
+    response = await client.post(f"{AUTH}/refresh", json={"refresh_token": refresh})
+    assert response.status_code == 401
 
 
 async def test_refresh_with_cookie_and_with_body(

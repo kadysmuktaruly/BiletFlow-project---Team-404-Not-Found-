@@ -250,9 +250,9 @@ clients translate.
 | Endpoint | Purpose |
 |---|---|
 | `POST /auth/register` | Create an `attendee` or `organizer` account and email a verification link. `platform_admin` cannot be self-assigned. |
-| `POST /auth/verify-email` | Confirm the email with the token from that link. |
+| `POST /auth/verify-email` | Confirm the email with the token from that link. The first confirmation also signs the user in; opening the link again only confirms. |
 | `POST /auth/resend-verification` | Send the link again. |
-| `POST /auth/login` | Returns a 15-minute access token. Browsers get the refresh token as an httpOnly `bf_refresh` cookie; clients sending `X-Client: scanner` get it in the body. |
+| `POST /auth/login` | Returns a 15-minute access token. An account must confirm its email first (`email_not_confirmed`, checked only after the password matches). Browsers get the refresh token as an httpOnly `bf_refresh` cookie; clients sending `X-Client: scanner` get it in the body. |
 | `POST /auth/refresh`, `POST /auth/logout` | Rotate the session, or clear the cookie. |
 | `POST /auth/forgot-password`, `POST /auth/reset-password` | Email a single-use reset link, then set a new password. Resetting signs out every other session. |
 | `GET /me`, `PATCH /me` | The signed-in user. Name, phone and language can be changed; role and email cannot. |

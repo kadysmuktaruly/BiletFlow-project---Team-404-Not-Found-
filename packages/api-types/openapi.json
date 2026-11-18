@@ -6165,6 +6165,28 @@
         ],
         "title": "VerifyEmailRequest",
         "type": "object"
+      },
+      "VerifyEmailResponse": {
+        "properties": {
+          "session": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TokenResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserRead"
+          }
+        },
+        "required": [
+          "user"
+        ],
+        "title": "VerifyEmailResponse",
+        "type": "object"
       }
     },
     "securitySchemes": {
@@ -7987,7 +8009,26 @@
     },
     "/api/v1/auth/verify-email": {
       "post": {
+        "description": "The first confirmation also signs the user in (`session`, plus the refresh cookie). Opening the same link again only confirms; `session` is then null.",
         "operationId": "verify_email_api_v1_auth_verify_email_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "x-client",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Client"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -8003,7 +8044,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserRead"
+                  "$ref": "#/components/schemas/VerifyEmailResponse"
                 }
               }
             },

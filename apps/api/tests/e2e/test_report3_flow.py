@@ -44,9 +44,9 @@ async def _signup(
     r = await client.post(
         f"{A}/auth/verify-email", json={"token": _token(mail, email, "verify_email")}
     )
-    assert r.json()["is_email_verified"] is True
-    r = await client.post(f"{A}/auth/login", json={"email": email, "password": password})
-    return {"Authorization": f"Bearer {r.json()['access_token']}"}
+    # The first confirmation signs the new user in.
+    assert r.json()["user"]["is_email_verified"] is True
+    return {"Authorization": f"Bearer {r.json()['session']['access_token']}"}
 
 
 async def test_report3_free_registration_and_demo_paid_purchase(

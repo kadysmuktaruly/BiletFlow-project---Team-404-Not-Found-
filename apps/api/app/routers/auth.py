@@ -18,6 +18,7 @@ from app.schemas.auth import (
     ResetPasswordRequest,
     TokenResponse,
     VerifyEmailRequest,
+    VerifyEmailResponse,
 )
 from app.schemas.user import UserRead
 from app.services import auth as auth_service
@@ -73,12 +74,25 @@ async def register(
 
 @router.post(
     "/verify-email",
-    response_model=UserRead,
+    response_model=VerifyEmailResponse,
     responses=error_responses(400),
     summary="Confirm an email address with the token from the verification email",
+    description=(
+        "The first confirmation also signs the user in (`session`, plus the refresh cookie). "
+        "Opening the same link again only confirms; `session` is then null."
+    ),
 )
-async def verify_email(data: VerifyEmailRequest, session: SessionDep) -> User:
-    return await auth_service.verify_email(session, data.token)
+async def verify_email(
+    data: VerifyEmailRequest,
+    session: SessionDep,
+    response: Response,
+    x_client: Annotated[str | None, Header()] = None,
+) -> VerifyEmailResponse:
+    user, confirmed_now = await auth_service.verify_email(session, data.token)
+    return VerifyEmailResponse(
+        user=UserRead.model_validate(user),
+        session=_session_response(user, response, x_client) if confirmed_now else None,
+    )
 
 
 @router.post(
