@@ -154,7 +154,14 @@ async def send_email(msg: OutgoingEmail) -> None:
         _outbox.append(msg)
         return
     await aiosmtplib.send(
-        _to_mime(msg), hostname=settings.smtp_host, port=settings.smtp_port, timeout=10
+        _to_mime(msg),
+        hostname=settings.smtp_host,
+        port=settings.smtp_port,
+        username=settings.smtp_username or None,
+        password=settings.smtp_password or None,
+        use_tls=settings.smtp_security == "ssl",
+        start_tls=True if settings.smtp_security == "starttls" else None,
+        timeout=10,
     )
 
 
