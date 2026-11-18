@@ -1,15 +1,17 @@
-"""All 27 BiletFlow tables.
+"""All 29 BiletFlow tables.
 
 SRS Section 6 lists 25 core entities. `PaidSalesActivation` is the 26th, added because
 SRS 4.5 and 4.12 require activation records that Section 6 omits — see docs/decisions.md.
 `PromoCodeTicketType` is the 27th, a plain association table for SRS 4.14's
-"applicable ticket types".
+"applicable ticket types". `EventReport` and `PlatformSettings` (SRS 4.12) came with the
+admin portal in Report 5 (migrations 0003, 0004).
 
 Importing this package registers every model on `Base.metadata`, which is what Alembic
 autogenerate walks. A model that is not reachable from here does not exist as far as
 migrations are concerned.
 """
 
+from app.models.admin import EventReport, PlatformSettings
 from app.models.audit import AuditLogEntry
 from app.models.base import Base
 from app.models.campaign import (
@@ -44,11 +46,13 @@ __all__ = [
     "Base",
     "CheckInRecord",
     "Event",
+    "EventReport",
     "Notification",
     "Order",
     "OrderItem",
     "OrganizerProfile",
     "PaidSalesActivation",
+    "PlatformSettings",
     "Payment",
     "PayoutAccount",
     "PromoCode",

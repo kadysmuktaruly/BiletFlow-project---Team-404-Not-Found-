@@ -441,6 +441,27 @@ the other side by email and in-app; status changes go on the event's audit timel
 web: **Get help** on event, order and ticket pages, **Contact BiletFlow support** for
 organizers, and **Support** in the header, with the thread refreshing every 10 seconds.
 
+### Platform administration (SRS 4.12)
+
+Platform Admins only (403 for anyone else). Every change is written to the audit log.
+
+| Endpoint | Purpose |
+|---|---|
+| `GET /admin/summary` | Counts for the overview. |
+| `GET /admin/users`, `POST /admin/users/{id}/suspend` / `unsuspend` | Search; suspend (with a reason) or reinstate. A suspended user's sessions stop working at once. |
+| `GET /admin/events`, `POST /admin/events/{id}/suspend` / `unsuspend` | Suspending stops all sales on the next request and hides the event; issued tickets stay valid. |
+| `POST /admin/events/{id}/paid-sales/suspend` / `resume` | Stop paid checkout and payment only (fraud suspected). |
+| `GET /admin/activations`, `/admin/orders`, `/admin/payments` | Paid-sales activation records, orders and DEMO payments (filter failed or refunded). |
+| `GET /admin/reports`, `POST /admin/reports/{id}/review` | Reported events: dismiss, or suspend the event. |
+| `GET/PUT /admin/settings` | The activation fee. With no saved value, `ACTIVATION_FEE_KZT` applies. A change affects fees paid from then on. |
+| `GET /admin/export/{users,events,orders,payments}.csv` | CSV, up to 10,000 rows; formula-like cells are escaped. |
+| `POST /events/{slug}/report` | Any signed-in user reports an event (one open report each). |
+
+The web portal is at `/admin` (header link **Admin**), with tabs for each area, and
+suspensions behind a confirmation that requires a reason. Event pages have **Report this
+event**. Two tables arrived with it: `event_reports` (migration 0003) and `platform_settings`
+(0004).
+
 ### Attendee web pages (SRS 4.2, 4.4, 4.6, 4.7)
 
 `/events` lists upcoming public events. `/events/{slug}` is the event page with ticket

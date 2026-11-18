@@ -18,12 +18,11 @@ from datetime import UTC, datetime
 from sqlalchemy import exists, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.config import get_settings
 from app.enums import ActivationStatus, PaymentPurpose, PaymentStatus, PayoutAccountStatus
 from app.errors import AppError
 from app.models import Event, PaidSalesActivation, Payment, TicketType, User
 from app.schemas.payment import ActivationRead
-from app.services import audit
+from app.services import audit, platform_settings
 from app.services.organizer import get_or_create_profile, get_payout_account
 from app.services.payments import (
     Outcome,
@@ -101,7 +100,8 @@ async def read(session: AsyncSession, activation: PaidSalesActivation) -> Activa
         payout_account_connected=activation.payout_account_connected,
         activation_fee_paid=activation.activation_fee_paid,
         terms_accepted=activation.terms_accepted,
-        activation_fee_kzt=activation.activation_fee_kzt or get_settings().activation_fee_kzt,
+        activation_fee_kzt=activation.activation_fee_kzt
+        or await platform_settings.activation_fee_kzt(session),
         activation_payment=payment_read(payment) if payment else None,
         activated_at=activation.activated_at,
         suspended_at=activation.suspended_at,
@@ -182,7 +182,7 @@ async def pay_fee(
     await session.refresh(activation, with_for_update=True)
     if activation.activation_fee_paid:
         raise AppError(409, "activation_fee_already_paid", "The activation fee is already paid.")
-    fee = get_settings().activation_fee_kzt
+    fee = await platform_settings.activation_fee_kzt(session)
     payment = new_payment(user, key, PaymentPurpose.ACTIVATION_FEE, fee, outcome, event_id=event.id)
     if not await insert_payment(session, payment):
         await session.rollback()

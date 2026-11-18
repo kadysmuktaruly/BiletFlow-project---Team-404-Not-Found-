@@ -13,6 +13,7 @@ import { useAuth } from "@/lib/auth";
 import { useErrorMessage } from "@/lib/use-error-message";
 
 import { PurchasePanel } from "./purchase-panel";
+import { ReportEvent } from "./report-event";
 
 export function EventPage() {
   const t = useTranslations("common");
@@ -44,12 +45,15 @@ export function EventPage() {
         <>
           <PurchasePanel event={event} initialPromo={promo} campaignRejection={promoRejected} />
           {status === "authenticated" && (
-            <Link
-              href={{ pathname: "/support/new", query: { event: event.id } }}
-              className="mt-3 inline-block text-sm font-medium text-gray-900 underline"
-            >
-              {ts("getHelp")}
-            </Link>
+            <div className="mt-3 space-y-2">
+              <Link
+                href={{ pathname: "/support/new", query: { event: event.id } }}
+                className="inline-block text-sm font-medium text-gray-900 underline"
+              >
+                {ts("getHelp")}
+              </Link>
+              <ReportEvent slug={event.slug} />
+            </div>
           )}
         </>
       }

@@ -2,11 +2,13 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, status
 
-from app.deps import OptionalUser, SessionDep
+from app.deps import CurrentUser, OptionalUser, SessionDep
 from app.errors import error_responses
+from app.schemas.admin import ReportCreate, ReportCreated
 from app.schemas.event import PublicEventList, PublicEventRead
+from app.services import admin as admin_service
 from app.services import events as event_service
 
 router = APIRouter(prefix="/events", tags=["events"])
@@ -40,3 +42,22 @@ async def list_events(
 async def read_event(slug: str, session: SessionDep, user: OptionalUser) -> PublicEventRead:
     event = await event_service.get_public_by_slug(session, slug, user)
     return await event_service.public_read(session, event)
+
+
+@router.post(
+    "/{slug}/report",
+    response_model=ReportCreated,
+    status_code=status.HTTP_201_CREATED,
+    responses=error_responses(401, 404, 409, 422),
+    summary="Report an event to the platform",
+    description=(
+        "Signed-in users report an event they can see (fraud, misleading, inappropriate, "
+        "spam, other). A Platform Admin reviews it. One open report per person per event "
+        "(`409 report_already_open`)."
+    ),
+)
+async def report_event(
+    slug: str, data: ReportCreate, user: CurrentUser, session: SessionDep
+) -> ReportCreated:
+    report = await admin_service.report_event(session, user, slug, data)
+    return ReportCreated(id=report.id, status=report.status)

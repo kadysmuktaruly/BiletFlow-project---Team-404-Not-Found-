@@ -39,7 +39,8 @@
     "notifications": "Notifications",
     "unread": "{count} unread",
     "myOrders": "My orders",
-    "support": "Support"
+    "support": "Support",
+    "admin": "Admin"
   },
   "home": {
     "title": "Find events and get your tickets in seconds",
@@ -433,7 +434,7 @@
     "payout_account_required": "Set up your payout account in your profile first.",
     "activation_fee_already_paid": "The activation fee is already paid.",
     "idempotency_key_reused": "This payment was already submitted. Refresh and try again.",
-    "user_not_found": "No active BiletFlow account uses that email. Ask them to register first.",
+    "user_not_found": "User not found.",
     "already_owner": "You already manage this event.",
     "already_assigned": "This person is already on the staff.",
     "staff_not_found": "That staff member was not found.",
@@ -471,7 +472,12 @@
     "order_not_cancellable": "Only confirmed free registrations can be cancelled. Paid orders are refunded instead.",
     "case_not_found": "Support case not found.",
     "case_context_required": "Open the case from an event, an order or a ticket.",
-    "invalid_assignee": "That person can't handle this case."
+    "invalid_assignee": "That person can't handle this case.",
+    "cannot_suspend_admin": "Platform admins can't be suspended here.",
+    "activation_not_found": "This event has no paid-sales record.",
+    "report_already_open": "You've already reported this event. We're on it.",
+    "report_already_reviewed": "This report has already been reviewed.",
+    "report_not_found": "Report not found."
   },
   "events": {
     "title": "Upcoming events",
@@ -645,6 +651,127 @@
       "assign": "Assign to",
       "save": "Update case",
       "refreshNote": "This conversation refreshes every 10 seconds."
+    }
+  },
+  "report": {
+    "open": "Report this event",
+    "title": "Report this event to BiletFlow",
+    "lead": "Tell the platform team if this event looks fake, misleading or inappropriate. The organizer isn't told who reported it.",
+    "reason": "Reason",
+    "details": "Details (optional)",
+    "submit": "Send report",
+    "cancel": "Cancel",
+    "sent": "Thanks. The BiletFlow team will review this event.",
+    "reasons": {
+      "fraud": "Fraud or scam",
+      "misleading": "Misleading information",
+      "inappropriate": "Inappropriate content",
+      "spam": "Spam",
+      "other": "Something else"
+    }
+  },
+  "admin": {
+    "title": "Platform admin",
+    "tabs": {
+      "overview": "Overview",
+      "users": "Users",
+      "events": "Events",
+      "orders": "Orders",
+      "payments": "Payments",
+      "activations": "Paid sales",
+      "reports": "Reports",
+      "settings": "Settings"
+    },
+    "search": "Search",
+    "all": "All",
+    "exportCsv": "Export CSV",
+    "truncated": "Showing the newest 100. Narrow the search to see more.",
+    "empty": "Nothing matches.",
+    "demoNote": "All payments are DEMO records: no real money moved.",
+    "summary": {
+      "users": "Users",
+      "suspended_users": "Suspended users",
+      "events_published": "Published events",
+      "suspended_events": "Suspended events",
+      "orders_confirmed": "Confirmed orders",
+      "payments_failed": "Failed payments",
+      "refunds": "Refunds",
+      "open_reports": "Open reports",
+      "open_support_cases": "Open support cases",
+      "paid_sales_suspended": "Paid sales suspended"
+    },
+    "col": {
+      "name": "Name",
+      "email": "Email",
+      "role": "Role",
+      "status": "Status",
+      "event": "Event",
+      "organizer": "Organizer",
+      "starts": "Starts",
+      "paidSales": "Paid sales",
+      "reports": "Reports",
+      "reference": "Reference",
+      "buyer": "Buyer",
+      "amount": "Amount",
+      "purpose": "Purpose",
+      "created": "Created",
+      "actions": "Actions",
+      "reason": "Reason",
+      "reporter": "Reporter",
+      "checklist": "Checklist",
+      "fee": "Fee"
+    },
+    "role": {
+      "attendee": "Attendee",
+      "organizer": "Organizer",
+      "event_admin": "Event admin",
+      "platform_admin": "Platform admin"
+    },
+    "paymentStatus": {
+      "pending": "Pending",
+      "succeeded": "Succeeded",
+      "failed": "Failed",
+      "refunded": "Refunded"
+    },
+    "purpose": {
+      "ticket_order": "Tickets",
+      "activation_fee": "Activation fee"
+    },
+    "reportStatus": {
+      "open": "Open",
+      "dismissed": "Dismissed",
+      "actioned": "Event suspended"
+    },
+    "suspended": "Suspended",
+    "active": "Active",
+    "suspend": "Suspend",
+    "reinstate": "Reinstate",
+    "suspendSales": "Suspend paid sales",
+    "resumeSales": "Resume paid sales",
+    "dismiss": "Dismiss",
+    "suspendEvent": "Suspend event",
+    "confirm": {
+      "userTitle": "Suspend {name}?",
+      "userText": "They won't be able to sign in, and their open sessions stop working at once.",
+      "eventTitle": "Suspend “{title}”?",
+      "eventText": "All sales stop at once and the event disappears from the listing. Tickets already issued stay valid.",
+      "salesTitle": "Suspend paid sales for “{title}”?",
+      "salesText": "Paid checkout and payments stop at once. Free registration keeps working.",
+      "dismissTitle": "Dismiss this report?",
+      "dismissText": "Nothing happens to the event. The report is closed.",
+      "actionTitle": "Suspend the reported event?",
+      "actionText": "The event's sales stop at once and it leaves the listing. The report is closed.",
+      "reason": "Reason (required, kept in the audit log)",
+      "note": "Note (optional, kept in the audit log)",
+      "keep": "Cancel"
+    },
+    "settings": {
+      "fee": "Paid-sales activation fee (KZT)",
+      "feeHint": "Applies to activation fees paid from now on. Fees already paid keep their amount. Non-refundable.",
+      "default": "Using the default from the server configuration.",
+      "customized": "Changed by an admin.",
+      "save": "Save",
+      "saved": "Saved."
     }
   }
 }

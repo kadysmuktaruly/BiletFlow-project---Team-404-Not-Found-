@@ -63,6 +63,11 @@ changes, update this file in the same PR.
   valid or checked-in ticket, notified once each however many tickets they hold.
 - `notifications.action_path` (migration 0002) stores the web path an in-app notification
   links to, because support cases have no column on the table to derive it from.
+- **Admin portal.** `event_reports` and `platform_settings` are new tables (migrations 0003,
+  0004). The activation fee is read from `platform_settings` when an admin has set it, else from
+  `ACTIVATION_FEE_KZT`; a change applies to fees paid afterwards only. Platform Admins can't be
+  suspended through the portal. Suspensions require a reason. Suspending an event keeps issued
+  tickets valid (attendees may still be admitted) but stops sales and hides it from the listing.
 - **Support cases.** Attendee cases are answered by the event's organizer and its event admins
   (check-in staff don't do support); organizer cases by Platform Admins, who can also open any
   attendee case for escalation. An attendee case always has an event, derived from the order

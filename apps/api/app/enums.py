@@ -221,3 +221,21 @@ class NotificationStatus(StrEnum):
     SENT = "sent"
     FAILED = "failed"
     READ = "read"
+
+
+class EventReportReason(StrEnum):
+    """Why someone reported an event to the platform (SRS 4.12 "Review reported events")."""
+
+    FRAUD = "fraud"
+    MISLEADING = "misleading"
+    INAPPROPRIATE = "inappropriate"
+    SPAM = "spam"
+    OTHER = "other"
+
+
+class EventReportStatus(StrEnum):
+    OPEN = "open"
+    # Reviewed, no action needed.
+    DISMISSED = "dismissed"
+    # Reviewed, and the event was suspended.
+    ACTIONED = "actioned"

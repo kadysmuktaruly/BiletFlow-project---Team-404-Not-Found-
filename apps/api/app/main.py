@@ -14,6 +14,7 @@ from app.db import engine
 from app.errors import ErrorResponse, install_error_handlers
 from app.routers import (
     activation,
+    admin,
     auth,
     campaigns,
     checkin,
@@ -69,6 +70,7 @@ def create_app() -> FastAPI:
     app.include_router(campaigns.router, prefix=API_PREFIX)
     app.include_router(campaigns.public_router, prefix=API_PREFIX)
     app.include_router(support.router, prefix=API_PREFIX)
+    app.include_router(admin.router, prefix=API_PREFIX)
     return app
 
 
