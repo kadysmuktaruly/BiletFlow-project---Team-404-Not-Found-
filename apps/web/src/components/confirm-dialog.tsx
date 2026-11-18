@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useRef } from "react";
 
-import { Button, TextArea } from "./ui";
+import { Button, modalClass, TextArea } from "./ui";
 
 /**
  * A confirmation step for actions that can't be undone (refunds, cancellations). It's an
@@ -46,7 +46,7 @@ export function ConfirmDialog({
       role="alertdialog"
       aria-labelledby={`${id}-title`}
       aria-describedby={`${id}-text`}
-      className={`space-y-3 rounded-lg border p-4 ${danger ? "border-red-300 bg-red-50" : "border-gray-300 bg-gray-50"}`}
+      className={modalClass(danger)}
       onKeyDown={(e) => {
         if (e.key === "Escape") onCancel();
       }}
@@ -56,10 +56,10 @@ export function ConfirmDialog({
         onConfirm(reason || null);
       }}
     >
-      <h3 id={`${id}-title`} className="font-semibold text-gray-900">
+      <h3 id={`${id}-title`} className={`text-lg font-bold ${danger ? "text-danger" : "text-ink"}`}>
         {title}
       </h3>
-      <p id={`${id}-text`} className="text-sm text-gray-800">
+      <p id={`${id}-text`} className="text-sm text-ink">
         {text}
       </p>
       {reasonLabel && (

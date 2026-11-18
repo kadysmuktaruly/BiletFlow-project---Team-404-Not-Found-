@@ -1,11 +1,111 @@
 @import "tailwindcss";
 
+/*
+ * BiletFlow design tokens ("Afisha"). This file is the only place colours, type, radius and
+ * shadows are defined; components use the Tailwind classes these generate (bg-paper,
+ * text-ink-muted, rounded-card, ...). Rationale and contrast table: docs/design-direction.md.
+ */
 @theme {
-  /* System fonts: no network fetch at build time, and full Cyrillic/Kazakh coverage. */
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
-    Arial, "Noto Sans", sans-serif;
+  /* Geologica (next/font, see app/[locale]/layout.tsx): full Kazakh Cyrillic and ₸. */
+  --font-sans: var(--font-geologica), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Noto Sans", sans-serif;
+
+  /* Neutrals */
+  --color-paper: #eef0f3;
+  --color-surface: #ffffff;
+  --color-ink: #101418;
+  --color-ink-muted: #4a5260;
+  --color-line: #d5d9e0;
+  --color-line-strong: #868e9b;
+
+  /* Accents (from the flag's sky and sun, tuned for contrast) */
+  --color-sky: #00a3c4;
+  --color-sky-ink: #00677f;
+  --color-sky-light: #7fddf0;
+  --color-sun: #ffc61a;
+  --color-steppe: #1d6b47;
+  --color-pomegranate: #b4233f;
+
+  /* Status */
+  --color-danger: #b42318;
+  --color-danger-soft: #fdecea;
+  --color-success: #1e7a46;
+  --color-success-soft: #e6f4ec;
+  --color-info-soft: #e3f4f8;
+  --color-demo-soft: #fff1c2;
+  /* Campaign QR / promo material: never confused with an admission ticket */
+  --color-promo: #5b2a86;
+  --color-promo-soft: #f1eaf8;
+
+  /* Shape: radius follows hierarchy */
+  --radius-poster: 1.25rem;
+  --radius-card: 1rem;
+  --radius-field: 0.75rem;
+
+  --shadow-modal: 0 24px 64px -16px rgb(16 20 24 / 0.35);
+
+  /* Type scale */
+  --text-display: clamp(2.25rem, 1.6rem + 3.2vw, 3.5rem);
+  --text-display--line-height: 1;
+  --text-title: clamp(1.75rem, 1.5rem + 1.2vw, 2.25rem);
+  --text-title--line-height: 1.1;
 }
 
-body {
-  @apply bg-gray-50 text-gray-900 antialiased;
+/* Headline voice: Geologica's sharp cut, heavy and tight. */
+@utility font-display {
+  font-variation-settings: "SHRP" 100;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+}
+
+@layer base {
+  :root {
+    --focus: var(--color-sky-ink);
+  }
+
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Headlines wrap between whole words; a single word only breaks if it is wider than the
+     screen (some Kazakh and Russian words at 390px). No automatic hyphenation. */
+  h1,
+  h2,
+  h3 {
+    overflow-wrap: break-word;
+  }
+
+  /* One visible focus style for everything interactive. */
+  :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-ink-muted);
+  }
+}
+
+/* Dark surfaces (ink posters): the focus ring switches to the light sky. */
+.on-dark {
+  --focus: var(--color-sky-light);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
 }
