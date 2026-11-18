@@ -146,6 +146,255 @@ EMAILS: Catalog = {
             "action": "Event page",
         },
     },
+    # --- SRS 4.10: event updates and cancellations ----------------------------------------
+    "event_updated": {
+        "kk": {
+            "subject": "Іс-шара өзгерді: {event}",
+            "greeting": "Сәлеметсіз бе, {name}!",
+            "paragraphs": [
+                "Ұйымдастырушы {event} іс-шарасын өзгертті: {changes}.",
+                "Қазіргі мәлімет: {when}, {venue}. Билеттеріңіз жарамды күйінде қалады.",
+            ],
+            "action": "Іс-шара беті",
+        },
+        "ru": {
+            "subject": "Мероприятие изменилось: {event}",
+            "greeting": "Здравствуйте, {name}!",
+            "paragraphs": [
+                "Организатор изменил мероприятие {event}: {changes}.",
+                "Сейчас: {when}, {venue}. Ваши билеты остаются в силе.",
+            ],
+            "action": "Страница мероприятия",
+        },
+        "en": {
+            "subject": "Event updated: {event}",
+            "greeting": "Hello {name},",
+            "paragraphs": [
+                "The organizer changed {event}: {changes}.",
+                "Now: {when}, {venue}. Your tickets are still valid.",
+            ],
+            "action": "Event page",
+        },
+    },
+    "event_cancelled": {
+        "kk": {
+            "subject": "Іс-шара тоқтатылды: {event}",
+            "greeting": "Сәлеметсіз бе, {name}!",
+            "paragraphs": [
+                "Ұйымдастырушы {when} өтуі тиіс {event} іс-шарасын тоқтатты.",
+                "Билеттеріңіз енді жарамсыз. Ақылы тапсырыстар толық қайтарылады "
+                "(DEMO: нақты ақша аударылмайды).",
+            ],
+            "action": "Менің тапсырыстарым",
+        },
+        "ru": {
+            "subject": "Мероприятие отменено: {event}",
+            "greeting": "Здравствуйте, {name}!",
+            "paragraphs": [
+                "Организатор отменил мероприятие {event}, которое должно было пройти {when}.",
+                "Ваши билеты больше не действуют. Платные заказы возвращаются полностью "
+                "(DEMO: настоящие деньги не переводятся).",
+            ],
+            "action": "Мои заказы",
+        },
+        "en": {
+            "subject": "Event cancelled: {event}",
+            "greeting": "Hello {name},",
+            "paragraphs": [
+                "The organizer has cancelled {event}, which was due to take place on {when}.",
+                "Your tickets are no longer valid. Paid orders are refunded in full "
+                "(DEMO: no real money moves).",
+            ],
+            "action": "My orders",
+        },
+    },
+    # --- SRS 4.9 / 4.10: refunds ---------------------------------------------------------
+    "refund_completed": {
+        "kk": {
+            "subject": "DEMO қайтарымы аяқталды: {event}",
+            "greeting": "Сәлеметсіз бе, {name}!",
+            "paragraphs": [
+                "{reference} тапсырысы бойынша {amount} DEMO қайтарымы аяқталды. "
+                "Бұл симуляция, нақты ақша аударылған жоқ.",
+                "Осы тапсырыстағы билеттер енді жарамсыз.",
+            ],
+            "action": "Тапсырысты ашу",
+        },
+        "ru": {
+            "subject": "DEMO-возврат выполнен: {event}",
+            "greeting": "Здравствуйте, {name}!",
+            "paragraphs": [
+                "DEMO-возврат {amount} по заказу {reference} выполнен. Это симуляция, "
+                "настоящие деньги не переводились.",
+                "Билеты из этого заказа больше не действуют.",
+            ],
+            "action": "Открыть заказ",
+        },
+        "en": {
+            "subject": "DEMO refund complete: {event}",
+            "greeting": "Hello {name},",
+            "paragraphs": [
+                "The DEMO refund of {amount} for order {reference} is complete. This is a "
+                "simulation; no real money moved.",
+                "The tickets in this order are no longer valid.",
+            ],
+            "action": "View order",
+        },
+    },
+    "registration_cancelled": {
+        "kk": {
+            "subject": "Тіркеу тоқтатылды: {event}",
+            "greeting": "Сәлеметсіз бе, {name}!",
+            "paragraphs": [
+                "Ұйымдастырушы {event} іс-шарасына {reference} тіркеуіңізді тоқтатты.",
+                "Осы тапсырыстағы билеттер енді жарамсыз.",
+            ],
+            "action": "Тапсырысты ашу",
+        },
+        "ru": {
+            "subject": "Регистрация отменена: {event}",
+            "greeting": "Здравствуйте, {name}!",
+            "paragraphs": [
+                "Организатор отменил вашу регистрацию {reference} на мероприятие {event}.",
+                "Билеты из этого заказа больше не действуют.",
+            ],
+            "action": "Открыть заказ",
+        },
+        "en": {
+            "subject": "Registration cancelled: {event}",
+            "greeting": "Hello {name},",
+            "paragraphs": [
+                "The organizer cancelled your registration {reference} for {event}.",
+                "The tickets in this order are no longer valid.",
+            ],
+            "action": "View order",
+        },
+    },
+    # --- SRS 4.10: organizer payout status (DEMO; payouts are shown, never executed) -------
+    "payout_status": {
+        "kk": {
+            "subject": "Төлем шоты: {status}",
+            "greeting": "Сәлеметсіз бе, {name}!",
+            "paragraphs": [
+                "Соңы {last4} болатын төлем шотыңыздың мәртебесі: {status} (DEMO).",
+                "Бұл демонстрацияда төлемдер тек көрсетіледі, нақты ақша аударылмайды.",
+            ],
+            "action": "Ұйымдастырушы профилі",
+        },
+        "ru": {
+            "subject": "Счёт для выплат: {status}",
+            "greeting": "Здравствуйте, {name}!",
+            "paragraphs": [
+                "Статус счёта для выплат с окончанием {last4}: {status} (DEMO).",
+                "В этой демонстрации выплаты только отображаются, настоящие деньги не переводятся.",
+            ],
+            "action": "Профиль организатора",
+        },
+        "en": {
+            "subject": "Payout account: {status}",
+            "greeting": "Hello {name},",
+            "paragraphs": [
+                "Your payout account ending in {last4} is now {status} (DEMO).",
+                "In this demo, payouts are shown but never executed; no real money moves.",
+            ],
+            "action": "Organizer profile",
+        },
+    },
+    # --- SRS 4.13: support cases ---------------------------------------------------------
+    "support_new_message": {
+        "kk": {
+            "subject": "Жаңа жауап: {reference}",
+            "greeting": "Сәлеметсіз бе, {name}!",
+            "paragraphs": ["{reference} «{subject}» қолдау өтінішінде жаңа хабарлама бар."],
+            "action": "Өтінішті ашу",
+        },
+        "ru": {
+            "subject": "Новый ответ: {reference}",
+            "greeting": "Здравствуйте, {name}!",
+            "paragraphs": ["В обращении {reference} «{subject}» новое сообщение."],
+            "action": "Открыть обращение",
+        },
+        "en": {
+            "subject": "New reply: {reference}",
+            "greeting": "Hello {name},",
+            "paragraphs": ["There's a new message in support case {reference}, '{subject}'."],
+            "action": "Open case",
+        },
+    },
+    "support_case_assigned": {
+        "kk": {
+            "subject": "Сізге өтініш тағайындалды: {reference}",
+            "greeting": "Сәлеметсіз бе, {name}!",
+            "paragraphs": ["{reference} «{subject}» қолдау өтініші сізге тағайындалды."],
+            "action": "Өтінішті ашу",
+        },
+        "ru": {
+            "subject": "Вам назначено обращение: {reference}",
+            "greeting": "Здравствуйте, {name}!",
+            "paragraphs": ["Вам назначено обращение в поддержку {reference} «{subject}»."],
+            "action": "Открыть обращение",
+        },
+        "en": {
+            "subject": "Case assigned to you: {reference}",
+            "greeting": "Hello {name},",
+            "paragraphs": ["Support case {reference}, '{subject}', has been assigned to you."],
+            "action": "Open case",
+        },
+    },
+    "support_status_changed": {
+        "kk": {
+            "subject": "Өтініш мәртебесі: {status}",
+            "greeting": "Сәлеметсіз бе, {name}!",
+            "paragraphs": ["{reference} «{subject}» өтінішінің жаңа мәртебесі: {status}."],
+            "action": "Өтінішті ашу",
+        },
+        "ru": {
+            "subject": "Статус обращения: {status}",
+            "greeting": "Здравствуйте, {name}!",
+            "paragraphs": ["Новый статус обращения {reference} «{subject}»: {status}."],
+            "action": "Открыть обращение",
+        },
+        "en": {
+            "subject": "Case status: {status}",
+            "greeting": "Hello {name},",
+            "paragraphs": ["Support case {reference}, '{subject}', is now: {status}."],
+            "action": "Open case",
+        },
+    },
+}
+
+# Status names that appear inside notifications, per locale.
+SUPPORT_STATUS: dict[Locale, dict[str, str]] = {
+    "kk": {
+        "open": "Ашық",
+        "in_progress": "Өңделуде",
+        "waiting_for_customer": "Сіздің жауабыңыз күтілуде",
+        "resolved": "Шешілді",
+    },
+    "ru": {
+        "open": "Открыто",
+        "in_progress": "В работе",
+        "waiting_for_customer": "Ждём вашего ответа",
+        "resolved": "Решено",
+    },
+    "en": {
+        "open": "Open",
+        "in_progress": "In progress",
+        "waiting_for_customer": "Waiting for your reply",
+        "resolved": "Resolved",
+    },
+}
+
+PAYOUT_STATUS: dict[Locale, dict[str, str]] = {
+    "kk": {"verified": "расталды", "pending": "тексерілуде", "rejected": "қабылданбады"},
+    "ru": {"verified": "подтверждён", "pending": "на проверке", "rejected": "отклонён"},
+    "en": {"verified": "verified", "pending": "pending", "rejected": "rejected"},
+}
+
+EVENT_CHANGES: dict[Locale, dict[str, str]] = {
+    "kk": {"time": "уақыты", "venue": "өтетін орны", "title": "атауы"},
+    "ru": {"time": "время", "venue": "место проведения", "title": "название"},
+    "en": {"time": "time", "venue": "venue", "title": "title"},
 }
 
 # Labels for the per-ticket blocks inside the order confirmation.

@@ -2,16 +2,19 @@
 
 import uuid
 from datetime import UTC, datetime
+from typing import Annotated
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Query, status
 from fastapi.responses import Response
 
 from app.deps import CurrentUser, SessionDep
 from app.errors import error_responses
 from app.i18n import normalize_locale
 from app.models import User
+from app.schemas.notification import NotificationList, NotificationRead, UnreadCount
 from app.schemas.order import MyTicketRead, OrderRead
 from app.schemas.user import UserRead, UserUpdate
+from app.services import notifications as notification_service
 from app.services import orders as order_service
 from app.tickets.pdf import render_ticket_pdf
 from app.tickets.qr import qr_svg
@@ -84,3 +87,58 @@ async def my_ticket_pdf(ticket_id: uuid.UUID, user: CurrentUser, session: Sessio
             "Cache-Control": "private, no-store",
         },
     )
+
+
+# --- in-app notifications (SRS 4.10, 4.13) ------------------------------------------------
+
+
+@router.get(
+    "/notifications",
+    response_model=NotificationList,
+    summary="Your in-app notifications, newest first",
+    description="Every notification is also emailed. `unread_count` counts all unread items.",
+)
+async def my_notifications(
+    user: CurrentUser,
+    session: SessionDep,
+    unread_only: bool = False,
+    limit: Annotated[int, Query(ge=1, le=100)] = 50,
+) -> NotificationList:
+    items, unread = await notification_service.list_in_app(
+        session, user, unread_only=unread_only, limit=limit
+    )
+    return NotificationList(
+        items=[NotificationRead.model_validate(n) for n in items], unread_count=unread
+    )
+
+
+@router.get(
+    "/notifications/unread-count",
+    response_model=UnreadCount,
+    summary="How many in-app notifications are unread (for the header badge)",
+)
+async def my_unread_count(user: CurrentUser, session: SessionDep) -> UnreadCount:
+    return UnreadCount(unread_count=await notification_service.unread_count(session, user))
+
+
+@router.post(
+    "/notifications/{notification_id}/read",
+    response_model=NotificationRead,
+    responses=error_responses(404),
+    summary="Mark one notification as read",
+)
+async def read_notification(
+    notification_id: uuid.UUID, user: CurrentUser, session: SessionDep
+) -> NotificationRead:
+    notification = await notification_service.mark_read(session, user, notification_id)
+    return NotificationRead.model_validate(notification)
+
+
+@router.post(
+    "/notifications/read-all",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Mark every notification as read",
+)
+async def read_all_notifications(user: CurrentUser, session: SessionDep) -> Response:
+    await notification_service.mark_all_read(session, user)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

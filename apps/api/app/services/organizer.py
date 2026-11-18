@@ -5,9 +5,13 @@ from datetime import UTC, datetime
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.enums import PayoutAccountStatus
+from app.enums import NotificationType, PayoutAccountStatus
+from app.i18n import normalize_locale
+from app.i18n.emails import PAYOUT_STATUS
 from app.models import OrganizerProfile, PayoutAccount, User
 from app.schemas.organizer import OrganizerProfileUpdate, PayoutAccountUpsert
+from app.services.mail import Outbound
+from app.services.notifications import Message, notify
 
 
 async def get_or_create_profile(session: AsyncSession, user: User) -> OrganizerProfile:
@@ -48,7 +52,7 @@ async def get_payout_account(
 
 async def upsert_payout_account(
     session: AsyncSession, profile: OrganizerProfile, data: PayoutAccountUpsert
-) -> PayoutAccount:
+) -> tuple[PayoutAccount, Outbound]:
     """Simulated verification: the account is marked verified at once. Real KYC/KYB and
     payouts are out of the MVP (SRS 8), and the record says so with `is_simulated`."""
     account = await get_payout_account(session, profile)
@@ -61,5 +65,21 @@ async def upsert_payout_account(
     account.status = PayoutAccountStatus.VERIFIED
     account.verified_at = datetime.now(UTC)
     account.is_simulated = True
+    # SRS 4.10 "Organizer payout status".
+    user = await session.get_one(User, profile.user_id)
+    locale = normalize_locale(user.locale)
+    outbound = await notify(
+        session,
+        user,
+        Message(
+            type=NotificationType.PAYOUT_STATUS,
+            template="payout_status",
+            params={
+                "last4": account.account_last4,
+                "status": PAYOUT_STATUS[locale][account.status.value],
+            },
+            action_path="/organizer/profile",
+        ),
+    )
     await session.commit()
-    return account
+    return account, outbound

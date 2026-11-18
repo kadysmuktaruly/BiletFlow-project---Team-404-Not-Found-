@@ -186,6 +186,11 @@ class Notification(Base, TimestampMixin):
         PGUUID(as_uuid=True), ForeignKey("tickets.id", ondelete="SET NULL")
     )
 
+    # Where the in-app notification leads in the web app, without the locale prefix, e.g.
+    # "/orders/<id>" or "/support/<id>". Added in 0002: a support case has no column above to
+    # derive its link from. NULL for notifications that lead nowhere.
+    action_path: Mapped[str | None] = mapped_column(String(500))
+
     sent_at: Mapped[datetime | None] = mapped_column()
     read_at: Mapped[datetime | None] = mapped_column()
 

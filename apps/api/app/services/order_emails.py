@@ -8,13 +8,12 @@ from zoneinfo import ZoneInfo
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.config import get_settings
 from app.enums import NotificationType
 from app.i18n import normalize_locale
 from app.i18n.emails import TICKET_LABELS
 from app.models import Event, Order, Ticket, User
-from app.services.mail import Attachment, Outbound, render
-from app.services.notifications import record_email
+from app.services.mail import Attachment, Outbound
+from app.services.notifications import Message, notify
 from app.tickets.pdf import render_ticket_pdf
 from app.tickets.qr import qr_png
 
@@ -91,52 +90,40 @@ async def confirmation(session: AsyncSession, order: Order) -> Outbound:
         f'border-radius:6px">{html.escape(money)}</p>'
     )
 
-    base = get_settings().public_base_url.rstrip("/")
-    msg = render(
-        "order_confirmed",
-        locale,
-        to=user.email,
-        action_url=f"{base}/{locale}/tickets",
-        extra_text="\n".join(text_blocks),
-        extra_html="".join(html_blocks),
-        attachments=attachments,
-        name=user.full_name,
-        reference=order.reference,
-        event=event.title,
-        when=format_when(event),
-        venue=_venue(event),
-    )
-    notification = await record_email(
+    return await notify(
         session,
-        user_id=user.id,
-        type=NotificationType.REGISTRATION_CONFIRMATION,
-        msg=msg,
-        event_id=event.id,
-        order_id=order.id,
+        user,
+        Message(
+            type=NotificationType.REGISTRATION_CONFIRMATION,
+            template="order_confirmed",
+            params={
+                "reference": order.reference,
+                "event": event.title,
+                "when": format_when(event),
+                "venue": _venue(event),
+            },
+            action_path="/tickets",
+            event_id=event.id,
+            order_id=order.id,
+            attachments=attachments,
+            extra_text="\n".join(text_blocks),
+            extra_html="".join(html_blocks),
+        ),
     )
-    return [(msg, notification.id)]
 
 
 async def payment_failed(session: AsyncSession, order: Order) -> Outbound:
     user = await session.get_one(User, order.user_id)
     event = await session.get_one(Event, order.event_id)
-    locale = normalize_locale(user.locale)
-    base = get_settings().public_base_url.rstrip("/")
-    msg = render(
-        "payment_failed",
-        locale,
-        to=user.email,
-        action_url=f"{base}/{locale}/events/{event.slug}",
-        name=user.full_name,
-        reference=order.reference,
-        event=event.title,
-    )
-    notification = await record_email(
+    return await notify(
         session,
-        user_id=user.id,
-        type=NotificationType.PAYMENT_FAILURE,
-        msg=msg,
-        event_id=event.id,
-        order_id=order.id,
+        user,
+        Message(
+            type=NotificationType.PAYMENT_FAILURE,
+            template="payment_failed",
+            params={"reference": order.reference, "event": event.title},
+            action_path=f"/events/{event.slug}",
+            event_id=event.id,
+            order_id=order.id,
+        ),
     )
-    return [(msg, notification.id)]

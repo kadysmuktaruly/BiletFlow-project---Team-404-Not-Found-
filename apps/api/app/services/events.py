@@ -1,5 +1,6 @@
 """Organizer-side event management (SRS 4.2). Drafts first; publishing comes later."""
 
+import uuid
 from datetime import UTC, datetime
 from zoneinfo import ZoneInfo
 
@@ -8,8 +9,17 @@ from sqlalchemy import update as sql_update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.enums import ActivationStatus, EventStatus, EventVisibility, OrderStatus, TicketStatus
+from app.enums import (
+    ActivationStatus,
+    EventStatus,
+    EventVisibility,
+    NotificationType,
+    OrderStatus,
+    TicketStatus,
+)
 from app.errors import AppError
+from app.i18n import normalize_locale
+from app.i18n.emails import EVENT_CHANGES
 from app.models import (
     Event,
     Order,
@@ -31,6 +41,8 @@ from app.schemas.event import (
     localize,
 )
 from app.services import audit
+from app.services.mail import Outbound
+from app.services.notifications import Message, notify_users
 from app.slugs import event_slug
 
 # Cancelled and completed events are historical records (SRS 4.16) and stay as they were.
@@ -91,10 +103,13 @@ async def list_owned(session: AsyncSession, organizer: OrganizerProfile) -> list
     return list(result)
 
 
-async def update(session: AsyncSession, event: Event, user: User, data: EventUpdate) -> Event:
+async def update(
+    session: AsyncSession, event: Event, user: User, data: EventUpdate
+) -> tuple[Event, Outbound]:
     if event.status not in EDITABLE_STATUSES:
         raise AppError(409, "event_not_editable", "Cancelled or completed events can't be edited.")
     old_capacity, old_visibility = event.capacity, event.visibility
+    before = _material(event)
 
     changes = data.model_dump(
         exclude_unset=True,
@@ -186,9 +201,82 @@ async def update(session: AsyncSession, event: Event, user: User, data: EventUpd
         else:
             _apply_venue(event.venue, data.venue)
 
+    # SRS 4.10 "Event updates": tell ticket holders when the time, place or name changes.
+    outbound: Outbound = []
+    await session.flush()
+    await session.refresh(event, ["venue"])
+    changed = [key for key, value in _material(event).items() if before[key] != value]
+    if changed and event.status in (EventStatus.PUBLISHED, EventStatus.UNPUBLISHED):
+        outbound = await _notify_holders(session, event, "event_updated", changed)
     await session.commit()
     await session.refresh(event)
-    return event
+    return event, outbound
+
+
+def _material(event: Event) -> dict[str, object]:
+    """The details attendees rely on to turn up: when, where, and what it's called."""
+    venue = event.venue
+    return {
+        "time": (event.starts_at, event.ends_at),
+        "venue": (venue.name, venue.address_line1, venue.city) if venue else None,
+        "title": event.title,
+    }
+
+
+async def ticket_holders(session: AsyncSession, event_id: uuid.UUID) -> list[User]:
+    """Buyers with at least one valid or checked-in ticket for the event."""
+    return list(
+        await session.scalars(
+            select(User)
+            .where(
+                User.id.in_(
+                    select(Order.user_id)
+                    .join(Ticket, Ticket.order_id == Order.id)
+                    .where(
+                        Ticket.event_id == event_id,
+                        Ticket.status.in_((TicketStatus.VALID, TicketStatus.CHECKED_IN)),
+                    )
+                )
+            )
+            .order_by(User.id)
+        )
+    )
+
+
+async def _notify_holders(
+    session: AsyncSession,
+    event: Event,
+    template: str,
+    changed: list[str] | None = None,
+    holders: list[User] | None = None,
+) -> Outbound:
+    from app.services.order_emails import format_when
+
+    holders = holders if holders is not None else await ticket_holders(session, event.id)
+    venue = event.venue
+    where = (
+        ", ".join(p for p in (venue.name, venue.address_line1, venue.city) if p) if venue else "—"
+    )
+    is_update = template == "event_updated"
+
+    def build(holder: User) -> Message:
+        labels = EVENT_CHANGES[normalize_locale(holder.locale)]
+        return Message(
+            type=NotificationType.EVENT_UPDATE
+            if is_update
+            else NotificationType.EVENT_CANCELLATION,
+            template=template,
+            params={
+                "event": event.title,
+                "when": format_when(event),
+                "venue": where,
+                "changes": ", ".join(labels[c] for c in changed or []),
+            },
+            action_path=f"/events/{event.slug}" if is_update else "/orders",
+            event_id=event.id,
+        )
+
+    return await notify_users(session, holders, build)
 
 
 # --- lifecycle (SRS 4.2: publish, unpublish, cancel) ---------------------------------------
@@ -248,14 +336,17 @@ async def unpublish(session: AsyncSession, event: Event, user: User) -> Event:
     return event
 
 
-async def cancel(session: AsyncSession, event: Event, user: User, reason: str | None) -> Event:
-    """Cancels the event, every valid ticket, and every unpaid order. Refunding paid orders
-    is SRS 4.9 work (Report 5); their tickets are cancelled here so they fail at the door."""
+async def cancel(
+    session: AsyncSession, event: Event, user: User, reason: str | None
+) -> tuple[Event, Outbound]:
+    """Cancels the event, every valid ticket, and every unpaid order, and tells every ticket
+    holder (SRS 4.10). Refunds of paid orders: SRS 4.9."""
     from app.services.orders import OPEN_STATUSES, release_order
 
     if event.status not in EDITABLE_STATUSES:
         raise AppError(409, "invalid_status_transition", "This event can't be cancelled.")
     await session.refresh(event, with_for_update=True)
+    holders = await ticket_holders(session, event.id)
     now = datetime.now(UTC)
     open_orders = await session.scalars(
         select(Order)
@@ -280,9 +371,12 @@ async def cancel(session: AsyncSession, event: Event, user: User, reason: str | 
         f"Cancelled “{event.title}”; {cancelled.rowcount} ticket(s) cancelled"  # type: ignore[attr-defined]
         + (f". Reason: {reason}" if reason else ""),
     )
+    await session.flush()
+    await session.refresh(event, ["venue"])
+    outbound = await _notify_holders(session, event, "event_cancelled", holders=holders)
     await session.commit()
     await session.refresh(event)
-    return event
+    return event, outbound
 
 
 # --- public reads ----------------------------------------------------------------------------

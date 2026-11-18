@@ -7,6 +7,7 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { useAuth } from "@/lib/auth";
 
 import { LocaleSwitcher } from "./locale-switcher";
+import { NotificationLink } from "./notification-badge";
 
 export function SiteHeader() {
   const t = useTranslations("nav");
@@ -28,9 +29,12 @@ export function SiteHeader() {
             {t("events")}
           </Link>
           {user && (
-            <Link href="/tickets" className="text-gray-700 hover:text-gray-900">
-              {t("myTickets")}
-            </Link>
+            <>
+              <Link href="/tickets" className="text-gray-700 hover:text-gray-900">
+                {t("myTickets")}
+              </Link>
+              <NotificationLink />
+            </>
           )}
           {user?.role === "organizer" && (
             <>

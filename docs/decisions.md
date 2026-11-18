@@ -55,5 +55,13 @@ changes, update this file in the same PR.
   confirmed at once like a free one.
 - A Campaign QR resolves to its event even when the campaign can't be used; the page opens
   without the code and says why.
+- **Notifications are rendered once, in the account language**, when they're created. The
+  in-app copy keeps that text even if the user switches the UI language later, so the inbox
+  always matches the email that was sent.
+- **"Event update" means the time, venue or title** of a published or unpublished event. Other
+  edits (description, cover, capacity) don't notify anyone. Ticket holders are buyers with a
+  valid or checked-in ticket, notified once each however many tickets they hold.
+- `notifications.action_path` (migration 0002) stores the web path an in-app notification
+  links to, because support cases have no column on the table to derive it from.
 - Cancelling an event cancels its valid tickets and pending orders. Automatic refunds of paid
   orders are Report 5 work (SRS §4.9).
