@@ -33,14 +33,17 @@
     "account": "Account",
     "organizer": "Organizer",
     "myEvents": "My events",
-    "profile": "Profile"
+    "profile": "Profile",
+    "events": "Events",
+    "myTickets": "My tickets"
   },
   "home": {
     "title": "Find events and get your tickets in seconds",
     "lead": "BiletFlow lets anyone in Kazakhstan publish an event, register guests for free or sell tickets in tenge, and check people in at the door with a QR code.",
     "forOrganizers": "Organize an event",
     "forOrganizersText": "Create a free event in minutes. Paid sales unlock after a short activation.",
-    "getStarted": "Get started"
+    "getStarted": "Get started",
+    "browse": "Browse events"
   },
   "auth": {
     "email": "Email",
@@ -322,6 +325,92 @@
     "already_assigned": "This person is already on the staff.",
     "staff_not_found": "That staff member was not found.",
     "sold_out": "There aren't enough tickets left.",
-    "paid_sales_not_active": "Paid tickets for this event aren't on sale yet."
+    "paid_sales_not_active": "Paid tickets for this event aren't on sale yet.",
+    "order_not_found": "Order not found.",
+    "order_expired": "Your reservation expired and the tickets went back on sale. Please start again.",
+    "order_already_paid": "This order has already been paid.",
+    "order_not_payable": "This order can no longer be paid.",
+    "event_not_on_sale": "This event isn't open for registration.",
+    "sales_suspended": "Sales for this event are suspended.",
+    "registration_not_open": "Registration hasn't opened yet.",
+    "registration_closed": "Registration has closed.",
+    "sales_not_started": "Sales for this ticket haven't started.",
+    "sales_ended": "Sales for this ticket have ended.",
+    "max_per_order_exceeded": "That's more than the limit per order for this ticket.",
+    "attendee_count_mismatch": "Enter one attendee for each ticket.",
+    "duplicate_ticket_type": "Each ticket type can only be listed once.",
+    "ticket_not_found": "Ticket not found."
+  },
+  "events": {
+    "title": "Upcoming events",
+    "search": "Search events",
+    "searchButton": "Search",
+    "empty": "No upcoming events match.",
+    "from": "From {price}",
+    "freeEntry": "Free entry"
+  },
+  "purchase": {
+    "quantity": "Quantity for {name}",
+    "total": "Total",
+    "continue": "Continue",
+    "signInToContinue": "Sign in to continue",
+    "selectTickets": "Choose at least one ticket.",
+    "attendeesTitle": "Who's attending?",
+    "attendeesLead": "Each ticket carries the attendee's name. Email is optional.",
+    "attendee": "Ticket {number}: {type}",
+    "attendeeName": "Full name",
+    "attendeeEmail": "Email",
+    "placeOrder": "Get tickets",
+    "reserve": "Continue to payment",
+    "back": "Change tickets",
+    "registrationClosed": "Registration is closed for this event."
+  },
+  "checkout": {
+    "title": "DEMO payment",
+    "demoBanner": "DEMO: this is a payment simulation. No card details are collected and no real money moves. Choose what the simulated payment does.",
+    "expires": "Your tickets are held until {time}.",
+    "summary": "Order {reference}",
+    "paySucceed": "Pay {amount} (DEMO: succeeds)",
+    "payFail": "Simulate a failed payment",
+    "abandon": "Cancel and release tickets",
+    "failed": "The DEMO payment failed. No money was taken, and the tickets went back on sale.",
+    "abandoned": "Order cancelled. The tickets went back on sale.",
+    "backToEvent": "Back to the event",
+    "processing": "Processing…"
+  },
+  "order": {
+    "confirmedTitle": "You're going!",
+    "confirmedLead": "We've emailed your tickets. You can also find them under My tickets.",
+    "reference": "Order {reference}",
+    "total": "Total paid",
+    "free": "Free registration",
+    "demoPaid": "Paid with a DEMO payment. No real money was charged.",
+    "viewTickets": "View my tickets",
+    "statusLabel": "Status: {status}",
+    "status": {
+      "pending": "Pending",
+      "awaiting_payment": "Awaiting payment",
+      "confirmed": "Confirmed",
+      "cancelled": "Cancelled",
+      "refunded": "Refunded",
+      "failed": "Payment failed",
+      "expired": "Expired"
+    },
+    "payNow": "Go to payment"
+  },
+  "tickets": {
+    "title": "My tickets",
+    "empty": "You don't have any tickets yet.",
+    "findEvents": "Find an event",
+    "ticketNumber": "Ticket number",
+    "attendee": "Attendee",
+    "qrAlt": "QR code for ticket {number}",
+    "showAtDoor": "Show this QR code at the entrance.",
+    "status": {
+      "valid": "Valid",
+      "checked_in": "Checked in",
+      "cancelled": "Cancelled",
+      "refunded": "Refunded"
+    }
   }
 }

@@ -12,6 +12,12 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
       <section className="space-y-4">
         <h1 className="max-w-2xl text-4xl font-bold tracking-tight text-gray-900">{t("title")}</h1>
         <p className="max-w-2xl text-lg text-gray-700">{t("lead")}</p>
+        <Link
+          href="/events"
+          className="inline-block rounded-md bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-gray-700"
+        >
+          {t("browse")}
+        </Link>
       </section>
       <section className="rounded-lg border border-gray-200 bg-white p-6">
         <h2 className="text-lg font-semibold text-gray-900">{t("forOrganizers")}</h2>

@@ -1,5 +1,6 @@
-# Full local stack for BiletFlow: `docker compose up` starts db, api and mailpit.
-# The web and scanner apps run on the host (npm / Expo); see README.
+# Full local stack for BiletFlow: `docker compose up` starts db, api, web and mailpit, each
+# with a health check. Demo data is seeded on start (SEED_DEMO_DATA=true). The scanner app
+# runs on a phone via Expo; see README.
 services:
   db:
     image: postgres:16-alpine
@@ -42,6 +43,11 @@ services:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-biletflow}:${POSTGRES_PASSWORD:-biletflow}@db:5432/${POSTGRES_DB:-biletflow}
       SMTP_HOST: mailpit
       SMTP_PORT: "1025"
+      # Where email links point, and the web origin CORS allows. Override both if you
+      # publish the web app on another port (WEB_PORT) or open it via a LAN IP.
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:3000}
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
+      SEED_DEMO_DATA: ${SEED_DEMO_DATA:-true}
     ports:
       - "${API_PORT:-8000}:8000"
     depends_on:
@@ -55,6 +61,26 @@ services:
         - python
         - -c
         - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health', timeout=4)"
+      interval: 10s
+      timeout: 5s
+      start_period: 20s
+      retries: 5
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        # Baked into the browser bundle: the API as seen from the user's browser.
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8000}
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/api/health || exit 1"]
       interval: 10s
       timeout: 5s
       start_period: 20s

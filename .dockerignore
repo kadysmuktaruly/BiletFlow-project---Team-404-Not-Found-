@@ -1,0 +1,17 @@
+# Build context for apps/web/Dockerfile (the API builds from apps/api with its own ignore file).
+**/node_modules
+**/.next
+**/.expo
+**/dist
+**/.venv
+**/__pycache__
+**/.mypy_cache
+**/.ruff_cache
+**/.pytest_cache
+.git
+.env
+.env.*
+docs
+apps/api
+apps/scanner/src
+apps/scanner/assets

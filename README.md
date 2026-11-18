@@ -48,7 +48,7 @@ biletflow/
 ├── packages/api-types/         # TypeScript types generated from the API's OpenAPI schema
 ├── scripts/gen-api-types.sh    # Regenerates packages/api-types
 ├── docs/                       # SRS, decisions, plans, demo scripts
-├── docker-compose.yml          # db, api, mailpit
+├── docker-compose.yml          # db, api, web, mailpit (with health checks)
 └── .env.example                # All environment variables, documented
 ```
 
@@ -62,19 +62,35 @@ biletflow/
 
 ## Getting started
 
-Requirements: Docker and [uv](https://docs.astral.sh/uv/).
+Requirements: Docker (with at least 4 GB of memory for the first build). For development
+outside Docker you also need [uv](https://docs.astral.sh/uv/) and Node.js 22.
 
 ```bash
-# 1. Configure the environment
-cp .env.example .env
+cp .env.example .env        # optional; the defaults work
+docker compose up -d --build
+docker compose ps           # wait for db, api, web and mailpit to be "healthy"
+```
 
-# 2. Start Postgres (exposed on host port 5433 by default)
-docker compose up -d db
+| Service | URL |
+|---|---|
+| Web app | http://localhost:3000 |
+| API and OpenAPI docs | http://localhost:8000/docs |
+| Mailpit (every email the app sends) | http://localhost:8025 |
+| Postgres | `localhost:5433` |
 
-# 3. Install dependencies and apply the schema
+The API applies migrations and loads demo data on start (`SEED_DEMO_DATA=true`): a free and a
+paid event, plus organizer, attendee, Event Admin and Platform Admin accounts, all with the
+password `Demo-pass-2026`. See [`apps/api/app/seed.py`](apps/api/app/seed.py) and the
+walkthrough in [`docs/demo-report-3.md`](docs/demo-report-3.md).
+
+To run the API on the host instead:
+
+```bash
+docker compose up -d db mailpit
 cd apps/api
 uv sync
 uv run alembic upgrade head
+uv run uvicorn app.main:app --reload
 ```
 
 `DATABASE_URL` must use the async driver (`postgresql+asyncpg://...`). A plain `postgresql://`
@@ -281,6 +297,15 @@ written to the audit log.
 In the web app, each event has its own area at `/organizer/events/{id}`, with tabs for details
 (including visibility, registration window and capacity), ticket types with live counts, the
 paid-sales checklist (DEMO), staff, and a preview, plus Publish, Unpublish and Cancel.
+
+### Attendee web pages (SRS 4.2, 4.4, 4.6, 4.7)
+
+`/events` lists upcoming public events. `/events/{slug}` is the event page with ticket
+selection, then attendee names (one per ticket). A free order is confirmed straight away. A
+paid order goes to `/checkout/{orderId}`, the **DEMO payment** page: succeed, fail, or cancel
+and release the tickets. `/orders/{orderId}` is the confirmation with QR codes, and `/tickets`
+(**My tickets**) lists every ticket with its QR code and status. Checkout requires sign-in;
+the event page sends visitors to sign in and brings them back.
 
 ## Data model conventions
 
