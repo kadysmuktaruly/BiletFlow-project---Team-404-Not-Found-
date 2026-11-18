@@ -3,7 +3,8 @@
     "appName": "BiletFlow Scanner",
     "loading": "Loading…",
     "retry": "Try again",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "cancel": "Cancel"
   },
   "login": {
     "title": "Staff sign-in",
@@ -27,7 +28,11 @@
     "invalid_credentials": "The email or password is incorrect.",
     "account_suspended": "This account has been suspended.",
     "unauthorized": "Please sign in again.",
-    "validation_error": "Enter a valid email and password."
+    "validation_error": "Enter a valid email and password.",
+    "event_not_found": "You're not assigned to this event any more.",
+    "ticket_not_found": "Ticket not found.",
+    "not_checked_in": "This ticket isn't checked in.",
+    "checkin_undo_forbidden": "Only event admins can undo a check-in."
   },
   "events": {
     "title": "Your events",
@@ -45,7 +50,8 @@
   "scan": {
     "title": "Scan",
     "aim": "Point the camera at the ticket's QR code.",
-    "permissionNeeded": "Allow camera access to scan tickets."
+    "permissionNeeded": "Allow camera access to scan tickets.",
+    "search": "Search attendees"
   },
   "result": {
     "valid": {
@@ -68,12 +74,36 @@
       "title": "Already used",
       "text": "This ticket was already checked in. Do not admit again."
     },
-    "campaign": "This is a promo QR code, not a ticket.",
     "attendee": "Attendee",
     "ticketType": "Ticket type",
     "ticketNumber": "Ticket",
     "checkedInAt": "Checked in at",
     "scanNext": "Scan next ticket",
-    "mockNotice": "Preview: live check-in isn't connected yet, so this result is simulated."
+    "mockNotice": "Training preview: example results only. Nothing is recorded.",
+    "title": "Result",
+    "checking": "Checking the ticket…",
+    "undo": "Undo check-in",
+    "undoTitle": "Undo this check-in?",
+    "undoText": "{{name}}'s ticket will be valid again.",
+    "undone": "Check-in undone. The ticket is valid again.",
+    "reasons": {
+      "unrecognized": "Not a BiletFlow ticket, or the code was changed.",
+      "wrong_event": "This ticket is for a different event.",
+      "campaign_qr_not_admission": "This is a promo QR code, not a ticket."
+    }
+  },
+  "counts": "{{checkedIn}} of {{registered}} checked in",
+  "search": {
+    "title": "Search",
+    "label": "Name, email or ticket number",
+    "placeholder": "e.g. Aigerim or BFT-7K2P",
+    "empty": "No matching tickets.",
+    "checkInHint": "Checks this ticket in",
+    "status": {
+      "valid": "Not checked in",
+      "checked_in": "Checked in",
+      "cancelled": "Cancelled",
+      "refunded": "Refunded"
+    }
   }
 }

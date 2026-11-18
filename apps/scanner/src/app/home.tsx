@@ -75,7 +75,12 @@ export default function HomeScreen() {
           <Pressable
             accessibilityRole="button"
             accessibilityHint={t("events.scan")}
-            onPress={() => router.push({ pathname: "/scan/[eventId]", params: { eventId: item.id, title: item.title } })}
+            onPress={() =>
+              router.push({
+                pathname: "/scan/[eventId]",
+                params: { eventId: item.id, title: item.title, timezone: item.timezone, canUndo: String(item.can_undo) },
+              })
+            }
             style={({ pressed }) => [styles.card, pressed && { opacity: 0.8 }]}
           >
             <Text style={styles.cardTitle}>{item.title}</Text>

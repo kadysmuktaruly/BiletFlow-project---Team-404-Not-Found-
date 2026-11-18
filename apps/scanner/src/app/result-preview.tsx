@@ -17,7 +17,7 @@ export default function ResultPreviewScreen() {
           state={state}
           details={
             state === "invalid"
-              ? { campaign: true }
+              ? { reason: t("result.reasons.campaign_qr_not_admission") }
               : { attendeeName: "Aigerim N", ticketTypeName: "Standard", ticketNumber: "BFT-7K2P-9XQM" }
           }
         />

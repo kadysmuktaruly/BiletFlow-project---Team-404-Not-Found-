@@ -146,10 +146,18 @@ npm test -w @biletflow/scanner           # jest (jest-expo)
 ```
 
 After sign-in, the scanner lists only the events you organize or are assigned to as staff
-(`GET /checkin/events`). Tapping one opens the camera, which reads QR codes only. Results use
-color, a symbol and text for all five states: valid, invalid, cancelled, refunded, already
-used. Until live check-in lands (Report 4), the result is simulated on the phone, and the
-screen says so. "Preview result screens" shows all five states for training.
+(`GET /checkin/events`). Tapping one opens the camera, which reads QR codes only, with the live
+"checked in of registered" count on top (refreshed every 10 seconds). Each scan goes to the API
+(`POST /checkin/events/{id}/scan`), which checks the signature and the ticket's live status and
+records the check-in once, even if two phones scan the same ticket. Results use color, a symbol
+and text for all five states: valid, invalid, cancelled, refunded, already used. An invalid
+result says why (not a BiletFlow ticket, another event's ticket, or a promo QR code), and an
+already-used one says when it was checked in (event time zone).
+
+**Search attendees** finds a ticket by name, email or ticket number when its QR won't scan, and
+checks it in with the same call. Owners and event admins see **Undo check-in** (with a
+confirmation) after a valid result; check-in staff don't. "Preview result screens" shows all five
+states for training; nothing is recorded there.
 
 The scanner sends `X-Client: scanner`, so the API returns the refresh token in the response
 body. The app keeps it in the OS keychain or keystore (`expo-secure-store`). The camera is
