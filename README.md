@@ -334,6 +334,31 @@ QR (`BFC1.…`, or a `/c/BFC1.…` link) is never accepted as a ticket.
 Check-ins and reversals are written to the audit log for the event timeline (SRS 4.16).
 `test_checkin_under_2s` checks the two-second target (SRS 7) for 30 scans.
 
+### Promo codes and Campaign QR codes (SRS 4.14)
+
+| Endpoint | Purpose |
+|---|---|
+| `GET/POST /organizer/events/{id}/campaigns` | List or create campaigns. Each campaign has one promo code (yours, or generated) and an opaque Campaign QR link `PUBLIC_BASE_URL/c/BFC1.…`. Percentage (1–100) or fixed-KZT discount, optional validity dates, redemption limit and eligible ticket types. |
+| `GET/PATCH /organizer/events/{id}/campaigns/{campaign_id}` | One campaign with its report: redemptions, orders, tickets sold, gross revenue, discount and net revenue. Name, dates and limit can change; the discount and eligible types can't. |
+| `POST …/campaigns/{campaign_id}/disable` | New checkouts get `promo_disabled`; placed orders keep their discount. |
+| `POST /promo/validate` | Preview: the code, the discount and the new total for the chosen tickets. No sign-in needed. |
+| `GET /campaigns/resolve/{token}` | Where a Campaign QR leads: the event slug and, if the campaign can be used, its code. |
+| `POST /orders` with `promo_code` | Applies the code at checkout. |
+
+**The server computes every discount.** Clients send only a code. Codes are case-insensitive and
+unique across BiletFlow. A percentage rounds down to whole KZT per line; a fixed amount is capped
+at the eligible subtotal and split across eligible lines. A rejected code fails with a clear
+`error.code`: `promo_not_found`, `promo_disabled`, `promo_not_started`, `promo_expired`,
+`promo_exhausted` or `promo_not_applicable`.
+
+**The limit holds under concurrency.** Checkout takes a redemption with one conditional
+`UPDATE … WHERE redeemed_count < max_redemptions`; `ck_promo_codes_within_limit` backs it up
+(`tests/test_promotions.py::test_promo_limit_holds_under_concurrency`). An order awaiting payment
+holds its redemption and gives it back if it fails, expires or is abandoned.
+
+Campaign tokens (`BFC1.`) and admission tokens (`BFT1.`) never overlap, and check-in rejects
+Campaign QR codes. Creating, changing and disabling a campaign is written to the audit log.
+
 ### Attendee web pages (SRS 4.2, 4.4, 4.6, 4.7)
 
 `/events` lists upcoming public events. `/events/{slug}` is the event page with ticket

@@ -30,6 +30,9 @@ class OrderCreate(BaseModel):
     items: list[OrderItemInput] = Field(min_length=1, max_length=20)
     # One per ticket, in item order. Leave empty to issue every ticket in the buyer's name.
     attendees: list[AttendeeInput] = Field(default_factory=list, max_length=100)
+    # SRS 4.14: a promo code, typed or applied from a Campaign QR. Case-insensitive. The
+    # server decides what it's worth; the order shows the discount it applied.
+    promo_code: str | None = Field(default=None, min_length=1, max_length=40)
 
 
 class EventSummary(BaseModel):
@@ -86,6 +89,9 @@ class OrderRead(BaseModel):
     discount_kzt: int
     total_kzt: int
     currency: str
+    # The promo code applied at checkout, as the organizer spelled it.
+    promo_code: str | None = None
+    campaign_name: str | None = None
     # True while the order waits for a (DEMO) payment before `expires_at`.
     payment_required: bool
     expires_at: datetime | None

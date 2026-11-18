@@ -188,6 +188,452 @@
         "title": "AttendeeSearchResult",
         "type": "object"
       },
+      "CampaignCreate": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9-]{2,39}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "discount_kzt": {
+            "anyOf": [
+              {
+                "maximum": 100000000.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discount Kzt"
+          },
+          "discount_percent": {
+            "anyOf": [
+              {
+                "maximum": 100.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discount Percent"
+          },
+          "discount_type": {
+            "$ref": "#/components/schemas/DiscountType"
+          },
+          "ends_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ends At"
+          },
+          "max_redemptions": {
+            "anyOf": [
+              {
+                "maximum": 1000000.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Redemptions"
+          },
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "starts_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Starts At"
+          },
+          "ticket_type_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 50,
+            "title": "Ticket Type Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "discount_type",
+          "name"
+        ],
+        "title": "CampaignCreate",
+        "type": "object"
+      },
+      "CampaignRead": {
+        "properties": {
+          "campaign_url": {
+            "title": "Campaign Url",
+            "type": "string"
+          },
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "disabled_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Disabled At"
+          },
+          "discount_kzt": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discount Kzt"
+          },
+          "discount_percent": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discount Percent"
+          },
+          "discount_type": {
+            "$ref": "#/components/schemas/DiscountType"
+          },
+          "ends_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ends At"
+          },
+          "event_id": {
+            "format": "uuid",
+            "title": "Event Id",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "max_redemptions": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Redemptions"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "qr_token": {
+            "title": "Qr Token",
+            "type": "string"
+          },
+          "redeemed_count": {
+            "title": "Redeemed Count",
+            "type": "integer"
+          },
+          "report": {
+            "$ref": "#/components/schemas/CampaignReport"
+          },
+          "starts_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Starts At"
+          },
+          "status": {
+            "enum": [
+              "active",
+              "scheduled",
+              "expired",
+              "exhausted",
+              "disabled"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "ticket_type_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Ticket Type Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "event_id",
+          "name",
+          "description",
+          "discount_type",
+          "discount_percent",
+          "discount_kzt",
+          "starts_at",
+          "ends_at",
+          "code",
+          "max_redemptions",
+          "redeemed_count",
+          "ticket_type_ids",
+          "status",
+          "campaign_url",
+          "qr_token",
+          "created_at",
+          "disabled_at",
+          "report"
+        ],
+        "title": "CampaignRead",
+        "type": "object"
+      },
+      "CampaignReport": {
+        "description": "SRS 4.14: \"exact redemptions, orders, tickets sold, gross revenue, discount amount,\nand net revenue for each campaign\". Counted over confirmed (and later refunded) orders;\n`net_revenue_kzt` subtracts refunds. DEMO figures: no real money moved.",
+        "properties": {
+          "discount_kzt": {
+            "title": "Discount Kzt",
+            "type": "integer"
+          },
+          "gross_revenue_kzt": {
+            "title": "Gross Revenue Kzt",
+            "type": "integer"
+          },
+          "net_revenue_kzt": {
+            "title": "Net Revenue Kzt",
+            "type": "integer"
+          },
+          "orders": {
+            "title": "Orders",
+            "type": "integer"
+          },
+          "redemptions": {
+            "title": "Redemptions",
+            "type": "integer"
+          },
+          "tickets_sold": {
+            "title": "Tickets Sold",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "redemptions",
+          "orders",
+          "tickets_sold",
+          "gross_revenue_kzt",
+          "discount_kzt",
+          "net_revenue_kzt"
+        ],
+        "title": "CampaignReport",
+        "type": "object"
+      },
+      "CampaignResolution": {
+        "description": "Where a Campaign QR leads. The code comes back only after the server has checked the\ncampaign can be used; otherwise `rejection` says why and the page opens without it.",
+        "properties": {
+          "campaign_name": {
+            "title": "Campaign Name",
+            "type": "string"
+          },
+          "code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code"
+          },
+          "event_id": {
+            "format": "uuid",
+            "title": "Event Id",
+            "type": "string"
+          },
+          "event_slug": {
+            "title": "Event Slug",
+            "type": "string"
+          },
+          "rejection": {
+            "anyOf": [
+              {
+                "enum": [
+                  "promo_not_found",
+                  "promo_disabled",
+                  "promo_not_started",
+                  "promo_expired",
+                  "promo_exhausted",
+                  "promo_not_applicable"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rejection"
+          }
+        },
+        "required": [
+          "event_id",
+          "event_slug",
+          "code",
+          "campaign_name"
+        ],
+        "title": "CampaignResolution",
+        "type": "object"
+      },
+      "CampaignUpdate": {
+        "description": "Name, description, validity dates and the redemption limit. The discount and the\neligible ticket types are fixed once created, so earlier orders stay explainable.",
+        "properties": {
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "ends_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ends At"
+          },
+          "max_redemptions": {
+            "anyOf": [
+              {
+                "maximum": 1000000.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Redemptions"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "starts_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Starts At"
+          }
+        },
+        "title": "CampaignUpdate",
+        "type": "object"
+      },
       "CancelEventRequest": {
         "properties": {
           "reason": {
@@ -364,6 +810,15 @@
         ],
         "title": "ConfirmRequest",
         "type": "object"
+      },
+      "DiscountType": {
+        "description": "SRS 4.14: 'a percentage or fixed-KZT discount'.",
+        "enum": [
+          "percentage",
+          "fixed_kzt"
+        ],
+        "title": "DiscountType",
+        "type": "string"
       },
       "EmailRequest": {
         "properties": {
@@ -1239,6 +1694,19 @@
             "minItems": 1,
             "title": "Items",
             "type": "array"
+          },
+          "promo_code": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Promo Code"
           }
         },
         "required": [
@@ -1337,6 +1805,17 @@
       },
       "OrderRead": {
         "properties": {
+          "campaign_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Campaign Name"
+          },
           "confirmed_at": {
             "anyOf": [
               {
@@ -1392,6 +1871,17 @@
           "payment_required": {
             "title": "Payment Required",
             "type": "boolean"
+          },
+          "promo_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Promo Code"
           },
           "reference": {
             "title": "Reference",
@@ -1864,6 +2354,129 @@
           "account_last4"
         ],
         "title": "PayoutAccountUpsert",
+        "type": "object"
+      },
+      "PromoLine": {
+        "properties": {
+          "discount_kzt": {
+            "title": "Discount Kzt",
+            "type": "integer"
+          },
+          "line_subtotal_kzt": {
+            "title": "Line Subtotal Kzt",
+            "type": "integer"
+          },
+          "line_total_kzt": {
+            "title": "Line Total Kzt",
+            "type": "integer"
+          },
+          "quantity": {
+            "title": "Quantity",
+            "type": "integer"
+          },
+          "ticket_type_id": {
+            "format": "uuid",
+            "title": "Ticket Type Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticket_type_id",
+          "quantity",
+          "line_subtotal_kzt",
+          "discount_kzt",
+          "line_total_kzt"
+        ],
+        "title": "PromoLine",
+        "type": "object"
+      },
+      "PromoQuote": {
+        "description": "What the code is worth for these items. A preview: checkout recomputes it.",
+        "properties": {
+          "campaign_name": {
+            "title": "Campaign Name",
+            "type": "string"
+          },
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "discount_kzt": {
+            "title": "Discount Kzt",
+            "type": "integer"
+          },
+          "discount_percent": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discount Percent"
+          },
+          "discount_type": {
+            "$ref": "#/components/schemas/DiscountType"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/PromoLine"
+            },
+            "title": "Lines",
+            "type": "array"
+          },
+          "subtotal_kzt": {
+            "title": "Subtotal Kzt",
+            "type": "integer"
+          },
+          "total_kzt": {
+            "title": "Total Kzt",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "code",
+          "campaign_name",
+          "discount_type",
+          "discount_percent",
+          "discount_kzt",
+          "subtotal_kzt",
+          "total_kzt",
+          "lines"
+        ],
+        "title": "PromoQuote",
+        "type": "object"
+      },
+      "PromoValidateRequest": {
+        "properties": {
+          "code": {
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Code",
+            "type": "string"
+          },
+          "event_id": {
+            "format": "uuid",
+            "title": "Event Id",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/OrderItemInput"
+            },
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "event_id",
+          "code",
+          "items"
+        ],
+        "title": "PromoValidateRequest",
         "type": "object"
       },
       "PublicEventList": {
@@ -3595,6 +4208,64 @@
         "summary": "Confirm an email address with the token from the verification email",
         "tags": [
           "auth"
+        ]
+      }
+    },
+    "/api/v1/campaigns/resolve/{token}": {
+      "get": {
+        "description": "The `/c/{token}` page calls this. When the campaign can be used, `code` is set so the event page can apply it; otherwise `code` is null and `rejection` says why. The token carries no discount: everything is read from the campaign on the server.",
+        "operationId": "resolve_campaign_api_v1_campaigns_resolve__token__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "title": "Token",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignResolution"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Resolve a Campaign QR link to its event and code",
+        "tags": [
+          "promotions"
         ]
       }
     },
@@ -5774,6 +6445,469 @@
         ]
       }
     },
+    "/api/v1/organizer/events/{event_id}/campaigns": {
+      "get": {
+        "operationId": "list_campaigns_api_v1_organizer_events__event_id__campaigns_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CampaignRead"
+                  },
+                  "title": "Response List Campaigns Api V1 Organizer Events  Event Id  Campaigns Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "This event's campaigns, newest first",
+        "tags": [
+          "campaigns"
+        ]
+      },
+      "post": {
+        "description": "A percentage (1–100) or fixed-KZT discount, optional validity dates, an optional redemption limit and optional eligible ticket types (empty = all). Leave `code` empty to get a generated one. Codes are case-insensitive and unique across BiletFlow (`409 promo_code_taken`).",
+        "operationId": "create_campaign_api_v1_organizer_events__event_id__campaigns_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CampaignCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create a campaign with its promo code and Campaign QR link",
+        "tags": [
+          "campaigns"
+        ]
+      }
+    },
+    "/api/v1/organizer/events/{event_id}/campaigns/{campaign_id}": {
+      "get": {
+        "operationId": "read_campaign_api_v1_organizer_events__event_id__campaigns__campaign_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "campaign_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Campaign Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "One campaign with its sales report",
+        "tags": [
+          "campaigns"
+        ]
+      },
+      "patch": {
+        "description": "The discount and eligible ticket types can't change after creation.",
+        "operationId": "update_campaign_api_v1_organizer_events__event_id__campaigns__campaign_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "campaign_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Campaign Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CampaignUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Change a campaign's name, dates or redemption limit",
+        "tags": [
+          "campaigns"
+        ]
+      }
+    },
+    "/api/v1/organizer/events/{event_id}/campaigns/{campaign_id}/disable": {
+      "post": {
+        "description": "New checkouts get `promo_disabled`. Orders already placed keep their discount.",
+        "operationId": "disable_campaign_api_v1_organizer_events__event_id__campaigns__campaign_id__disable_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "campaign_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Campaign Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Disable a campaign and its code",
+        "tags": [
+          "campaigns"
+        ]
+      }
+    },
     "/api/v1/organizer/events/{event_id}/cancel": {
       "post": {
         "description": "Cancels every valid ticket (they fail at check-in) and releases unpaid orders. Refunds for paid orders arrive with SRS 4.9.",
@@ -7013,6 +8147,73 @@
         "summary": "Update contact details",
         "tags": [
           "organizer"
+        ]
+      }
+    },
+    "/api/v1/promo/validate": {
+      "post": {
+        "description": "No sign-in needed. Returns the discount and new total computed on the server, or an error whose `code` says why the code can't be used: `promo_not_found`, `promo_disabled`, `promo_not_started`, `promo_expired`, `promo_exhausted` or `promo_not_applicable`. Checkout recomputes everything; this is only a preview.",
+        "operationId": "validate_promo_api_v1_promo_validate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PromoValidateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PromoQuote"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Preview what a promo code is worth for these tickets",
+        "tags": [
+          "promotions"
         ]
       }
     }

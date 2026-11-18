@@ -37,6 +37,8 @@ from app.models import (
     Order,
     OrderItem,
     OrganizerProfile,
+    PromoCode,
+    PromotionalCampaign,
     StaffAssignment,
     Ticket,
     TicketType,
@@ -51,7 +53,7 @@ from app.schemas.order import (
     OrderRead,
     TicketRead,
 )
-from app.services import order_emails
+from app.services import order_emails, promotions
 from app.services.mail import Outbound
 from app.tickets.numbers import order_reference, ticket_number
 from app.tickets.tokens import sign_admission_token
@@ -188,8 +190,20 @@ async def create_order(
     # (when tickets are issued) reproduces the order they were listed in.
     item_ids = _ascending_ids(len(requested))
     attendee_ids = _ascending_ids(len(attendees))
+    line_subtotals = [(tt_id, types[tt_id].price_kzt * qty) for tt_id, qty in requested.items()]
+    discounts = [0] * len(line_subtotals)
+    if data.promo_code is not None:
+        # SRS 4.14: computed and redeemed here, on the server, inside the checkout
+        # transaction. A rejected code fails the whole order with its reason.
+        applied = await promotions.apply_to_lines(
+            session, event.id, data.promo_code, line_subtotals, now
+        )
+        await promotions.redeem(session, applied)
+        discounts = applied.discounts
+        order.promo_code_id = applied.code.id
+        order.campaign_id = applied.campaign.id
     subtotal = 0
-    for item_id, (tt_id, qty) in zip(item_ids, requested.items(), strict=True):
+    for item_id, (tt_id, qty), discount in zip(item_ids, requested.items(), discounts, strict=True):
         tt = types[tt_id]
         line = tt.price_kzt * qty
         subtotal += line
@@ -200,8 +214,8 @@ async def create_order(
                 ticket_type_id=tt.id,
                 quantity=qty,
                 unit_price_kzt=tt.price_kzt,
-                discount_kzt=0,
-                line_total_kzt=line,
+                discount_kzt=discount,
+                line_total_kzt=line - discount,
             )
         )
     for attendee_id, a in zip(attendee_ids, attendees, strict=True):
@@ -216,7 +230,7 @@ async def create_order(
             )
         )
     order.subtotal_kzt = subtotal
-    order.discount_kzt = 0
+    order.discount_kzt = sum(discounts)
     order.total_kzt = subtotal - order.discount_kzt
     await session.flush()
 
@@ -318,6 +332,7 @@ async def confirm_order(session: AsyncSession, order: Order, now: datetime | Non
     order.status = OrderStatus.CONFIRMED
     order.confirmed_at = now
     order.expires_at = None
+    promotions.record_redemption(session, order, now)
     await session.flush()
 
 
@@ -333,6 +348,8 @@ async def release_order(session: AsyncSession, order: Order, status: OrderStatus
             .where(TicketType.id == item.ticket_type_id)
             .values(quantity_reserved=TicketType.quantity_reserved - item.quantity)
         )
+    # The redemption it held goes back to the code's limit (docs/decisions.md).
+    await promotions.release(session, order)
     order.status = status
     if status is OrderStatus.CANCELLED:
         order.cancelled_at = datetime.now(UTC)
@@ -475,6 +492,15 @@ async def order_read(session: AsyncSession, order: Order) -> OrderRead:
     tickets = list(
         await session.scalars(select(Ticket).where(Ticket.order_id == order.id).order_by(Ticket.id))
     )
+    promo_code = campaign_name = None
+    if order.promo_code_id is not None:
+        promo_code = await session.scalar(
+            select(PromoCode.code).where(PromoCode.id == order.promo_code_id)
+        )
+    if order.campaign_id is not None:
+        campaign_name = await session.scalar(
+            select(PromotionalCampaign.name).where(PromotionalCampaign.id == order.campaign_id)
+        )
     return OrderRead(
         id=order.id,
         reference=order.reference,
@@ -484,6 +510,8 @@ async def order_read(session: AsyncSession, order: Order) -> OrderRead:
         discount_kzt=order.discount_kzt,
         total_kzt=order.total_kzt,
         currency=order.currency,
+        promo_code=promo_code,
+        campaign_name=campaign_name,
         payment_required=order.status is OrderStatus.AWAITING_PAYMENT,
         expires_at=order.expires_at,
         confirmed_at=order.confirmed_at,
