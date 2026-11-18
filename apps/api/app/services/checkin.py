@@ -27,6 +27,7 @@ from app.models import (
     Attendee,
     CheckInRecord,
     Event,
+    Order,
     OrganizerProfile,
     StaffAssignment,
     Ticket,
@@ -39,6 +40,8 @@ from app.schemas.checkin import (
     CheckInStats,
     CheckInTicket,
     InvalidReason,
+    OrganizerAttendee,
+    OrganizerAttendeeList,
     ScanResult,
     UndoResult,
 )
@@ -346,4 +349,56 @@ async def search(session: AsyncSession, access: StaffAccess, q: str | None) -> A
     return AttendeeSearchResult(
         tickets=await search_tickets(session, access.event.id, q),
         stats=await stats(session, access.event.id),
+    )
+
+
+async def organizer_attendees(
+    session: AsyncSession,
+    event_id: uuid.UUID,
+    q: str | None,
+    status: TicketStatus | None,
+    limit: int = 200,
+) -> OrganizerAttendeeList:
+    """The organizer's attendee list: every ticket of the event, searchable, with status."""
+    query = (
+        select(Ticket, Attendee, TicketType.name, Order.reference)
+        .join(Attendee, Attendee.id == Ticket.attendee_id)
+        .join(TicketType, TicketType.id == Ticket.ticket_type_id)
+        .join(Order, Order.id == Ticket.order_id)
+        .where(Ticket.event_id == event_id)
+    )
+    term = (q or "").strip()
+    if term:
+        pattern = _like(term)
+        query = query.where(
+            or_(
+                Attendee.full_name.ilike(pattern, escape="\\"),
+                Attendee.email.ilike(pattern, escape="\\"),
+                Ticket.ticket_number.ilike(pattern, escape="\\"),
+                Order.reference.ilike(pattern, escape="\\"),
+            )
+        )
+    if status is not None:
+        query = query.where(Ticket.status == status)
+    rows = (
+        (
+            await session.execute(
+                query.order_by(Attendee.full_name, Ticket.ticket_number).limit(limit + 1)
+            )
+        )
+        .tuples()
+        .all()
+    )
+    attendees = [
+        OrganizerAttendee(
+            **_to_view(ticket, attendee.full_name, type_name).model_dump(),
+            attendee_email=attendee.email,
+            order_id=ticket.order_id,
+            order_reference=reference,
+            issued_at=ticket.issued_at,
+        )
+        for ticket, attendee, type_name, reference in rows[:limit]
+    ]
+    return OrganizerAttendeeList(
+        attendees=attendees, stats=await stats(session, event_id), truncated=len(rows) > limit
     )

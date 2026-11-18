@@ -422,3 +422,48 @@ async def test_checkin_under_2s(client: httpx.AsyncClient, session: AsyncSession
     p95 = statistics.quantiles(timings, n=20)[-1]
     assert p95 < 2.0, f"p95 {p95:.3f}s"
     assert max(timings) < 2.0
+
+
+# --- the organizer's attendee list --------------------------------------------------------
+
+
+async def test_organizer_attendee_list_search_status_and_isolation(
+    client: httpx.AsyncClient, session: AsyncSession
+) -> None:
+    door = await make_door(client, session)
+    await scan(client, door, door.tickets[0]["qr_payload"])
+    await set_status(session, door.tickets[2]["id"], TicketStatus.REFUNDED)
+    url = f"{API_PREFIX}/organizer/events/{door.event.id}/attendees"
+
+    everyone = (await client.get(url, headers=bearer(door.owner))).json()
+    assert [(a["attendee_name"], a["status"]) for a in everyone["attendees"]] == [
+        ("Aigerim Bekova", "checked_in"),
+        ("Daniyar Sadykov", "valid"),
+        ("Ruslan 100%_Off", "refunded"),
+    ]
+    first = everyone["attendees"][0]
+    assert first["attendee_email"] == "guest0@example.kz"
+    assert first["order_reference"].startswith("BF-")
+    assert first["checked_in_at"] is not None
+    assert everyone["stats"] == {"registered": 2, "checked_in": 1}
+    assert everyone["truncated"] is False
+
+    by_ref = (
+        await client.get(
+            url, headers=bearer(door.owner), params={"q": first["order_reference"].lower()}
+        )
+    ).json()
+    assert len(by_ref["attendees"]) == 3  # one order, three tickets
+    refunded = (
+        await client.get(url, headers=bearer(door.owner), params={"status": "refunded"})
+    ).json()
+    assert [a["attendee_name"] for a in refunded["attendees"]] == ["Ruslan 100%_Off"]
+    bad = await client.get(url, headers=bearer(door.owner), params={"status": "lost"})
+    assert bad.status_code == 422
+
+    # Staff use the scanner's search; the organizer list is the owner's only.
+    for outsider in (door.admin, door.staff):
+        response = await client.get(url, headers=bearer(outsider))
+        assert response.status_code in (403, 404)
+    other = await make_door(client, session)
+    assert (await client.get(url, headers=bearer(other.owner))).status_code == 404

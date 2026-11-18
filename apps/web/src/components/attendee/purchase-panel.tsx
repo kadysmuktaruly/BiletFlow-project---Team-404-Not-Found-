@@ -2,7 +2,7 @@
 
 import type { Schemas } from "@biletflow/api-types";
 import { useFormatter, useTranslations } from "next-intl";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import type { PublicEvent } from "@/components/event-view";
 import { Alert, Button, Field } from "@/components/ui";
@@ -13,10 +13,20 @@ import { useMoney } from "@/lib/format";
 import { useErrorMessage } from "@/lib/use-error-message";
 
 type Attendee = Schemas["AttendeeInput"];
+type PromoQuote = Schemas["PromoQuote"];
 
 /** Ticket selection, then attendee details, then the order (SRS 4.4, 4.6). Totals shown
- * here are a preview; the server computes the real amounts. */
-export function PurchasePanel({ event }: { event: PublicEvent }) {
+ * here are a preview; the server computes the real amounts, discounts included (SRS 4.14).
+ * `initialPromo` comes from a Campaign QR link, already checked by the server. */
+export function PurchasePanel({
+  event,
+  initialPromo = null,
+  campaignRejection = null,
+}: {
+  event: PublicEvent;
+  initialPromo?: string | null;
+  campaignRejection?: string | null;
+}) {
   const t = useTranslations();
   const format = useFormatter();
   const money = useMoney();
@@ -29,10 +39,39 @@ export function PurchasePanel({ event }: { event: PublicEvent }) {
   const [attendees, setAttendees] = useState<Attendee[]>([]);
   const [error, setError] = useState<unknown>(null);
   const [busy, setBusy] = useState(false);
+  const [promoInput, setPromoInput] = useState(initialPromo ?? "");
+  const [promoCode, setPromoCode] = useState<string | null>(initialPromo);
+  // Each server answer remembers which code and selection it was for, so a stale answer is
+  // never shown against a changed selection.
+  const [promoResult, setPromoResult] = useState<{ key: string; quote?: PromoQuote; error?: unknown } | null>(null);
 
   const selected = event.ticket_types.filter((tt) => (quantities[tt.id] ?? 0) > 0);
-  const total = selected.reduce((sum, tt) => sum + tt.price_kzt * quantities[tt.id], 0);
+  const subtotal = selected.reduce((sum, tt) => sum + tt.price_kzt * quantities[tt.id], 0);
   const slots = selected.flatMap((tt) => Array.from({ length: quantities[tt.id] }, () => tt));
+  const items = selected.map((tt) => ({ ticket_type_id: tt.id, quantity: quantities[tt.id] }));
+  const itemsJson = JSON.stringify(items);
+  const promoKey = promoCode && items.length > 0 ? `${promoCode}|${itemsJson}` : null;
+  const current = promoResult && promoResult.key === promoKey ? promoResult : null;
+  const quote = current?.quote ?? null;
+  const promoError = current?.error ?? null;
+  const checkingPromo = promoKey !== null && current === null;
+  const total = quote ? quote.total_kzt : subtotal;
+
+  useEffect(() => {
+    if (!promoKey || !promoCode) return;
+    let active = true;
+    unwrap(
+      api.POST("/api/v1/promo/validate", {
+        body: { event_id: event.id, code: promoCode, items: JSON.parse(itemsJson) as typeof items },
+      }),
+    )
+      .then((q) => active && setPromoResult({ key: promoKey, quote: q }))
+      .catch((err: unknown) => active && setPromoResult({ key: promoKey, error: err }));
+    return () => {
+      active = false;
+    };
+    // `itemsJson` is part of `promoKey`; listing both keeps the lint rule exact.
+  }, [promoKey, promoCode, itemsJson, event.id]);
 
   if (event.status === "cancelled") return null;
   if (!event.registration_open) {
@@ -79,8 +118,10 @@ export function PurchasePanel({ event }: { event: PublicEvent }) {
         api.POST("/api/v1/orders", {
           body: {
             event_id: event.id,
-            items: selected.map((tt) => ({ ticket_type_id: tt.id, quantity: quantities[tt.id] })),
+            items,
             attendees: attendees.map((a) => ({ ...a, email: a.email || null })),
+            // Only a code the server accepted for this selection; checkout checks it again.
+            promo_code: quote ? quote.code : null,
           },
         }),
       );
@@ -90,6 +131,89 @@ export function PurchasePanel({ event }: { event: PublicEvent }) {
       setBusy(false);
     }
   }
+
+  const totals = (
+    <div className="space-y-1 border-t border-gray-100 pt-3">
+      {quote && quote.discount_kzt > 0 && (
+        <dl className="space-y-1 text-sm text-gray-700">
+          <div className="flex justify-between">
+            <dt>{t("purchase.subtotal")}</dt>
+            <dd>{money(quote.subtotal_kzt)}</dd>
+          </div>
+          <div className="flex justify-between">
+            <dt>{t("purchase.discount", { code: quote.code })}</dt>
+            <dd>−{money(quote.discount_kzt)}</dd>
+          </div>
+        </dl>
+      )}
+      <div className="flex items-center justify-between font-semibold text-gray-900">
+        <span>{t("purchase.total")}</span>
+        <span>{total === 0 ? t("event.view.free") : money(total)}</span>
+      </div>
+    </div>
+  );
+
+  const promoBox = (
+    <div className="space-y-2">
+      {campaignRejection && !promoCode && (
+        <Alert kind="info">
+          {t("purchase.campaignRejected", {
+            reason: t.has(`errors.${campaignRejection}`) ? t(`errors.${campaignRejection}`) : t("errors.generic"),
+          })}
+        </Alert>
+      )}
+      {promoCode ? (
+        <div className="flex flex-wrap items-center justify-between gap-2 text-sm" aria-live="polite">
+          <span className="text-gray-800">
+            {checkingPromo
+              ? t("purchase.promoChecking")
+              : quote
+                ? t("purchase.promoApplied", { code: quote.code, amount: money(quote.discount_kzt) })
+                : items.length === 0
+                  ? t("purchase.promoPending", { code: promoCode })
+                  : null}
+          </span>
+          <button
+            type="button"
+            className="font-medium text-gray-900 underline"
+            onClick={() => {
+              setPromoCode(null);
+              setPromoInput("");
+            }}
+          >
+            {t("purchase.promoRemove")}
+          </button>
+          {promoError ? (
+            <div className="w-full">
+              <Alert kind="error">{errorMessage(promoError)}</Alert>
+            </div>
+          ) : null}
+        </div>
+      ) : (
+        <form
+          className="flex items-end gap-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            const code = promoInput.trim();
+            if (code) setPromoCode(code);
+          }}
+        >
+          <Field
+            className="flex-1"
+            label={t("purchase.promoLabel")}
+            value={promoInput}
+            onChange={(e) => setPromoInput(e.target.value)}
+            maxLength={40}
+            autoComplete="off"
+            autoCapitalize="characters"
+          />
+          <Button type="submit" variant="secondary" disabled={!promoInput.trim()}>
+            {t("purchase.promoApply")}
+          </Button>
+        </form>
+      )}
+    </div>
+  );
 
   const errorText =
     error instanceof Error && error.message === "select" ? t("purchase.selectTickets") : error ? errorMessage(error) : null;
@@ -125,10 +249,7 @@ export function PurchasePanel({ event }: { event: PublicEvent }) {
             />
           </fieldset>
         ))}
-        <div className="flex items-center justify-between border-t border-gray-100 pt-3 font-semibold text-gray-900">
-          <span>{t("purchase.total")}</span>
-          <span>{total === 0 ? t("event.view.free") : money(total)}</span>
-        </div>
+        {totals}
         <div className="flex flex-col gap-2">
           <Button type="submit" disabled={busy}>
             {total === 0 ? t("purchase.placeOrder") : t("purchase.reserve")}
@@ -184,11 +305,9 @@ export function PurchasePanel({ event }: { event: PublicEvent }) {
           </div>
         );
       })}
+      {promoBox}
       {errorText && <Alert kind="error">{errorText}</Alert>}
-      <div className="flex items-center justify-between font-semibold text-gray-900">
-        <span>{t("purchase.total")}</span>
-        <span>{total === 0 ? t("event.view.free") : money(total)}</span>
-      </div>
+      {totals}
       <Button className="w-full" onClick={toAttendees}>
         {status === "authenticated" ? t("purchase.continue") : t("purchase.signInToContinue")}
       </Button>

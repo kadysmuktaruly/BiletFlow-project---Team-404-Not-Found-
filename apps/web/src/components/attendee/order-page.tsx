@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { TicketPdfButton } from "@/components/ticket-pdf-button";
 import { TicketQr } from "@/components/ticket-qr";
 import { Alert, Card, PageTitle } from "@/components/ui";
 import { Link } from "@/i18n/navigation";
@@ -53,6 +54,18 @@ export function OrderPage() {
         <p className="text-sm text-gray-700">
           {t("order.statusLabel", { status: t(`order.status.${order.status}`) })}
         </p>
+        {order.discount_kzt > 0 && (
+          <dl className="space-y-1 text-sm text-gray-700">
+            <div className="flex justify-between">
+              <dt>{t("order.subtotal")}</dt>
+              <dd>{money(order.subtotal_kzt)}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt>{t("order.discount", { code: order.promo_code ?? "" })}</dt>
+              <dd>−{money(order.discount_kzt)}</dd>
+            </div>
+          </dl>
+        )}
         <p className="font-semibold text-gray-900">
           {order.total_kzt === 0 ? t("order.free") : `${t("order.total")}: ${money(order.total_kzt)}`}
         </p>
@@ -73,6 +86,7 @@ export function OrderPage() {
                 <p className="text-sm text-gray-700">
                   {ticket.ticket_type_name} · {ticket.attendee_name}
                 </p>
+                <TicketPdfButton ticketId={ticket.id} ticketNumber={ticket.ticket_number} />
               </Card>
             </li>
           ))}

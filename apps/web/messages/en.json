@@ -130,7 +130,9 @@
         "tickets": "Tickets",
         "activation": "Paid sales",
         "staff": "Staff",
-        "preview": "Preview"
+        "preview": "Preview",
+        "campaigns": "Campaigns",
+        "attendees": "Attendees"
       },
       "publish": "Publish",
       "unpublish": "Unpublish",
@@ -233,6 +235,78 @@
     },
     "preview": {
       "banner": "Preview: this is how attendees will see the page."
+    },
+    "campaigns": {
+      "lead": "Promo campaigns give a discount through a code or a Campaign QR. The server checks every code and works out the discount.",
+      "empty": "No campaigns yet.",
+      "add": "New campaign",
+      "name": "Campaign name",
+      "description": "Description",
+      "discountType": "Discount",
+      "percentage": "Percentage",
+      "fixed": "Fixed amount (KZT)",
+      "percent": "Percent off",
+      "amount": "Amount off (KZT)",
+      "code": "Promo code",
+      "codeHint": "Letters, digits and dashes. Leave empty to generate one.",
+      "startsAt": "Valid from",
+      "endsAt": "Valid until",
+      "datesHint": "In the event's time zone ({timezone}).",
+      "maxRedemptions": "Maximum redemptions",
+      "maxRedemptionsHint": "Leave empty for no limit.",
+      "eligibleTypes": "Applies to",
+      "eligibleHint": "Choose none to apply it to every ticket type.",
+      "create": "Create campaign",
+      "statusLabel": "Status",
+      "status": {
+        "active": "Active",
+        "scheduled": "Scheduled",
+        "expired": "Expired",
+        "exhausted": "Limit reached",
+        "disabled": "Disabled"
+      },
+      "used": "{count} used",
+      "usedOf": "{count} of {max} used",
+      "percentOff": "{value}% off",
+      "amountOff": "{amount} off",
+      "allTypes": "All ticket types",
+      "report": {
+        "redemptions": "Redemptions",
+        "orders": "Orders",
+        "ticketsSold": "Tickets sold",
+        "gross": "Gross",
+        "discount": "Discounts",
+        "net": "Net"
+      },
+      "demoNote": "DEMO figures: no real money moved.",
+      "disable": "Disable",
+      "disableConfirm": "Disable this campaign? New orders won't be able to use its code. Orders already placed keep their discount.",
+      "downloadSvg": "Download QR (SVG)",
+      "downloadPdf": "Download poster (PDF)",
+      "copyLink": "Copy link",
+      "copied": "Link copied.",
+      "link": "Campaign link",
+      "qrAlt": "Campaign QR for code {code}: a promotion, not a ticket",
+      "notATicket": "Promo, not a ticket"
+    },
+    "attendees": {
+      "lead": "Everyone with a ticket for this event, with live ticket status.",
+      "search": "Search",
+      "searchHint": "Name, email, ticket number or order reference",
+      "statusFilter": "Status",
+      "all": "All",
+      "counts": "{registered} registered · {checkedIn} checked in",
+      "empty": "No attendees match.",
+      "truncated": "Showing the first 200. Narrow the search to see the rest.",
+      "col": {
+        "name": "Attendee",
+        "email": "Email",
+        "type": "Ticket type",
+        "number": "Ticket number",
+        "order": "Order",
+        "status": "Status",
+        "checkedIn": "Checked in"
+      }
     }
   },
   "event": {
@@ -339,7 +413,19 @@
     "max_per_order_exceeded": "That's more than the limit per order for this ticket.",
     "attendee_count_mismatch": "Enter one attendee for each ticket.",
     "duplicate_ticket_type": "Each ticket type can only be listed once.",
-    "ticket_not_found": "Ticket not found."
+    "ticket_not_found": "Ticket not found.",
+    "promo_not_found": "This promo code doesn't exist for this event.",
+    "promo_disabled": "This promo code has been disabled.",
+    "promo_not_started": "This promo code isn't valid yet.",
+    "promo_expired": "This promo code has expired.",
+    "promo_exhausted": "This promo code has been used the maximum number of times.",
+    "promo_not_applicable": "This promo code doesn't apply to the selected tickets.",
+    "campaign_not_found": "This campaign isn't valid.",
+    "promo_code_taken": "That code is already in use. Pick another one.",
+    "max_redemptions_below_used": "The limit can't be lower than the redemptions already used.",
+    "invalid_window": "The end must not be before the start.",
+    "event_read_only": "Cancelled and completed events can't be changed.",
+    "download_failed": "The download didn't work. Try again."
   },
   "events": {
     "title": "Upcoming events",
@@ -363,7 +449,16 @@
     "placeOrder": "Get tickets",
     "reserve": "Continue to payment",
     "back": "Change tickets",
-    "registrationClosed": "Registration is closed for this event."
+    "registrationClosed": "Registration is closed for this event.",
+    "promoLabel": "Promo code",
+    "promoApply": "Apply",
+    "promoRemove": "Remove code",
+    "promoApplied": "Code {code} applied: −{amount}",
+    "promoPending": "Code {code} will be applied when you choose tickets.",
+    "promoChecking": "Checking the code…",
+    "subtotal": "Subtotal",
+    "discount": "Discount ({code})",
+    "campaignRejected": "The campaign code couldn't be applied: {reason}"
   },
   "checkout": {
     "title": "DEMO payment",
@@ -396,7 +491,10 @@
       "failed": "Payment failed",
       "expired": "Expired"
     },
-    "payNow": "Go to payment"
+    "payNow": "Go to payment",
+    "subtotal": "Subtotal",
+    "discount": "Discount ({code})",
+    "downloadPdf": "Download PDF"
   },
   "tickets": {
     "title": "My tickets",
@@ -411,6 +509,13 @@
       "checked_in": "Checked in",
       "cancelled": "Cancelled",
       "refunded": "Refunded"
-    }
+    },
+    "downloadPdf": "Download PDF",
+    "downloadPdfLabel": "Download ticket {number} as a PDF"
+  },
+  "campaignLink": {
+    "opening": "Opening the event…",
+    "invalid": "This campaign link isn't valid.",
+    "browse": "Browse events"
   }
 }

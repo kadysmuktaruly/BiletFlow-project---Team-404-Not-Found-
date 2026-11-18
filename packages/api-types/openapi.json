@@ -1939,6 +1939,114 @@
         "title": "OrderStatus",
         "type": "string"
       },
+      "OrganizerAttendee": {
+        "description": "A row of the organizer's attendee list (SRS 4.4: \"The organizer shall see the\nregistration in the attendee list\").",
+        "properties": {
+          "attendee_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attendee Email"
+          },
+          "attendee_name": {
+            "title": "Attendee Name",
+            "type": "string"
+          },
+          "checked_in_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Checked In At"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "issued_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Issued At"
+          },
+          "order_id": {
+            "format": "uuid",
+            "title": "Order Id",
+            "type": "string"
+          },
+          "order_reference": {
+            "title": "Order Reference",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TicketStatus"
+          },
+          "ticket_number": {
+            "title": "Ticket Number",
+            "type": "string"
+          },
+          "ticket_type_name": {
+            "title": "Ticket Type Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "ticket_number",
+          "status",
+          "attendee_name",
+          "ticket_type_name",
+          "checked_in_at",
+          "attendee_email",
+          "order_id",
+          "order_reference",
+          "issued_at"
+        ],
+        "title": "OrganizerAttendee",
+        "type": "object"
+      },
+      "OrganizerAttendeeList": {
+        "properties": {
+          "attendees": {
+            "items": {
+              "$ref": "#/components/schemas/OrganizerAttendee"
+            },
+            "title": "Attendees",
+            "type": "array"
+          },
+          "stats": {
+            "$ref": "#/components/schemas/CheckInStats"
+          },
+          "truncated": {
+            "title": "Truncated",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "attendees",
+          "stats",
+          "truncated"
+        ],
+        "title": "OrganizerAttendeeList",
+        "type": "object"
+      },
       "OrganizerProfileRead": {
         "properties": {
           "contact_email": {
@@ -6517,6 +6625,118 @@
         "summary": "Accept the paid-event terms",
         "tags": [
           "activation"
+        ]
+      }
+    },
+    "/api/v1/organizer/events/{event_id}/attendees": {
+      "get": {
+        "description": "Every ticket of the event with its attendee, type, number, order reference and live status (valid, checked in, cancelled, refunded). `q` matches name, email, ticket number or order reference, case-insensitively; `status` filters. Up to 200 rows; `truncated` says there were more.",
+        "operationId": "list_attendees_api_v1_organizer_events__event_id__attendees_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 200,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/TicketStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizerAttendeeList"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Attendee list with ticket status",
+        "tags": [
+          "organizer"
         ]
       }
     },

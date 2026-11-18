@@ -16,6 +16,7 @@ import secrets
 import uuid
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from zoneinfo import ZoneInfo
 
 from sqlalchemy import func, select, update
 from sqlalchemy.exc import IntegrityError
@@ -35,6 +36,7 @@ from app.models import (
     TicketType,
     User,
 )
+from app.schemas.event import localize
 from app.schemas.order import OrderItemInput
 from app.schemas.promo import (
     CampaignCreate,
@@ -456,6 +458,12 @@ async def create(
         while await _code_taken(session, text):
             text = _new_code()
 
+    # Like event times, a date without a UTC offset is local time at the event.
+    tz = ZoneInfo(event.timezone)
+    starts_at = localize(data.starts_at, tz) if data.starts_at else None
+    ends_at = localize(data.ends_at, tz) if data.ends_at else None
+    if starts_at and ends_at and ends_at < starts_at:
+        raise AppError(422, "invalid_window", "ends_at must not be before starts_at.")
     campaign = PromotionalCampaign(
         id=uuid.uuid4(),
         event_id=event.id,
@@ -465,8 +473,8 @@ async def create(
         discount_type=data.discount_type,
         discount_percent=data.discount_percent,
         discount_kzt=data.discount_kzt,
-        starts_at=data.starts_at,
-        ends_at=data.ends_at,
+        starts_at=starts_at,
+        ends_at=ends_at,
         qr_token=_new_token(),
         created_by_user_id=user.id,
     )
@@ -524,11 +532,15 @@ async def update_campaign(
                 f"{code.redeemed_count} redemptions are already taken.",
             )
         code.max_redemptions = limit
+    tz = ZoneInfo(event.timezone)
     for field in ("name", "description", "starts_at", "ends_at"):
         if field in changes:
-            if field == "name" and changes[field] is None:
+            value = changes[field]
+            if field == "name" and value is None:
                 continue
-            setattr(campaign, field, changes[field])
+            if field in ("starts_at", "ends_at") and value is not None:
+                value = localize(value, tz)
+            setattr(campaign, field, value)
     if campaign.starts_at and campaign.ends_at and campaign.ends_at < campaign.starts_at:
         raise AppError(422, "invalid_window", "ends_at must not be before starts_at.")
     audit.record(

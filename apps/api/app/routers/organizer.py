@@ -1,12 +1,15 @@
 """/organizer: the signed-in organizer's profile, payout account and events (SRS 4.1, 4.2)."""
 
 import uuid
+from typing import Annotated
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Query, status
 
 from app.deps import CurrentOrganizer, OrganizerUser, OwnedEvent, SessionDep
+from app.enums import TicketStatus
 from app.errors import AppError, error_responses
 from app.models import Event, OrganizerProfile, PayoutAccount
+from app.schemas.checkin import OrganizerAttendeeList
 from app.schemas.event import (
     CancelEventRequest,
     EventCreate,
@@ -22,6 +25,7 @@ from app.schemas.organizer import (
 )
 from app.schemas.staff import StaffAssign, StaffRead
 from app.schemas.ticket_type import TicketTypeCreate, TicketTypeRead, TicketTypeUpdate
+from app.services import checkin as checkin_service
 from app.services import events as event_service
 from app.services import organizer as organizer_service
 from app.services import staff as staff_service
@@ -262,3 +266,24 @@ async def delete_ticket_type(
 ) -> None:
     tt = await ticket_type_service.get_for_event(session, event, ticket_type_id)
     await ticket_type_service.delete(session, event, tt, user)
+
+
+@router.get(
+    "/events/{event_id}/attendees",
+    response_model=OrganizerAttendeeList,
+    responses=error_responses(404, 422),
+    summary="Attendee list with ticket status",
+    description=(
+        "Every ticket of the event with its attendee, type, number, order reference and "
+        "live status (valid, checked in, cancelled, refunded). `q` matches name, email, "
+        "ticket number or order reference, case-insensitively; `status` filters. Up to 200 "
+        "rows; `truncated` says there were more."
+    ),
+)
+async def list_attendees(
+    event: OwnedEvent,
+    session: SessionDep,
+    q: Annotated[str | None, Query(max_length=200)] = None,
+    status: TicketStatus | None = None,
+) -> OrganizerAttendeeList:
+    return await checkin_service.organizer_attendees(session, event.id, q, status)

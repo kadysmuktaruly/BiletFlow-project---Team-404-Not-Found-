@@ -639,6 +639,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/organizer/events/{event_id}/attendees": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Attendee list with ticket status
+         * @description Every ticket of the event with its attendee, type, number, order reference and live status (valid, checked in, cancelled, refunded). `q` matches name, email, ticket number or order reference, case-insensitively; `status` filters. Up to 200 rows; `truncated` says there were more.
+         */
+        get: operations["list_attendees_api_v1_organizer_events__event_id__attendees_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/organizer/events/{event_id}/campaigns": {
         parameters: {
             query?: never;
@@ -1620,6 +1640,46 @@ export interface components {
          * @enum {string}
          */
         OrderStatus: "pending" | "awaiting_payment" | "confirmed" | "cancelled" | "refunded" | "failed" | "expired";
+        /**
+         * OrganizerAttendee
+         * @description A row of the organizer's attendee list (SRS 4.4: "The organizer shall see the
+         *     registration in the attendee list").
+         */
+        OrganizerAttendee: {
+            /** Attendee Email */
+            attendee_email: string | null;
+            /** Attendee Name */
+            attendee_name: string;
+            /** Checked In At */
+            checked_in_at: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Issued At */
+            issued_at: string | null;
+            /**
+             * Order Id
+             * Format: uuid
+             */
+            order_id: string;
+            /** Order Reference */
+            order_reference: string;
+            status: components["schemas"]["TicketStatus"];
+            /** Ticket Number */
+            ticket_number: string;
+            /** Ticket Type Name */
+            ticket_type_name: string;
+        };
+        /** OrganizerAttendeeList */
+        OrganizerAttendeeList: {
+            /** Attendees */
+            attendees: components["schemas"]["OrganizerAttendee"][];
+            stats: components["schemas"]["CheckInStats"];
+            /** Truncated */
+            truncated: boolean;
+        };
         /** OrganizerProfileRead */
         OrganizerProfileRead: {
             /** Contact Email */
@@ -2322,6 +2382,8 @@ export type SchemaOrderItemRead = components['schemas']['OrderItemRead'];
 export type SchemaOrderPaymentResult = components['schemas']['OrderPaymentResult'];
 export type SchemaOrderRead = components['schemas']['OrderRead'];
 export type SchemaOrderStatus = components['schemas']['OrderStatus'];
+export type SchemaOrganizerAttendee = components['schemas']['OrganizerAttendee'];
+export type SchemaOrganizerAttendeeList = components['schemas']['OrganizerAttendeeList'];
 export type SchemaOrganizerProfileRead = components['schemas']['OrganizerProfileRead'];
 export type SchemaOrganizerProfileUpdate = components['schemas']['OrganizerProfileUpdate'];
 export type SchemaOrganizerSummary = components['schemas']['OrganizerSummary'];
@@ -4313,6 +4375,67 @@ export interface operations {
                 };
             };
             /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_attendees_api_v1_organizer_events__event_id__attendees_get: {
+        parameters: {
+            query?: {
+                q?: string | null;
+                status?: components["schemas"]["TicketStatus"] | null;
+            };
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrganizerAttendeeList"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
             422: {
                 headers: {
                     [name: string]: unknown;

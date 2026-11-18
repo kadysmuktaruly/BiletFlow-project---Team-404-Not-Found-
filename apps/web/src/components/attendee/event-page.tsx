@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 
@@ -16,6 +16,10 @@ export function EventPage() {
   const t = useTranslations("common");
   const errorMessage = useErrorMessage();
   const { slug } = useParams<{ slug: string }>();
+  // Set by the Campaign QR landing page (/c/[token]) after the server resolved the campaign.
+  const search = useSearchParams();
+  const promo = search.get("promo");
+  const promoRejected = search.get("promo_rejected");
   const { status } = useAuth();
   const [event, setEvent] = useState<PublicEvent | null>(null);
   const [error, setError] = useState<unknown>(null);
@@ -30,5 +34,10 @@ export function EventPage() {
 
   if (error) return <Alert kind="error">{errorMessage(error)}</Alert>;
   if (!event) return <p className="text-gray-600">{t("loading")}</p>;
-  return <EventView event={event} ticketSlot={<PurchasePanel event={event} />} />;
+  return (
+    <EventView
+      event={event}
+      ticketSlot={<PurchasePanel event={event} initialPromo={promo} campaignRejection={promoRejected} />}
+    />
+  );
 }

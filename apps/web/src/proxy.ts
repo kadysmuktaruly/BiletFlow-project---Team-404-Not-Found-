@@ -7,6 +7,7 @@ import { routing } from "./i18n/routing";
 export default createMiddleware(routing);
 
 export const config = {
-  // Everything except API routes, Next internals and files with an extension.
-  matcher: "/((?!api|_next|_vercel|.*\\..*).*)",
+  // Everything except API routes, Next internals and files with an extension. Campaign QR
+  // links (/c/BFC1.<token>) contain a dot but are pages, so they're matched explicitly.
+  matcher: ["/((?!api|_next|_vercel|.*\\..*).*)", "/c/:path*", "/:locale(kk|ru|en)/c/:path*"],
 };

@@ -540,3 +540,25 @@ async def test_private_event_campaign_links_stay_private(
         f"{API_PREFIX}/campaigns/resolve/{hidden['qr_token']}", headers=bearer(shop.owner)
     )
     assert owner.status_code == 200
+
+
+async def test_campaign_dates_without_an_offset_are_event_local(
+    client: httpx.AsyncClient, session: AsyncSession
+) -> None:
+    shop = await make_shop(session, timezone="Asia/Almaty")
+    created = await create_campaign(
+        client, shop, starts_at="2026-12-01T09:00", ends_at="2026-12-31T23:59"
+    )
+
+    # Almaty is UTC+5 all year.
+    def instant(value: str) -> datetime:
+        return datetime.fromisoformat(value).astimezone(UTC)
+
+    assert instant(created["starts_at"]) == datetime(2026, 12, 1, 4, 0, tzinfo=UTC)
+    assert instant(created["ends_at"]) == datetime(2026, 12, 31, 18, 59, tzinfo=UTC)
+    updated = await client.patch(
+        f"{shop.campaigns}/{created['id']}",
+        headers=bearer(shop.owner),
+        json={"ends_at": "2027-01-10T10:00"},
+    )
+    assert instant(updated.json()["ends_at"]) == datetime(2027, 1, 10, 5, 0, tzinfo=UTC)
