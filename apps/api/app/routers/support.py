@@ -29,7 +29,7 @@ async def open_case(
     data: CaseCreate, user: CurrentUser, session: SessionDep, background: BackgroundTasks
 ) -> CaseRead:
     case, outbound = await support_service.create_case(session, user, data)
-    schedule(background, outbound)
+    await schedule(background, outbound)
     return await support_service.read_case(session, user, case.id)
 
 
@@ -74,7 +74,7 @@ async def reply(
     background: BackgroundTasks,
 ) -> CaseRead:
     case, outbound = await support_service.add_message(session, user, case_id, data)
-    schedule(background, outbound)
+    await schedule(background, outbound)
     return await support_service.read_case(session, user, case.id)
 
 
@@ -97,5 +97,5 @@ async def update_case(
     background: BackgroundTasks,
 ) -> CaseRead:
     case, outbound = await support_service.update_case(session, user, case_id, data)
-    schedule(background, outbound)
+    await schedule(background, outbound)
     return await support_service.read_case(session, user, case.id)
