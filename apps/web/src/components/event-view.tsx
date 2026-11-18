@@ -5,7 +5,8 @@ import { useTranslations } from "next-intl";
 
 import { useEventDateTime, useMoney } from "@/lib/format";
 
-import { Alert } from "./ui";
+import { Poster } from "./event-card";
+import { Alert, Badge, LINK, PriceTag, SECTION_TITLE } from "./ui";
 
 export type PublicEvent = Schemas["PublicEventRead"];
 export type PublicTicketType = Schemas["PublicTicketTypeRead"];
@@ -25,95 +26,97 @@ export function EventView({
   const venue = event.venue;
 
   return (
-    <article className="grid gap-8 lg:grid-cols-[1fr_22rem]">
-      <div className="space-y-6">
-        {event.cover_image_url && (
-          // eslint-disable-next-line @next/next/no-img-element -- organizer-supplied URL, any host
-          <img
-            src={event.cover_image_url}
-            alt=""
-            className="aspect-[2/1] w-full rounded-lg border border-gray-200 object-cover"
-          />
-        )}
-        <header className="space-y-2">
-          {event.category && (
-            <p className="text-sm font-medium uppercase tracking-wide text-gray-600">{event.category}</p>
-          )}
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900">{event.title}</h1>
-        </header>
-        {event.status === "cancelled" && <Alert kind="error">{t("cancelled")}</Alert>}
-        <dl className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <dt className="text-sm font-medium text-gray-600">{t("when")}</dt>
-            <dd className="text-gray-900">
-              {when(event.starts_at, event.timezone)} – {when(event.ends_at, event.timezone)}
-              <span className="block text-sm text-gray-600">{event.timezone}</span>
-            </dd>
-          </div>
-          {venue && (
+    <article className="space-y-10">
+      <div className="grid gap-6 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] md:items-end md:gap-10">
+        <Poster
+          seed={event.id}
+          startsAt={event.starts_at}
+          timezone={event.timezone}
+          imageUrl={event.cover_image_url}
+          aspect="aspect-[4/3] md:aspect-[4/5]"
+        />
+        <div className="space-y-5">
+          <header className="space-y-3">
+            {event.category && <Badge>{event.category}</Badge>}
+            <h1 className="font-display text-display text-ink">{event.title}</h1>
+          </header>
+          {event.status === "cancelled" && <Alert kind="error">{t("cancelled")}</Alert>}
+          <dl className="grid gap-x-6 gap-y-4 border-t border-line pt-5 sm:grid-cols-2">
             <div>
-              <dt className="text-sm font-medium text-gray-600">{t("where")}</dt>
-              <dd className="text-gray-900">
-                {venue.name}
-                <span className="block text-sm text-gray-600">
-                  {[venue.address_line1, venue.city].filter(Boolean).join(", ")}
-                </span>
+              <dt className="text-sm font-semibold text-ink-muted">{t("when")}</dt>
+              <dd className="font-semibold text-ink">
+                {when(event.starts_at, event.timezone)} – {when(event.ends_at, event.timezone)}
+                <span className="block text-sm font-normal text-ink-muted">{event.timezone}</span>
               </dd>
             </div>
-          )}
-          <div>
-            <dt className="text-sm font-medium text-gray-600">{t("organizer")}</dt>
-            <dd className="text-gray-900">
-              {event.organizer.display_name}
-              <a
-                href={`mailto:${event.organizer.contact_email}`}
-                className="block text-sm text-gray-700 underline"
-              >
-                {event.organizer.contact_email}
-              </a>
-            </dd>
-          </div>
-        </dl>
-        {event.description && (
-          <div className="whitespace-pre-line leading-relaxed text-gray-800">{event.description}</div>
-        )}
-        {event.refund_policy && (
-          <section aria-labelledby="refund-policy" className="rounded-md border border-gray-200 bg-white p-4">
-            <h2 id="refund-policy" className="mb-1 font-semibold text-gray-900">
-              {t("refundPolicy")}
-            </h2>
-            <p className="whitespace-pre-line text-gray-800">{event.refund_policy}</p>
-          </section>
-        )}
+            {venue && (
+              <div>
+                <dt className="text-sm font-semibold text-ink-muted">{t("where")}</dt>
+                <dd className="font-semibold text-ink">
+                  {venue.name}
+                  <span className="block text-sm font-normal text-ink-muted">
+                    {[venue.address_line1, venue.city].filter(Boolean).join(", ")}
+                  </span>
+                </dd>
+              </div>
+            )}
+            <div className="sm:col-span-2">
+              <dt className="text-sm font-semibold text-ink-muted">{t("organizer")}</dt>
+              <dd className="font-semibold text-ink">
+                {event.organizer.display_name}
+                <a href={`mailto:${event.organizer.contact_email}`} className={`block w-fit text-sm ${LINK}`}>
+                  {event.organizer.contact_email}
+                </a>
+              </dd>
+            </div>
+          </dl>
+        </div>
       </div>
 
-      <aside aria-labelledby="tickets-heading" className="space-y-3">
-        <h2 id="tickets-heading" className="text-lg font-semibold text-gray-900">
-          {t("tickets")}
-        </h2>
-        {ticketSlot ?? (
-          <ul className="space-y-2">
-            {event.ticket_types.length === 0 && <li className="text-gray-600">{t("noTickets")}</li>}
-            {event.ticket_types.map((tt) => (
-              <li key={tt.id} className="rounded-md border border-gray-200 bg-white p-3">
-                <div className="flex items-baseline justify-between gap-2">
-                  <span className="font-medium text-gray-900">{tt.name}</span>
-                  <span className="font-semibold text-gray-900">
-                    {tt.is_free ? t("free") : money(tt.price_kzt)}
-                  </span>
-                </div>
-                <p className="text-sm text-gray-600">
-                  {tt.quantity_available === 0
-                    ? t("soldOut")
-                    : tt.on_sale
-                      ? t("left", { count: tt.quantity_available })
-                      : t("notOnSale")}
-                </p>
-              </li>
-            ))}
-          </ul>
-        )}
-      </aside>
+      <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_24rem]">
+        <div className="space-y-6">
+          {event.description && (
+            <div className="max-w-[65ch] whitespace-pre-line text-lg leading-relaxed text-ink">{event.description}</div>
+          )}
+          {event.refund_policy && (
+            <section aria-labelledby="refund-policy" className="max-w-[65ch] rounded-card border border-line bg-surface p-5">
+              <h2 id="refund-policy" className="mb-1 font-semibold text-ink">
+                {t("refundPolicy")}
+              </h2>
+              <p className="whitespace-pre-line text-ink-muted">{event.refund_policy}</p>
+            </section>
+          )}
+        </div>
+
+        <aside
+          aria-labelledby="tickets-heading"
+          className="h-fit space-y-4 rounded-card border border-line bg-surface p-5 lg:sticky lg:top-24"
+        >
+          <h2 id="tickets-heading" className={SECTION_TITLE}>
+            {t("tickets")}
+          </h2>
+          {ticketSlot ?? (
+            <ul className="space-y-3">
+              {event.ticket_types.length === 0 && <li className="text-ink-muted">{t("noTickets")}</li>}
+              {event.ticket_types.map((tt) => (
+                <li key={tt.id} className="border-t border-line pt-3 first:border-t-0 first:pt-0">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <span className="font-semibold text-ink">{tt.name}</span>
+                    <PriceTag>{tt.is_free ? t("free") : money(tt.price_kzt)}</PriceTag>
+                  </div>
+                  <p className="text-sm text-ink-muted">
+                    {tt.quantity_available === 0
+                      ? t("soldOut")
+                      : tt.on_sale
+                        ? t("left", { count: tt.quantity_available })
+                        : t("notOnSale")}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </aside>
+      </div>
     </article>
   );
 }

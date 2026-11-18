@@ -26,11 +26,11 @@ export function PreviewPanel() {
   }, [event.id, event.updated_at]);
 
   if (error) return <Alert kind="error">{errorMessage(error)}</Alert>;
-  if (!preview) return <p className="text-gray-600">{t("common.loading")}</p>;
+  if (!preview) return <p className="text-ink-muted">{t("common.loading")}</p>;
   return (
     <div className="space-y-6">
       <Alert kind="info">{t("organizer.preview.banner")}</Alert>
-      <div className="rounded-lg border-2 border-dashed border-gray-300 p-4 sm:p-6">
+      <div className="rounded-card border-2 border-dashed border-line-strong p-4 sm:p-6">
         <EventView event={preview} />
       </div>
     </div>

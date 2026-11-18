@@ -40,7 +40,7 @@ export function ResetPasswordForm() {
       {done ? (
         <div className="space-y-4">
           <Alert kind="success">{t("reset.success")}</Alert>
-          <Link href="/login" className="font-medium text-gray-900 underline">
+          <Link href="/login" className="font-semibold text-sky-ink underline decoration-1 underline-offset-4 hover:decoration-2">
             {tn("signIn")}
           </Link>
         </div>

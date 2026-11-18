@@ -36,7 +36,7 @@ export function ForgotPasswordForm() {
         <Alert kind="success">{t("forgot.done", { email: sentTo })}</Alert>
       ) : (
         <form onSubmit={onSubmit} className="space-y-4">
-          <p className="text-gray-700">{t("forgot.lead")}</p>
+          <p className="text-ink-muted">{t("forgot.lead")}</p>
           {error ? <Alert kind="error">{errorMessage(error)}</Alert> : null}
           <Field name="email" type="email" label={t("email")} autoComplete="email" required />
           <Button type="submit" disabled={busy} className="w-full">

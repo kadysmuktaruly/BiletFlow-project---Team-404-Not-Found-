@@ -26,9 +26,10 @@ type Metric = "tickets" | "revenue";
 
 // Single-series charts: categorical slot 1 of the validated reference palette. Text stays in
 // the page's ink colors, never the series color; grid and axes are recessive.
-const SERIES = "#2a78d6";
-const GRID = "#e5e7eb";
-const AXIS_TEXT = "#4b5563";
+// Chart colours mirror the design tokens in app/globals.css (Recharts needs literal values).
+const SERIES = "#00677f"; // sky-ink
+const GRID = "#d5d9e0"; // line
+const AXIS_TEXT = "#4a5260"; // ink-muted
 
 /**
  * SRS 4.15 dashboard: KPI tiles, a line chart of sales over time, a bar chart by ticket
@@ -100,7 +101,7 @@ export function AnalyticsDashboard({ eventId }: { eventId?: string }) {
 
   return (
     <div className="space-y-6">
-      <p className="flex flex-wrap items-center gap-2 text-gray-600">
+      <p className="flex flex-wrap items-center gap-2 text-ink-muted">
         <DemoBadge label={tc("demo")} /> {t("lead")}
       </p>
 
@@ -129,11 +130,11 @@ export function AnalyticsDashboard({ eventId }: { eventId?: string }) {
         <Field type="date" label={t("to")} value={to || data?.filters.date_to || ""} onChange={(e) => setTo(e.target.value)} />
       </div>
       {result?.error ? <Alert kind="error">{errorMessage(result.error)}</Alert> : null}
-      {!data && !result?.error && <p className="text-gray-600">{tc("loading")}</p>}
+      {!data && !result?.error && <p className="text-ink-muted">{tc("loading")}</p>}
 
       {data && (
         <>
-          <p className="text-sm text-gray-600">{t("rangeNote", { timezone: data.filters.timezone })}</p>
+          <p className="text-sm text-ink-muted">{t("rangeNote", { timezone: data.filters.timezone })}</p>
           <Kpis data={data} />
           <SalesOverTime data={data} />
           <ByTicketType data={data} />
@@ -169,10 +170,10 @@ function Kpis({ data }: { data: Analytics }) {
   return (
     <dl className="grid grid-cols-2 gap-3 lg:grid-cols-4">
       {tiles.map((tile) => (
-        <div key={tile.label} className="rounded-lg border border-gray-200 bg-white p-4">
-          <dt className="text-sm text-gray-600">{tile.label}</dt>
-          <dd className="mt-1 text-xl font-bold text-gray-900">{tile.value}</dd>
-          {tile.note && <dd className="text-sm text-gray-600">{tile.note}</dd>}
+        <div key={tile.label} className="rounded-card border border-line bg-surface p-4">
+          <dt className="text-sm text-ink-muted">{tile.label}</dt>
+          <dd className="font-display mt-1 text-2xl text-ink tabular-nums">{tile.value}</dd>
+          {tile.note && <dd className="text-sm text-ink-muted">{tile.note}</dd>}
         </div>
       ))}
     </dl>
@@ -182,7 +183,7 @@ function Kpis({ data }: { data: Analytics }) {
 function TableToggle({ open, onToggle, controls }: { open: boolean; onToggle: () => void; controls: string }) {
   const t = useTranslations("analytics");
   return (
-    <button type="button" onClick={onToggle} aria-expanded={open} aria-controls={controls} className="text-sm font-medium text-gray-900 underline">
+    <button type="button" onClick={onToggle} aria-expanded={open} aria-controls={controls} className="text-sm font-semibold text-sky-ink underline decoration-1 underline-offset-4 hover:decoration-2">
       {open ? t("hideTable") : t("showTable")}
     </button>
   );
@@ -205,23 +206,23 @@ function SalesOverTime({ data }: { data: Analytics }) {
       : t("chartSummaryRevenue", { total: money(total), days: points.length });
 
   return (
-    <section aria-labelledby={`${id}-title`} className="space-y-3 rounded-lg border border-gray-200 bg-white p-4">
+    <section aria-labelledby={`${id}-title`} className="space-y-3 rounded-card border border-line bg-surface p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 id={`${id}-title`} className="text-lg font-semibold text-gray-900">
+        <h2 id={`${id}-title`} className="font-display text-xl text-ink">
           {t("overTime")}
         </h2>
         {/* One measure at a time: tickets and money never share a y-axis. */}
         <fieldset className="flex items-center gap-1 text-sm">
           <legend className="sr-only">{t("metric")}</legend>
           {(["tickets", "revenue"] as const).map((m) => (
-            <label key={m} className={`cursor-pointer rounded-md border px-3 py-1 ${metric === m ? "border-gray-900 bg-gray-900 text-white" : "border-gray-300 bg-white text-gray-900"}`}>
+            <label key={m} className={`inline-flex min-h-9 cursor-pointer items-center rounded-full border px-3.5 font-semibold has-[:focus-visible]:outline has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-sky-ink ${metric === m ? "border-ink bg-ink text-surface" : "border-line-strong bg-surface text-ink"}`}>
               <input type="radio" name={`${id}-metric`} value={m} checked={metric === m} onChange={() => setMetric(m)} className="sr-only" />
               {t(m)}
             </label>
           ))}
         </fieldset>
       </div>
-      <p className="text-sm text-gray-700">{summary}</p>
+      <p className="text-sm text-ink-muted">{summary}</p>
       <div className="h-64" role="img" aria-label={`${t("overTime")}. ${summary}`}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={points} margin={{ top: 8, right: 16, bottom: 0, left: 8 }}>
@@ -232,8 +233,8 @@ function SalesOverTime({ data }: { data: Analytics }) {
               cursor={{ stroke: AXIS_TEXT, strokeDasharray: "3 3" }}
               formatter={(v) => [show(Number(v)), t(metric)]}
               labelFormatter={(label) => day(String(label))}
-              contentStyle={{ borderRadius: 8, borderColor: GRID, color: "#111827" }}
-              itemStyle={{ color: "#111827" }}
+              contentStyle={{ borderRadius: 12, borderColor: GRID, color: "#101418" }}
+              itemStyle={{ color: "#101418" }}
             />
             <Line type="linear" dataKey="value" name={t(metric)} stroke={SERIES} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" dot={false} activeDot={{ r: 5, stroke: "#ffffff", strokeWidth: 2 }} isAnimationActive={false} />
           </LineChart>
@@ -243,16 +244,16 @@ function SalesOverTime({ data }: { data: Analytics }) {
       {table && (
         <div id={`${id}-table`} className="max-h-72 overflow-auto">
           <table className="min-w-full text-sm">
-            <thead className="sticky top-0 bg-white text-left text-gray-700">
+            <thead className="sticky top-0 bg-surface text-left text-ink-muted">
               <tr>
                 <th scope="col" className="py-1 pr-4">{t("date")}</th>
                 <th scope="col" className="py-1 pr-4 text-right">{t("tickets")}</th>
                 <th scope="col" className="py-1 text-right">{t("revenue")}</th>
               </tr>
             </thead>
-            <tbody className="text-gray-900">
+            <tbody className="text-ink">
               {data.sales_over_time.map((p) => (
-                <tr key={p.date} className="border-t border-gray-100">
+                <tr key={p.date} className="border-t border-line">
                   <th scope="row" className="py-1 pr-4 text-left font-normal">{day(p.date)}</th>
                   <td className="py-1 pr-4 text-right">{p.tickets}</td>
                   <td className="py-1 text-right">{money(p.revenue_kzt)}</td>
@@ -273,12 +274,12 @@ function ByTicketType({ data }: { data: Analytics }) {
   const rows = data.by_ticket_type;
   const height = Math.max(120, rows.length * 44 + 32);
   return (
-    <section aria-labelledby={`${id}-title`} className="space-y-3 rounded-lg border border-gray-200 bg-white p-4">
-      <h2 id={`${id}-title`} className="text-lg font-semibold text-gray-900">
+    <section aria-labelledby={`${id}-title`} className="space-y-3 rounded-card border border-line bg-surface p-5">
+      <h2 id={`${id}-title`} className="font-display text-xl text-ink">
         {t("byType")}
       </h2>
       {rows.length === 0 ? (
-        <p className="text-gray-600">{t("noData")}</p>
+        <p className="text-ink-muted">{t("noData")}</p>
       ) : (
         <>
           <div style={{ height }} role="img" aria-label={`${t("byType")}: ${rows.map((r) => `${r.name} ${r.tickets_in_range}`).join(", ")}`}>
@@ -286,22 +287,22 @@ function ByTicketType({ data }: { data: Analytics }) {
               <BarChart data={rows} layout="vertical" margin={{ top: 4, right: 48, bottom: 4, left: 8 }} barCategoryGap={12}>
                 <CartesianGrid horizontal={false} stroke={GRID} />
                 <XAxis type="number" allowDecimals={false} tick={{ fill: AXIS_TEXT, fontSize: 12 }} tickLine={false} axisLine={{ stroke: GRID }} />
-                <YAxis type="category" dataKey="name" width={120} tick={{ fill: "#111827", fontSize: 13 }} tickLine={false} axisLine={false} />
+                <YAxis type="category" dataKey="name" width={120} tick={{ fill: "#101418", fontSize: 13 }} tickLine={false} axisLine={false} />
                 <Tooltip
-                  cursor={{ fill: "#f3f4f6" }}
+                  cursor={{ fill: "#eef0f3" }}
                   formatter={(v, _name, item) => [`${v} · ${money((item.payload as { revenue_kzt: number }).revenue_kzt)}`, t("inRange")]}
-                  contentStyle={{ borderRadius: 8, borderColor: GRID, color: "#111827" }}
-              itemStyle={{ color: "#111827" }}
+                  contentStyle={{ borderRadius: 12, borderColor: GRID, color: "#101418" }}
+              itemStyle={{ color: "#101418" }}
                 />
                 <Bar dataKey="tickets_in_range" name={t("inRange")} fill={SERIES} barSize={20} radius={[0, 4, 4, 0]} isAnimationActive={false}>
-                  <LabelList dataKey="tickets_in_range" position="right" fill="#111827" fontSize={12} />
+                  <LabelList dataKey="tickets_in_range" position="right" fill="#101418" fontSize={12} />
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">
-              <thead className="text-left text-gray-700">
+              <thead className="text-left text-ink-muted">
                 <tr>
                   <th scope="col" className="py-1 pr-4">{t("name")}</th>
                   <th scope="col" className="py-1 pr-4 text-right">{t("inRange")}</th>
@@ -311,9 +312,9 @@ function ByTicketType({ data }: { data: Analytics }) {
                   <th scope="col" className="py-1 text-right">{t("checked")}</th>
                 </tr>
               </thead>
-              <tbody className="text-gray-900">
+              <tbody className="text-ink">
                 {rows.map((r) => (
-                  <tr key={r.ticket_type_id} className="border-t border-gray-100">
+                  <tr key={r.ticket_type_id} className="border-t border-line">
                     <th scope="row" className="py-1 pr-4 text-left font-medium">{r.name}</th>
                     <td className="py-1 pr-4 text-right">{r.tickets_in_range}</td>
                     <td className="py-1 pr-4 text-right">{money(r.revenue_kzt)}</td>
@@ -335,25 +336,25 @@ function Campaigns({ data, money }: { data: Analytics; money: (n: number) => str
   const t = useTranslations("analytics");
   const id = useId();
   return (
-    <section aria-labelledby={`${id}-title`} className="space-y-3 rounded-lg border border-gray-200 bg-white p-4">
-      <h2 id={`${id}-title`} className="text-lg font-semibold text-gray-900">
+    <section aria-labelledby={`${id}-title`} className="space-y-3 rounded-card border border-line bg-surface p-5">
+      <h2 id={`${id}-title`} className="font-display text-xl text-ink">
         {t("campaigns")}
       </h2>
       {data.campaigns.length === 0 ? (
-        <p className="text-gray-600">{t("noCampaigns")}</p>
+        <p className="text-ink-muted">{t("noCampaigns")}</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm">
-            <thead className="text-left text-gray-700">
+            <thead className="text-left text-ink-muted">
               <tr>
                 {(["campaign", "code", "redemptions", "orders", "tickets", "gross", "discount", "net"] as const).map((c, i) => (
                   <th key={c} scope="col" className={`py-1 pr-4 ${i > 1 ? "text-right" : ""}`}>{t(c)}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="text-gray-900">
+            <tbody className="text-ink">
               {data.campaigns.map((c) => (
-                <tr key={c.campaign_id} className="border-t border-gray-100">
+                <tr key={c.campaign_id} className="border-t border-line">
                   <th scope="row" className="py-1 pr-4 text-left font-medium">{c.name}</th>
                   <td className="py-1 pr-4 font-mono">{c.code ?? "—"}</td>
                   <td className="py-1 pr-4 text-right">{c.redemptions}</td>

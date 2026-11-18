@@ -33,14 +33,14 @@ export function CampaignLanding() {
     return (
       <div className="space-y-4">
         <Alert kind="error">{t("invalid")}</Alert>
-        <Link href="/events" className="font-medium text-gray-900 underline">
+        <Link href="/events" className="font-semibold text-sky-ink underline decoration-1 underline-offset-4 hover:decoration-2">
           {t("browse")}
         </Link>
       </div>
     );
   }
   return (
-    <p className="text-gray-600" aria-live="polite">
+    <p className="text-ink-muted" aria-live="polite">
       {t("opening")}
     </p>
   );

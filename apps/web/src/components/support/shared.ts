@@ -17,10 +17,10 @@ export const ORGANIZER_CATEGORIES: Schemas["SupportCategory"][] = ["account", "p
 export const STATUSES: Schemas["SupportCaseStatus"][] = ["open", "in_progress", "waiting_for_customer", "resolved"];
 
 export const STATUS_STYLE: Record<Schemas["SupportCaseStatus"], string> = {
-  open: "border-blue-300 bg-blue-50 text-blue-900",
-  in_progress: "border-amber-400 bg-amber-50 text-amber-950",
-  waiting_for_customer: "border-violet-300 bg-violet-50 text-violet-900",
-  resolved: "border-green-300 bg-green-50 text-green-900",
+  open: "border-sky/40 bg-info-soft text-sky-ink",
+  in_progress: "border-sun bg-demo-soft text-ink",
+  waiting_for_customer: "border-promo/30 bg-promo-soft text-promo",
+  resolved: "border-success/30 bg-success-soft text-success",
 };
 
 type Translate = (key: string, values?: Record<string, string>) => string;

@@ -40,11 +40,11 @@ export function VerifyEmailForm() {
   return (
     <Card>
       <PageTitle>{t("verify.title")}</PageTitle>
-      {state === "working" && <p className="text-gray-700">{t("verify.working")}</p>}
+      {state === "working" && <p className="text-ink-muted">{t("verify.working")}</p>}
       {state === "done" && (
         <div className="space-y-4">
           <Alert kind="success">{t("verify.success")}</Alert>
-          <Link href="/login" className="font-medium text-gray-900 underline">
+          <Link href="/login" className="font-semibold text-sky-ink underline decoration-1 underline-offset-4 hover:decoration-2">
             {tn("signIn")}
           </Link>
         </div>
@@ -53,7 +53,7 @@ export function VerifyEmailForm() {
         <div className="space-y-6">
           <Alert kind="error">{token ? errorMessage(error) : t("verify.missingToken")}</Alert>
           <form onSubmit={resend} className="space-y-3">
-            <h2 className="font-semibold text-gray-900">{t("verify.resendTitle")}</h2>
+            <h2 className="font-semibold text-ink">{t("verify.resendTitle")}</h2>
             {resent ? (
               <Alert kind="success">{t("verify.resent")}</Alert>
             ) : (

@@ -55,13 +55,13 @@ export function LoginForm() {
         <Button type="submit" disabled={busy} className="w-full">
           {t("login.submit")}
         </Button>
-        <div className="flex justify-between text-sm">
-          <Link href="/forgot-password" className="text-gray-700 underline">
+        <div className="flex flex-wrap justify-between gap-x-4 gap-y-2 text-sm">
+          <Link href="/forgot-password" className="text-ink-muted underline decoration-1 underline-offset-4 hover:text-ink">
             {t("login.forgot")}
           </Link>
-          <span className="text-gray-600">
+          <span className="text-ink-muted">
             {t("login.noAccount")}{" "}
-            <Link href="/register" className="font-medium text-gray-900 underline">
+            <Link href="/register" className="font-semibold text-sky-ink underline decoration-1 underline-offset-4 hover:decoration-2">
               {tn("register")}
             </Link>
           </span>

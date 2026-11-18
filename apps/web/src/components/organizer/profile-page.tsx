@@ -4,7 +4,7 @@ import type { Schemas } from "@biletflow/api-types";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
-import { Alert, Button, Card, DemoBadge, Field, PageTitle, TextArea } from "@/components/ui";
+import { Alert, Button, Card, DemoBadge, Field, PageTitle, TextArea, Toast } from "@/components/ui";
 import { api, ApiError, unwrap } from "@/lib/api";
 import { useErrorMessage } from "@/lib/use-error-message";
 
@@ -79,13 +79,13 @@ export function ProfilePage() {
   }
 
   if (loadError) return <Alert kind="error">{errorMessage(loadError)}</Alert>;
-  if (!profile) return <p className="text-gray-600">{tc("loading")}</p>;
+  if (!profile) return <p className="text-ink-muted">{tc("loading")}</p>;
 
   return (
     <div className="space-y-8">
       <Card>
         <PageTitle>{t("profile.title")}</PageTitle>
-        <p className="-mt-4 mb-6 text-gray-600">{t("profile.lead")}</p>
+        <p className="-mt-4 mb-6 text-ink-muted">{t("profile.lead")}</p>
         <form onSubmit={saveProfile} className="grid gap-4 sm:grid-cols-2">
           <Field
             name="display_name"
@@ -122,7 +122,7 @@ export function ProfilePage() {
           />
           <div className="flex items-center gap-4 sm:col-span-2">
             <Button type="submit">{tc("save")}</Button>
-            {profileState.saved && <span className="text-sm text-green-800">{tc("saved")}</span>}
+            {profileState.saved && <Toast>{tc("saved")}</Toast>}
           </div>
           {profileState.error ? (
             <div className="sm:col-span-2">
@@ -134,12 +134,12 @@ export function ProfilePage() {
 
       <Card>
         <div className="mb-4 flex items-center gap-3">
-          <h2 className="text-xl font-bold text-gray-900">{t("payout.title")}</h2>
+          <h2 className="font-display text-xl text-ink">{t("payout.title")}</h2>
           <DemoBadge label={tc("demo")} />
         </div>
         <Alert kind="demo">{t("payout.demoNotice")}</Alert>
         {payout && (
-          <p className="mt-3 text-sm text-gray-700">
+          <p className="mt-3 text-sm text-ink-muted">
             {t("payout.status", { status: t(`payout.statuses.${payout.status}`) })}
           </p>
         )}
@@ -168,7 +168,7 @@ export function ProfilePage() {
           />
           <div className="flex items-center gap-4 sm:col-span-3">
             <Button type="submit">{tc("save")}</Button>
-            {payoutState.saved && <span className="text-sm text-green-800">{tc("saved")}</span>}
+            {payoutState.saved && <Toast>{tc("saved")}</Toast>}
           </div>
           {payoutState.error ? (
             <div className="sm:col-span-3">

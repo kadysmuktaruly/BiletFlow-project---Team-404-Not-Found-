@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-import { Alert, Button, Card, DemoBadge, PageTitle } from "@/components/ui";
+import { Alert, Button, Card, DemoBadge, LINK, PageTitle, PriceTag } from "@/components/ui";
 import { Link, useRouter } from "@/i18n/navigation";
 import { api, ApiError, unwrap } from "@/lib/api";
 import { newIdempotencyKey, useEventDateTime, useMoney } from "@/lib/format";
@@ -78,22 +78,22 @@ export function CheckoutPage() {
   }
 
   if (!order) {
-    return error ? <Alert kind="error">{errorMessage(error)}</Alert> : <p className="text-gray-600">{t("common.loading")}</p>;
+    return error ? <Alert kind="error">{errorMessage(error)}</Alert> : <p className="text-ink-muted">{t("common.loading")}</p>;
   }
 
   const open = order.status === "awaiting_payment";
   return (
     <div className="mx-auto max-w-xl space-y-6">
-      <div className="flex items-center gap-3">
-        <PageTitle>{t("checkout.title")}</PageTitle>
+      <div className="flex flex-wrap items-center gap-3">
+        <PageTitle className="mb-0">{t("checkout.title")}</PageTitle>
         <DemoBadge label={t("common.demo")} />
       </div>
       <Alert kind="demo">{t("checkout.demoBanner")}</Alert>
       <Card className="space-y-3">
-        <p className="text-sm text-gray-600">{t("checkout.summary", { reference: order.reference })}</p>
-        <h2 className="text-lg font-semibold text-gray-900">{order.event.title}</h2>
-        <p className="text-sm text-gray-700">{when(order.event.starts_at, order.event.timezone)}</p>
-        <ul className="divide-y divide-gray-100 text-sm">
+        <p className="text-sm text-ink-muted">{t("checkout.summary", { reference: order.reference })}</p>
+        <h2 className="font-display text-2xl text-ink">{order.event.title}</h2>
+        <p className="text-sm font-semibold text-sky-ink">{when(order.event.starts_at, order.event.timezone)}</p>
+        <ul className="divide-y divide-line border-y border-line text-sm">
           {order.items.map((item) => (
             <li key={item.id} className="flex justify-between py-2">
               <span>
@@ -104,7 +104,7 @@ export function CheckoutPage() {
           ))}
         </ul>
         {order.discount_kzt > 0 && (
-          <dl className="space-y-1 border-t border-gray-200 pt-2 text-sm text-gray-700">
+          <dl className="space-y-1 border-t border-line pt-2 text-sm text-ink-muted">
             <div className="flex justify-between">
               <dt>{t("purchase.subtotal")}</dt>
               <dd>{money(order.subtotal_kzt)}</dd>
@@ -115,12 +115,12 @@ export function CheckoutPage() {
             </div>
           </dl>
         )}
-        <div className="flex justify-between border-t border-gray-200 pt-2 font-semibold">
-          <span>{t("purchase.total")}</span>
-          <span>{money(order.total_kzt)}</span>
+        <div className="flex items-baseline justify-between gap-3 border-t-2 border-ink pt-3">
+          <span className="font-semibold">{t("purchase.total")}</span>
+          <PriceTag size="lg">{money(order.total_kzt)}</PriceTag>
         </div>
         {open && order.expires_at && (
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-ink-muted">
             {t("checkout.expires", { time: when(order.expires_at, order.event.timezone) })}
           </p>
         )}
@@ -130,7 +130,7 @@ export function CheckoutPage() {
       {outcome === "abandoned" && <Alert kind="info">{t("checkout.abandoned")}</Alert>}
       {open ? (
         <div className="flex flex-col gap-2">
-          <Button disabled={busy} onClick={() => void pay("succeed")}>
+          <Button disabled={busy} onClick={() => void pay("succeed")} className="min-h-12 text-base">
             {busy ? t("checkout.processing") : t("checkout.paySucceed", { amount: money(order.total_kzt) })}
           </Button>
           <Button variant="secondary" disabled={busy} onClick={() => void pay("fail")}>
@@ -141,7 +141,7 @@ export function CheckoutPage() {
           </Button>
         </div>
       ) : (
-        <Link href={`/events/${order.event.slug}`} className="font-medium text-gray-900 underline">
+        <Link href={`/events/${order.event.slug}`} className={LINK}>
           {t("checkout.backToEvent")}
         </Link>
       )}

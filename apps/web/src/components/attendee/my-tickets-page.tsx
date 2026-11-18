@@ -6,7 +6,8 @@ import { useEffect, useState } from "react";
 
 import { TicketPdfButton } from "@/components/ticket-pdf-button";
 import { TicketQr } from "@/components/ticket-qr";
-import { Alert, PageTitle } from "@/components/ui";
+import { TicketCard } from "@/components/ticket-card";
+import { Alert, EmptyState, LINK, PageTitle, type BadgeTone } from "@/components/ui";
 import { Link } from "@/i18n/navigation";
 import { api, unwrap } from "@/lib/api";
 import { useEventDateTime } from "@/lib/format";
@@ -14,11 +15,11 @@ import { useErrorMessage } from "@/lib/use-error-message";
 
 type MyTicket = Schemas["MyTicketRead"];
 
-const STATUS_STYLE: Record<MyTicket["status"], string> = {
-  valid: "bg-green-100 text-green-900",
-  checked_in: "bg-blue-100 text-blue-900",
-  cancelled: "bg-gray-200 text-gray-900",
-  refunded: "bg-purple-100 text-purple-900",
+const STATUS_TONE: Record<MyTicket["status"], BadgeTone> = {
+  valid: "success",
+  checked_in: "info",
+  cancelled: "neutral",
+  refunded: "promo",
 };
 
 export function MyTicketsPage() {
@@ -33,7 +34,7 @@ export function MyTicketsPage() {
   }, []);
 
   if (error) return <Alert kind="error">{errorMessage(error)}</Alert>;
-  if (!tickets) return <p className="text-gray-600">{t("common.loading")}</p>;
+  if (!tickets) return <p className="text-ink-muted">{t("common.loading")}</p>;
 
   const byEvent = new Map<string, MyTicket[]>();
   for (const ticket of tickets) byEvent.set(ticket.event.id, [...(byEvent.get(ticket.event.id) ?? []), ticket]);
@@ -42,42 +43,41 @@ export function MyTicketsPage() {
     <div className="space-y-8">
       <PageTitle>{t("tickets.title")}</PageTitle>
       {tickets.length === 0 && (
-        <p className="text-gray-600">
+        <EmptyState>
           {t("tickets.empty")}{" "}
-          <Link href="/events" className="font-medium text-gray-900 underline">
+          <Link href="/events" className={LINK}>
             {t("tickets.findEvents")}
           </Link>
-        </p>
+        </EmptyState>
       )}
       {[...byEvent.values()].map((group) => {
         const event = group[0].event;
         return (
           <section key={event.id} aria-labelledby={`event-${event.id}`} className="space-y-3">
             <div>
-              <h2 id={`event-${event.id}`} className="text-xl font-semibold text-gray-900">
+              <h2 id={`event-${event.id}`} className="font-display text-2xl text-ink">
                 {event.title}
               </h2>
-              <p className="text-gray-700">
+              <p className="font-semibold text-sky-ink">
                 {when(event.starts_at, event.timezone)}
                 {event.venue_name ? ` · ${event.venue_name}` : ""}
               </p>
             </div>
-            <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {group.map((ticket) => (
-                <li key={ticket.id} className="flex flex-col items-center gap-2 rounded-lg border border-gray-200 bg-white p-4 text-center">
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${STATUS_STYLE[ticket.status]}`}>
-                    {t(`tickets.status.${ticket.status}`)}
-                  </span>
-                  <TicketQr ticketId={ticket.id} ticketNumber={ticket.ticket_number} />
-                  <p className="font-mono text-lg font-bold tracking-wider">{ticket.ticket_number}</p>
-                  <p className="text-sm text-gray-700">
-                    {ticket.ticket_type_name} · {ticket.attendee_name}
-                  </p>
-                  {ticket.status === "valid" && <p className="text-xs text-gray-600">{t("tickets.showAtDoor")}</p>}
-                  <TicketPdfButton ticketId={ticket.id} ticketNumber={ticket.ticket_number} />
-                  <Link href={{ pathname: "/support/new", query: { ticket: ticket.id } }} className="text-sm font-medium text-gray-900 underline">
-                    {t("support.getHelp")}
-                  </Link>
+                <li key={ticket.id}>
+                  <TicketCard
+                    qr={<TicketQr ticketId={ticket.id} ticketNumber={ticket.ticket_number} />}
+                    number={ticket.ticket_number}
+                    status={{ label: t(`tickets.status.${ticket.status}`), tone: STATUS_TONE[ticket.status] }}
+                    details={`${ticket.ticket_type_name} · ${ticket.attendee_name}`}
+                    note={ticket.status === "valid" && <p className="text-xs text-ink-muted">{t("tickets.showAtDoor")}</p>}
+                  >
+                    <TicketPdfButton ticketId={ticket.id} ticketNumber={ticket.ticket_number} />
+                    <Link href={{ pathname: "/support/new", query: { ticket: ticket.id } }} className={`text-sm ${LINK}`}>
+                      {t("support.getHelp")}
+                    </Link>
+                  </TicketCard>
                 </li>
               ))}
             </ul>

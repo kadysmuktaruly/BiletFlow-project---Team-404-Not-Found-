@@ -86,12 +86,12 @@ export function RegisterForm() {
           error={fields.password && t("passwordHint")}
         />
         <fieldset>
-          <legend className="mb-1 text-sm font-medium text-gray-900">{t("register.role")}</legend>
+          <legend className="mb-1 text-sm font-medium text-ink">{t("register.role")}</legend>
           <div className="grid grid-cols-2 gap-2">
             {(["attendee", "organizer"] as const).map((r) => (
               <label
                 key={r}
-                className={`cursor-pointer rounded-md border px-3 py-2 text-sm ${role === r ? "border-gray-900 bg-gray-900 text-white" : "border-gray-300 bg-white text-gray-900"}`}
+                className={`flex min-h-11 cursor-pointer items-center rounded-full border px-4 text-sm font-semibold has-[:focus-visible]:outline has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-sky-ink ${role === r ? "border-ink bg-ink text-surface" : "border-line-strong bg-surface text-ink"}`}
               >
                 <input
                   type="radio"
@@ -109,9 +109,9 @@ export function RegisterForm() {
         <Button type="submit" disabled={busy} className="w-full">
           {t("register.submit")}
         </Button>
-        <p className="text-center text-sm text-gray-600">
+        <p className="text-center text-sm text-ink-muted">
           {t("register.haveAccount")}{" "}
-          <Link href="/login" className="font-medium text-gray-900 underline">
+          <Link href="/login" className="font-semibold text-sky-ink underline decoration-1 underline-offset-4 hover:decoration-2">
             {t("login.submit")}
           </Link>
         </p>

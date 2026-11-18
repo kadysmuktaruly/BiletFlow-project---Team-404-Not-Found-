@@ -4,7 +4,7 @@ import type { Schemas } from "@biletflow/api-types";
 import { useFormatter, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
-import { Alert, Field, Select } from "@/components/ui";
+import { Alert, EmptyState, Field, Select } from "@/components/ui";
 import { api, unwrap } from "@/lib/api";
 import { useErrorMessage } from "@/lib/use-error-message";
 
@@ -45,7 +45,7 @@ export function EventHistory() {
   const label = (c: string) => (t.has(`categories.${c}`) ? t(`categories.${c}`) : c);
   return (
     <div className="space-y-4">
-      <p className="text-gray-600">{t("lead")}</p>
+      <p className="text-ink-muted">{t("lead")}</p>
       <div className="flex flex-wrap items-end gap-3">
         <Select
           label={t("category")}
@@ -57,29 +57,29 @@ export function EventHistory() {
         <Field type="date" label={t("to")} value={to} onChange={(e) => setTo(e.target.value)} />
       </div>
       {result?.error ? <Alert kind="error">{errorMessage(result.error)}</Alert> : null}
-      {!result && <p className="text-gray-600">{tc("loading")}</p>}
-      {data && data.entries.length === 0 && <p className="text-gray-600">{t("empty")}</p>}
+      {!result && <p className="text-ink-muted">{tc("loading")}</p>}
+      {data && data.entries.length === 0 && <EmptyState>{t("empty")}</EmptyState>}
       {data && data.entries.length > 0 && (
-        <ol className="relative space-y-4 border-l border-gray-200 pl-5">
+        <ol className="relative space-y-4 border-l border-line pl-5">
           {data.entries.map((e) => (
             <li key={e.id} className="relative">
-              <span aria-hidden="true" className="absolute -left-[25px] top-1.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-gray-700" />
-              <p className="text-sm text-gray-600">
+              <span aria-hidden="true" className="absolute -left-[25px] top-1.5 h-2.5 w-2.5 rounded-full border-2 border-surface bg-ink-muted" />
+              <p className="text-sm text-ink-muted">
                 <time dateTime={e.occurred_at}>
                   {format.dateTime(new Date(e.occurred_at), { dateStyle: "medium", timeStyle: "short", timeZone: event.timezone })}
                 </time>
                 {" · "}
                 {e.actor_name ?? t("system")}
                 {" · "}
-                <span className="rounded bg-gray-100 px-1.5 py-0.5 text-xs font-medium text-gray-800">{label(e.category)}</span>
+                <span className="rounded-full border border-line bg-paper px-2.5 py-0.5 text-xs font-semibold text-ink">{label(e.category)}</span>
               </p>
-              <p className="text-gray-900">{e.description}</p>
-              <p className="font-mono text-xs text-gray-500">{e.action}</p>
+              <p className="text-ink">{e.description}</p>
+              <p className="font-mono text-xs text-ink-muted">{e.action}</p>
             </li>
           ))}
         </ol>
       )}
-      {data?.truncated && <p className="text-sm text-gray-600">{t("truncated")}</p>}
+      {data?.truncated && <p className="text-sm text-ink-muted">{t("truncated")}</p>}
     </div>
   );
 }

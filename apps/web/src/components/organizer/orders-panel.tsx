@@ -5,7 +5,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { ConfirmDialog } from "@/components/confirm-dialog";
-import { Alert, Button, DemoBadge, Field, Select } from "@/components/ui";
+import { Alert, Button, DemoBadge, EmptyState, Field, Select } from "@/components/ui";
 import { api, ApiError, unwrap } from "@/lib/api";
 import { newIdempotencyKey, useMoney } from "@/lib/format";
 import { useErrorMessage } from "@/lib/use-error-message";
@@ -104,7 +104,7 @@ export function OrdersPanel() {
   const list = result?.list;
   return (
     <div className="space-y-4">
-      <p className="flex flex-wrap items-center gap-2 text-gray-600">
+      <p className="flex flex-wrap items-center gap-2 text-ink-muted">
         <DemoBadge label={tc("demo")} /> {t("lead")}
       </p>
       <div className="grid gap-3 sm:grid-cols-[1fr_12rem]">
@@ -118,7 +118,7 @@ export function OrdersPanel() {
       </div>
       {notice && <Alert kind="success">{notice}</Alert>}
       {result?.error ? <Alert kind="error">{errorMessage(result.error)}</Alert> : null}
-      {!result && <p className="text-gray-600">{tc("loading")}</p>}
+      {!result && <p className="text-ink-muted">{tc("loading")}</p>}
       {confirming && (
         <div className="space-y-2">
           {actionError ? <Alert kind="error">{errorMessage(actionError)}</Alert> : null}
@@ -142,11 +142,11 @@ export function OrdersPanel() {
           />
         </div>
       )}
-      {list && list.orders.length === 0 && <p className="text-gray-600">{t("empty")}</p>}
+      {list && list.orders.length === 0 && <EmptyState>{t("empty")}</EmptyState>}
       {list && list.orders.length > 0 && (
-        <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
-          <table className="min-w-full divide-y divide-gray-200 text-sm">
-            <thead className="bg-gray-50 text-left text-gray-700">
+        <div className="overflow-x-auto rounded-card border border-line bg-surface">
+          <table className="min-w-full divide-y divide-line text-sm">
+            <thead className="bg-paper text-left text-[0.8125rem] text-ink-muted">
               <tr>
                 {(["reference", "buyer", "tickets", "total", "status", "placed", "actions"] as const).map((col) => (
                   <th key={col} scope="col" className="px-3 py-2 font-semibold">
@@ -155,7 +155,7 @@ export function OrdersPanel() {
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100 text-gray-900">
+            <tbody className="divide-y divide-line text-ink">
               {list.orders.map((o) => (
                 <tr key={o.id}>
                   <th scope="row" className="px-3 py-2 text-left font-mono font-medium">
@@ -163,15 +163,15 @@ export function OrdersPanel() {
                   </th>
                   <td className="px-3 py-2">
                     {o.buyer_name}
-                    <span className="block text-xs text-gray-600">{o.buyer_email}</span>
+                    <span className="block text-xs text-ink-muted">{o.buyer_email}</span>
                   </td>
                   <td className="px-3 py-2">{o.tickets}</td>
                   <td className="px-3 py-2">
                     {o.total_kzt === 0 ? "—" : money(o.total_kzt)}
                     {o.refunded_kzt > 0 && (
-                      <span className="block text-xs text-gray-600">{t("refundedAmount", { amount: money(o.refunded_kzt) })}</span>
+                      <span className="block text-xs text-ink-muted">{t("refundedAmount", { amount: money(o.refunded_kzt) })}</span>
                     )}
-                    {o.promo_code && <span className="block font-mono text-xs text-gray-600">{o.promo_code}</span>}
+                    {o.promo_code && <span className="block font-mono text-xs text-ink-muted">{o.promo_code}</span>}
                   </td>
                   <td className="px-3 py-2">{to(o.status)}</td>
                   <td className="px-3 py-2">
@@ -195,7 +195,7 @@ export function OrdersPanel() {
           </table>
         </div>
       )}
-      {list?.truncated && <p className="text-sm text-gray-600">{t("truncated")}</p>}
+      {list?.truncated && <p className="text-sm text-ink-muted">{t("truncated")}</p>}
     </div>
   );
 }

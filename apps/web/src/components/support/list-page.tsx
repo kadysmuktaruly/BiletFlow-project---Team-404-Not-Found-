@@ -4,7 +4,7 @@ import type { Schemas } from "@biletflow/api-types";
 import { useFormatter, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
-import { Alert, PageTitle } from "@/components/ui";
+import { Alert, buttonClass, EmptyState, PageTitle } from "@/components/ui";
 import { Link } from "@/i18n/navigation";
 import { api, unwrap } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
@@ -43,21 +43,21 @@ export function SupportListPage() {
         {user?.role === "organizer" && (
           <Link
             href={{ pathname: "/support/new", query: { kind: "organizer" } }}
-            className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50"
+            className={buttonClass("secondary")}
           >
             {t("contactPlatform")}
           </Link>
         )}
       </div>
-      <p className="text-gray-600">{t("lead")}</p>
+      <p className="text-ink-muted">{t("lead")}</p>
       {error ? <Alert kind="error">{errorMessage(error)}</Alert> : null}
-      {!cases && !error && <p className="text-gray-600">{tc("loading")}</p>}
-      {cases?.length === 0 && <p className="text-gray-600">{t("empty")}</p>}
+      {!cases && !error && <p className="text-ink-muted">{tc("loading")}</p>}
+      {cases?.length === 0 && <EmptyState>{t("empty")}</EmptyState>}
       <ul className="space-y-3">
         {cases?.map((c) => (
-          <li key={c.id} className="rounded-lg border border-gray-200 bg-white p-4">
+          <li key={c.id} className="rounded-card border border-line bg-surface p-5">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <h2 className="font-semibold text-gray-900">
+              <h2 className="font-display text-lg text-ink">
                 <Link href={`/support/${c.id}`} className="underline-offset-4 hover:underline">
                   {c.subject}
                 </Link>
@@ -66,10 +66,10 @@ export function SupportListPage() {
                 {t(`status.${c.status}`)}
               </span>
             </div>
-            <p className="mt-1 text-sm text-gray-700">
+            <p className="mt-1 text-sm text-ink-muted">
               <span className="font-mono">{c.reference}</span> · {t(`category.${c.category}`)} · {contextLine(t, c.context)}
             </p>
-            <p className="text-xs text-gray-600">
+            <p className="text-xs text-ink-muted">
               {c.viewer_role === "requester" ? t("yours") : `${t("handling")} · ${c.requester.full_name}`}
               {c.last_message_at
                 ? ` · ${format.dateTime(new Date(c.last_message_at), { dateStyle: "medium", timeStyle: "short" })}`

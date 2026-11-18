@@ -7,7 +7,8 @@ import { useEffect, useState } from "react";
 
 import { TicketPdfButton } from "@/components/ticket-pdf-button";
 import { TicketQr } from "@/components/ticket-qr";
-import { Alert, Card, PageTitle } from "@/components/ui";
+import { TicketCard } from "@/components/ticket-card";
+import { Alert, Card, LINK, PageTitle, PriceTag, buttonClass } from "@/components/ui";
 import { Link } from "@/i18n/navigation";
 import { api, unwrap } from "@/lib/api";
 import { useEventDateTime, useMoney } from "@/lib/format";
@@ -31,31 +32,31 @@ export function OrderPage() {
   }, [orderId]);
 
   if (error) return <Alert kind="error">{errorMessage(error)}</Alert>;
-  if (!order) return <p className="text-gray-600">{t("common.loading")}</p>;
+  if (!order) return <p className="text-ink-muted">{t("common.loading")}</p>;
 
   const confirmed = order.status === "confirmed";
   return (
     <div className="space-y-6">
       {confirmed ? (
         <div className="space-y-2">
-          <PageTitle>{t("order.confirmedTitle")}</PageTitle>
-          <p className="-mt-4 text-gray-700">{t("order.confirmedLead")}</p>
+          <h1 className="font-display text-display text-ink">{t("order.confirmedTitle")}</h1>
+          <p className="max-w-[65ch] text-lg text-ink-muted">{t("order.confirmedLead")}</p>
         </div>
       ) : (
         <PageTitle>{t("order.reference", { reference: order.reference })}</PageTitle>
       )}
-      <Card className="space-y-2">
-        <p className="text-sm text-gray-600">{t("order.reference", { reference: order.reference })}</p>
-        <h2 className="text-lg font-semibold text-gray-900">{order.event.title}</h2>
-        <p className="text-gray-700">
+      <Card className="max-w-2xl space-y-3">
+        <p className="text-sm text-ink-muted">{t("order.reference", { reference: order.reference })}</p>
+        <h2 className="font-display text-2xl text-ink">{order.event.title}</h2>
+        <p className="font-semibold text-sky-ink">
           {when(order.event.starts_at, order.event.timezone)}
           {order.event.venue_name ? ` · ${order.event.venue_name}` : ""}
         </p>
-        <p className="text-sm text-gray-700">
+        <p className="text-sm text-ink-muted">
           {t("order.statusLabel", { status: t(`order.status.${order.status}`) })}
         </p>
         {order.discount_kzt > 0 && (
-          <dl className="space-y-1 text-sm text-gray-700">
+          <dl className="space-y-1 text-sm text-ink-muted">
             <div className="flex justify-between">
               <dt>{t("order.subtotal")}</dt>
               <dd>{money(order.subtotal_kzt)}</dd>
@@ -66,43 +67,44 @@ export function OrderPage() {
             </div>
           </dl>
         )}
-        <p className="font-semibold text-gray-900">
-          {order.total_kzt === 0 ? t("order.free") : `${t("order.total")}: ${money(order.total_kzt)}`}
+        <p className="border-t-2 border-ink pt-3">
+          <PriceTag size="lg">
+            {order.total_kzt === 0 ? t("order.free") : `${t("order.total")}: ${money(order.total_kzt)}`}
+          </PriceTag>
         </p>
-        {order.total_kzt > 0 && confirmed && <p className="text-sm text-amber-900">{t("order.demoPaid")}</p>}
+        {order.total_kzt > 0 && confirmed && <p className="rounded-field border-l-4 border-ink bg-demo-soft px-3 py-2 text-sm text-ink">{t("order.demoPaid")}</p>}
         {order.refunded_kzt > 0 && (
-          <p className="text-sm font-medium text-amber-900">{t("order.refunded", { amount: money(order.refunded_kzt) })}</p>
+          <p className="text-sm font-medium text-ink">{t("order.refunded", { amount: money(order.refunded_kzt) })}</p>
         )}
         {order.status === "cancelled" && order.tickets.length > 0 && (
-          <p className="text-sm text-gray-800">{t("order.cancelledNote")}</p>
+          <p className="text-sm text-ink">{t("order.cancelledNote")}</p>
         )}
-        <Link href={{ pathname: "/support/new", query: { order: order.id } }} className="text-sm font-medium text-gray-900 underline">
+        <Link href={{ pathname: "/support/new", query: { order: order.id } }} className={`block w-fit text-sm ${LINK}`}>
           {t("support.getHelp")}
         </Link>
         {order.payment_required && (
-          <Link href={`/checkout/${order.id}`} className="font-medium text-gray-900 underline">
+          <Link href={`/checkout/${order.id}`} className={buttonClass("primary")}>
             {t("order.payNow")}
           </Link>
         )}
       </Card>
       {order.tickets.length > 0 && (
-        <ul className="grid gap-4 sm:grid-cols-2">
+        <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {order.tickets.map((ticket) => (
             <li key={ticket.id}>
-              <Card className="flex flex-col items-center gap-3 text-center">
-                <TicketQr ticketId={ticket.id} ticketNumber={ticket.ticket_number} />
-                <p className="font-mono text-lg font-bold tracking-wider">{ticket.ticket_number}</p>
-                <p className="text-sm text-gray-700">
-                  {ticket.ticket_type_name} · {ticket.attendee_name}
-                </p>
+              <TicketCard
+                qr={<TicketQr ticketId={ticket.id} ticketNumber={ticket.ticket_number} />}
+                number={ticket.ticket_number}
+                details={`${ticket.ticket_type_name} · ${ticket.attendee_name}`}
+              >
                 <TicketPdfButton ticketId={ticket.id} ticketNumber={ticket.ticket_number} />
-              </Card>
+              </TicketCard>
             </li>
           ))}
         </ul>
       )}
       {confirmed && (
-        <Link href="/tickets" className="inline-block rounded-md bg-gray-900 px-4 py-2 text-sm font-semibold text-white">
+        <Link href="/tickets" className={buttonClass("primary")}>
           {t("order.viewTickets")}
         </Link>
       )}

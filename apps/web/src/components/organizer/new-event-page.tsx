@@ -14,7 +14,7 @@ export function NewEventPage() {
   return (
     <div>
       <PageTitle>{t("newTitle")}</PageTitle>
-      <p className="-mt-4 mb-6 text-gray-600">{t("draftNotice")}</p>
+      <p className="-mt-4 mb-6 text-ink-muted">{t("draftNotice")}</p>
       <EventForm
         submitLabel={t("createDraft")}
         onSubmit={async (input) => {

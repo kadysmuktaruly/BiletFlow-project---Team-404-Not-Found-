@@ -4,7 +4,7 @@ import type { Schemas } from "@biletflow/api-types";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
-import { Alert, Button, Card, Field } from "@/components/ui";
+import { Alert, Button, Card, EmptyState, Field } from "@/components/ui";
 import { api, ApiError, unwrap } from "@/lib/api";
 import { useMoney } from "@/lib/format";
 import { useErrorMessage } from "@/lib/use-error-message";
@@ -114,24 +114,24 @@ export function TicketTypesPanel() {
   const fields = formError instanceof ApiError ? formError.fields : {};
   return (
     <div className="space-y-6">
-      <p className="text-gray-600">{t("lead")}</p>
+      <p className="text-ink-muted">{t("lead")}</p>
       {error ? <Alert kind="error">{errorMessage(error)}</Alert> : null}
-      {types === null && !error && <p className="text-gray-600">{tc("loading")}</p>}
-      {types?.length === 0 && <p className="text-gray-600">{t("empty")}</p>}
+      {types === null && !error && <p className="text-ink-muted">{tc("loading")}</p>}
+      {types?.length === 0 && <EmptyState>{t("empty")}</EmptyState>}
       {types && types.length > 0 && (
         <ul className="space-y-3">
           {types.map((tt) => (
-            <li key={tt.id} className="rounded-lg border border-gray-200 bg-white p-4">
+            <li key={tt.id} className="rounded-card border border-line bg-surface p-4">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <p className="font-semibold text-gray-900">
+                <p className="font-semibold text-ink">
                   {tt.name}
                   {tt.is_hidden && (
-                    <span className="ml-2 rounded bg-gray-200 px-1.5 py-0.5 text-xs font-medium text-gray-800">
+                    <span className="ml-2 rounded-full border border-line bg-paper px-2.5 py-0.5 text-xs font-semibold text-ink">
                       {t("hidden")}
                     </span>
                   )}
                 </p>
-                <p className="font-semibold text-gray-900">{tt.is_free ? t("free") : money(tt.price_kzt)}</p>
+                <p className="font-semibold text-ink">{tt.is_free ? t("free") : money(tt.price_kzt)}</p>
               </div>
               <dl className="mt-2 grid grid-cols-2 gap-2 text-sm sm:grid-cols-5">
                 {(
@@ -144,8 +144,8 @@ export function TicketTypesPanel() {
                   ] as const
                 ).map(([key, value]) => (
                   <div key={key}>
-                    <dt className="text-gray-600">{t(`counts.${key}`)}</dt>
-                    <dd className="font-medium text-gray-900">
+                    <dt className="text-ink-muted">{t(`counts.${key}`)}</dt>
+                    <dd className="font-medium text-ink">
                       {value}
                       {key === "available" ? ` / ${tt.quantity_total}` : ""}
                     </dd>
@@ -184,7 +184,7 @@ export function TicketTypesPanel() {
       )}
 
       <Card>
-        <h2 className="mb-4 text-lg font-semibold text-gray-900">{t("add")}</h2>
+        <h2 className="font-display mb-4 text-xl text-ink">{t("add")}</h2>
         <form onSubmit={create} className="grid gap-4 sm:grid-cols-2" noValidate>
           {formError ? (
             <div className="sm:col-span-2">

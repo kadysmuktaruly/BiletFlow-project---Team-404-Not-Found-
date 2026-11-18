@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { useParams, useSearchParams } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 
-import { Alert, Button, TextArea } from "@/components/ui";
+import { Alert, Badge, Button, buttonClass, TAB_BAR, tabClass, TextArea } from "@/components/ui";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { api, unwrap } from "@/lib/api";
 import { useErrorMessage } from "@/lib/use-error-message";
@@ -98,7 +98,7 @@ export function EventShell({ children }: { children: React.ReactNode }) {
   }
 
   if (loadError) return <Alert kind="error">{errorMessage(loadError)}</Alert>;
-  if (!event) return <p className="text-gray-600">{t("common.loading")}</p>;
+  if (!event) return <p className="text-ink-muted">{t("common.loading")}</p>;
 
   const base = `/organizer/events/${event.id}`;
   const tabs = [
@@ -121,20 +121,20 @@ export function EventShell({ children }: { children: React.ReactNode }) {
       <div className="space-y-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-1">
-            <Link href="/organizer/events" className="text-sm text-gray-600 underline">
+            <Link href="/organizer/events" className="text-sm text-ink-muted underline decoration-1 underline-offset-4 hover:text-ink">
               {t("common.back")}
             </Link>
             <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-2xl font-bold tracking-tight text-gray-900">{event.title}</h1>
-              <span className="rounded-full border border-gray-300 px-2 py-0.5 text-xs font-medium text-gray-800">
+              <h1 className="font-display text-title text-ink">{event.title}</h1>
+              <Badge tone={event.status === "published" ? "success" : event.status === "cancelled" ? "danger" : "neutral"}>
                 {t(`event.status.${event.status}`)}
-              </span>
+              </Badge>
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
             <Link
               href={{ pathname: "/support/new", query: { kind: "organizer", event: event.id } }}
-              className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50"
+              className={buttonClass("secondary")}
             >
               {t("support.contactPlatform")}
             </Link>
@@ -144,7 +144,7 @@ export function EventShell({ children }: { children: React.ReactNode }) {
             {event.status === "published" && (
               <Link
                 href={`/events/${event.slug}`}
-                className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50"
+                className={buttonClass("secondary")}
               >
                 {t("organizer.manage.viewPublic")}
               </Link>
@@ -174,14 +174,14 @@ export function EventShell({ children }: { children: React.ReactNode }) {
 
         {confirmCancel && (
           <form
-            className="space-y-3 rounded-lg border border-red-300 bg-red-50 p-4"
+            className="space-y-3 rounded-card border border-danger/30 bg-danger-soft p-4"
             onSubmit={(e) => {
               e.preventDefault();
               void act("cancel", String(new FormData(e.currentTarget).get("reason") ?? ""));
             }}
           >
-            <h2 className="font-semibold text-red-900">{t("organizer.manage.cancelTitle")}</h2>
-            <p className="text-sm text-red-900">{t("organizer.manage.cancelText")}</p>
+            <h2 className="font-semibold text-danger">{t("organizer.manage.cancelTitle")}</h2>
+            <p className="text-sm text-danger">{t("organizer.manage.cancelText")}</p>
             <TextArea name="reason" label={t("organizer.manage.cancelReason")} rows={2} />
             <div className="flex gap-2">
               <Button type="submit" variant="danger" disabled={busy}>
@@ -194,8 +194,8 @@ export function EventShell({ children }: { children: React.ReactNode }) {
           </form>
         )}
 
-        <nav aria-label={event.title} className="border-b border-gray-200">
-          <ul className="-mb-px flex flex-wrap gap-4 text-sm">
+        <nav aria-label={event.title} className="border-b border-line pb-3">
+          <ul className={TAB_BAR}>
             {tabs.map((tab) => {
               const active = pathname === tab.href;
               return (
@@ -203,7 +203,7 @@ export function EventShell({ children }: { children: React.ReactNode }) {
                   <Link
                     href={tab.href}
                     aria-current={active ? "page" : undefined}
-                    className={`inline-block border-b-2 px-1 py-2 font-medium ${active ? "border-gray-900 text-gray-900" : "border-transparent text-gray-600 hover:text-gray-900"}`}
+                    className={tabClass(active)}
                   >
                     {tab.label}
                   </Link>

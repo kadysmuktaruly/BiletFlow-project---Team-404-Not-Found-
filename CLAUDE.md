@@ -49,6 +49,18 @@ Do not add, swap, or remove frameworks or major libraries without asking first.
 - A resource the caller may not see returns 404, not 403.
 - Put all user-facing web strings in one module (translations come later).
 
+## Web design system
+
+- Build every web screen from the design system: tokens in `apps/web/src/app/globals.css`
+  (one `@theme` block) and shared components in `apps/web/src/components/ui.tsx`,
+  `event-card.tsx` (Poster, EventCard), `ticket-card.tsx`, `confirm-dialog.tsx`,
+  `site-header.tsx` and `site-footer.tsx`. Don't add raw Tailwind palette colours
+  (`gray-*`, `red-*`, ...) or hex values; add a token instead. The rationale and the WCAG
+  contrast table are in `docs/design-direction.md`.
+- Keep the DEMO marker (`DemoBadge`, `Alert kind="demo"`) on every payment screen, keep
+  visible focus styles, and check each new screen at 390px in kk and ru.
+- Add every new route to `docs/redesign-checklist.md` and `apps/web/e2e/smoke.spec.ts`.
+
 ## Commands
 
 Run from `apps/api`:
