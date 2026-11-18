@@ -210,9 +210,10 @@ class Ticket(Base, TimestampMixin):
         pg_enum(TicketStatus, "ticket_status"), nullable=False, default=TicketStatus.VALID
     )
 
-    # SRS 4.14 / 7: the admission token. Opaque and server-side; it encodes nothing.
-    # Its wire format carries the `BFT1.` prefix that makes a Campaign QR structurally
-    # unable to reach this table — see app/schemas/scan.py.
+    # SRS 4.7 / 4.14: the admission token in the QR code: `BFT1.<ticket id>.<HMAC>`, signed
+    # with TICKET_SIGNING_SECRET. It identifies the ticket and nothing more (no status, no
+    # price), so check-in always reads live status. The `BFT1.` prefix keeps Campaign QR
+    # codes (`BFC1.`) out of check-in. See app/tickets/tokens.py.
     admission_token: Mapped[str] = mapped_column(String(64), nullable=False)
 
     # NULL for general admission. SRS 4.3.1 requires the seat be stored on the ticket.

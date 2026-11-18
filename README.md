@@ -211,6 +211,25 @@ local time in the event's IANA `timezone` (for example `Asia/Almaty`). Responses
 `starts_at` (UTC) and `starts_at_local` (the event's own zone). Someone else's event returns
 404, not 403.
 
+### Ticket types, orders and tickets (SRS 4.3, 4.4, 4.6, 4.7)
+
+| Endpoint | Purpose |
+|---|---|
+| `GET/POST /organizer/events/{id}/ticket-types`, `PATCH/DELETE …/{ticket_type_id}` | Free (`price_kzt: 0`) or paid types with quantity, sales window, per-order limit and `is_hidden`. Responses include available, reserved, sold, refunded and checked-in counts. A type that has orders can be hidden but not deleted. Price and quantity changes are written to the audit log. |
+| `POST /orders` | Send ticket type ids and quantities (and optionally one attendee per ticket). The server computes every amount. A zero-total order is confirmed at once and its tickets issued. A paid order is `awaiting_payment` and holds its tickets for `ORDER_RESERVATION_TTL_SECONDS`. |
+| `GET /orders/{id}`, `GET /me/orders` | Your orders. Other people's orders return 404. |
+| `GET /me/tickets`, `GET /me/tickets/{id}/qr.svg` | Your tickets and their QR codes. |
+
+**Inventory never oversells.** Checkout locks the event row, then reserves with a conditional
+`UPDATE … WHERE sold + reserved + n <= total`. `ck_ticket_types_inventory_within_total` backs
+it up. `tests/test_inventory_concurrency.py` fires concurrent requests at the last ticket and
+expects exactly one sale. Unpaid orders expire; the next checkout for the event releases them,
+and a background sweep (`ORDER_SWEEP_INTERVAL_SECONDS`) cleans up the rest.
+
+**Ticket QR codes** carry `BFT1.<ticket id>.<HMAC-SHA256>`, signed with
+`TICKET_SIGNING_SECRET`. The token identifies the ticket only. Its status is always read live
+at check-in, so a refunded ticket's QR code stops working.
+
 ## Data model conventions
 
 - **UUID primary keys** everywhere, generated both in Python and by the database (`gen_random_uuid()`).
@@ -242,5 +261,7 @@ All variables are documented in [`.env.example`](.env.example). The main ones:
 | `DATABASE_URL` | `postgresql+asyncpg://biletflow:biletflow@localhost:5433/biletflow` | Async Postgres connection |
 | `POSTGRES_PORT` | `5433` | Host port for the Postgres container |
 | `SEAT_HOLD_TTL_SECONDS` | `600` | How long a checkout seat hold lasts |
+| `ORDER_RESERVATION_TTL_SECONDS` | `600` | How long an unpaid order holds its tickets |
+| `TICKET_SIGNING_SECRET` | dev key | Signs ticket QR codes; required outside development |
 | `ACTIVATION_FEE_KZT` | `5000` | Paid sales activation fee (placeholder amount) |
 | `CURRENCY` | `KZT` | Currency for the initial release |

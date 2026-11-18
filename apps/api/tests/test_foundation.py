@@ -114,10 +114,17 @@ async def test_cors_rejects_unknown_origin() -> None:
     assert "access-control-allow-origin" not in response.headers
 
 
-def test_production_requires_real_jwt_secret() -> None:
+def test_production_requires_real_secrets() -> None:
     with pytest.raises(ValidationError, match="JWT_SECRET"):
         Settings(environment="production", _env_file=None)
-    ok = Settings(environment="production", jwt_secret="x" * 32, _env_file=None)
+    with pytest.raises(ValidationError, match="TICKET_SIGNING_SECRET"):
+        Settings(environment="production", jwt_secret="x" * 32, _env_file=None)
+    ok = Settings(
+        environment="production",
+        jwt_secret="x" * 32,
+        ticket_signing_secret="y" * 32,
+        _env_file=None,
+    )
     assert ok.jwt_secret == "x" * 32
 
 

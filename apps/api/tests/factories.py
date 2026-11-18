@@ -11,7 +11,7 @@ from typing import Any
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.enums import EventStatus, UserRole
-from app.models import Event, OrganizerProfile, User
+from app.models import Event, OrganizerProfile, TicketType, User
 from app.security import TokenType, create_token, hash_password
 
 _seq = itertools.count(1)
@@ -79,3 +79,29 @@ async def make_event(session: AsyncSession, organizer: OrganizerProfile, **overr
     session.add(event)
     await session.flush()
     return event
+
+
+async def make_ticket_type(session: AsyncSession, event: Event, **overrides: Any) -> TicketType:
+    n = _n()
+    values: dict[str, Any] = {
+        "event_id": event.id,
+        "name": f"Ticket type {n}",
+        "price_kzt": 0,
+        "quantity_total": 100,
+        "max_per_order": 10,
+    }
+    values.update(overrides)
+    ticket_type = TicketType(**values)
+    session.add(ticket_type)
+    await session.flush()
+    return ticket_type
+
+
+async def make_published_event(
+    session: AsyncSession, organizer: OrganizerProfile | None = None, **overrides: Any
+) -> Event:
+    """A published, public event, open for registration."""
+    organizer = organizer or await make_organizer(session)
+    overrides.setdefault("status", EventStatus.PUBLISHED)
+    overrides.setdefault("published_at", datetime.now(UTC))
+    return await make_event(session, organizer, **overrides)
