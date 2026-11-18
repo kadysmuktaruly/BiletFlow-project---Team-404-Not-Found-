@@ -5,6 +5,7 @@ from collections.abc import Iterator
 
 import httpx
 import pytest
+from fastapi import Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import ratelimit
@@ -95,3 +96,37 @@ async def test_limits_are_off_for_the_test_suite_by_default(
     assert ratelimit.enabled() is False  # ENVIRONMENT=test
     monkeypatch.setattr(get_settings(), "environment", "development")
     assert ratelimit.enabled() is True
+
+
+def _request(headers: dict[str, str]) -> Request:
+    return Request(
+        {
+            "type": "http",
+            "headers": [(k.lower().encode(), v.encode()) for k, v in headers.items()],
+            "client": ("10.0.0.1", 1234),
+        }
+    )
+
+
+def test_client_ip_trusts_the_proxy_header_only_with_the_shared_secret(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(get_settings(), "trusted_proxy_secret", "s" * 40)
+    forwarded = {ratelimit.PROXY_CLIENT_IP_HEADER: "203.0.113.7"}
+
+    assert ratelimit.client_ip(
+        _request({**forwarded, ratelimit.PROXY_SECRET_HEADER: "s" * 40})
+    ) == ("203.0.113.7")
+    # Anyone can send the IP header; without the secret it's ignored.
+    assert ratelimit.client_ip(_request(forwarded)) == "10.0.0.1"
+    assert ratelimit.client_ip(_request({**forwarded, ratelimit.PROXY_SECRET_HEADER: "guess"})) == (
+        "10.0.0.1"
+    )
+
+
+def test_client_ip_ignores_the_proxy_header_when_no_proxy_is_trusted(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(get_settings(), "trusted_proxy_secret", "")
+    headers = {ratelimit.PROXY_CLIENT_IP_HEADER: "203.0.113.7", ratelimit.PROXY_SECRET_HEADER: ""}
+    assert ratelimit.client_ip(_request(headers)) == "10.0.0.1"

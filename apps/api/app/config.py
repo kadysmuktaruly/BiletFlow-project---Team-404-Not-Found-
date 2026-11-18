@@ -84,6 +84,10 @@ class Settings(BaseSettings):
     # Brute-force protection on sign-in and account emails. Off under ENVIRONMENT=test unless
     # set explicitly, so the test suite can sign in freely; tests/test_rate_limit.py turns it on.
     rate_limit_enabled: bool | None = None
+    # Shared with the web app's proxy (API_PROXY_SECRET there). When a request carries this
+    # secret, its X-BiletFlow-Client-IP header is the visitor's address; Vercel itself replaces
+    # X-Forwarded-For with the proxy's address. Empty means no proxy is trusted.
+    trusted_proxy_secret: str = ""
 
     # SRS 4.6 / 4.14: the currency for the initial Kazakhstan release.
     currency: str = "KZT"
