@@ -69,6 +69,10 @@ export function EventForm({
         starts_at: String(f.get("starts_at")),
         ends_at: String(f.get("ends_at")),
         timezone: String(f.get("timezone")),
+        visibility: String(f.get("visibility")) as EventInput["visibility"],
+        registration_opens_at: blankToNull(f.get("registration_opens_at")),
+        registration_closes_at: blankToNull(f.get("registration_closes_at")),
+        capacity: f.get("capacity") ? Number(f.get("capacity")) : null,
       });
       setSaved(true);
     } catch (err) {
@@ -169,6 +173,44 @@ export function EventForm({
             options={TIMEZONES.map((tz) => ({ value: tz, label: tz }))}
           />
         </div>
+      </Card>
+
+      <Card className="space-y-4">
+        <h2 className="text-lg font-semibold text-gray-900">{t("settings")}</h2>
+        <Select
+          name="visibility"
+          label={t("visibility")}
+          defaultValue={event?.visibility ?? "public"}
+          options={(["public", "unlisted", "private"] as const).map((v) => ({
+            value: v,
+            label: t(`visibilityOptions.${v}`),
+          }))}
+        />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field
+            name="registration_opens_at"
+            type="datetime-local"
+            label={`${t("registrationOpens")} (${tc("optional")})`}
+            defaultValue={event?.registration_opens_at_local ?? ""}
+            hint={t("registrationHint")}
+          />
+          <Field
+            name="registration_closes_at"
+            type="datetime-local"
+            label={`${t("registrationCloses")} (${tc("optional")})`}
+            defaultValue={event?.registration_closes_at_local ?? ""}
+          />
+        </div>
+        <Field
+          name="capacity"
+          type="number"
+          min={1}
+          label={`${t("capacity")} (${tc("optional")})`}
+          hint={t("capacityHint")}
+          defaultValue={event?.capacity ?? ""}
+          error={fieldError("capacity")}
+          className="sm:max-w-xs"
+        />
       </Card>
 
       <div className="flex items-center gap-4">

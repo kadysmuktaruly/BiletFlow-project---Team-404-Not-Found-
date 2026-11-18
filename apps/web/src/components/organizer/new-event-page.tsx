@@ -19,7 +19,7 @@ export function NewEventPage() {
         submitLabel={t("createDraft")}
         onSubmit={async (input) => {
           const event = await unwrap(api.POST("/api/v1/organizer/events", { body: input }));
-          router.replace(`/organizer/events/${event.id}`);
+          router.replace(`/organizer/events/${event.id}/tickets`);
         }}
       />
     </div>

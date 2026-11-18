@@ -152,6 +152,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Upcoming public events
+         * @description Only published, public, upcoming events. Unlisted and private ones never appear.
+         */
+        get: operations["list_events_api_v1_events_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/events/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * An event's public page
+         * @description Public and unlisted events open by slug. Private events open only for their organizer and staff (send the access token); everyone else gets 404.
+         */
+        get: operations["read_event_api_v1_events__slug__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/health": {
         parameters: {
             query?: never;
@@ -442,6 +482,101 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/organizer/events/{event_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel an event
+         * @description Cancels every valid ticket (they fail at check-in) and releases unpaid orders. Refunds for paid orders arrive with SRS 4.9.
+         */
+        post: operations["cancel_event_api_v1_organizer_events__event_id__cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/organizer/events/{event_id}/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Preview the public page, whatever the event's status */
+        get: operations["preview_event_api_v1_organizer_events__event_id__preview_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/organizer/events/{event_id}/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Publish an event
+         * @description Needs a verified email, a venue, at least one visible ticket type, and an end time in the future. Public events then appear in the listing; unlisted ones open by link.
+         */
+        post: operations["publish_event_api_v1_organizer_events__event_id__publish_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/organizer/events/{event_id}/staff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** People who can check attendees in at this event */
+        get: operations["list_staff_api_v1_organizer_events__event_id__staff_get"];
+        put?: never;
+        /**
+         * Assign an existing user as Event Admin or check-in staff
+         * @description Event admins can scan and undo check-ins; check-in staff can only scan.
+         */
+        post: operations["assign_staff_api_v1_organizer_events__event_id__staff_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/organizer/events/{event_id}/staff/{assignment_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove someone from the event's staff */
+        delete: operations["revoke_staff_api_v1_organizer_events__event_id__staff__assignment_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/organizer/events/{event_id}/ticket-types": {
         parameters: {
             query?: never;
@@ -479,6 +614,26 @@ export interface paths {
         head?: never;
         /** Edit a ticket type, or hide it with is_hidden */
         patch: operations["update_ticket_type_api_v1_organizer_events__event_id__ticket_types__ticket_type_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/organizer/events/{event_id}/unpublish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Unpublish an event: hide its page and stop new registrations
+         * @description Tickets already issued stay valid.
+         */
+        post: operations["unpublish_event_api_v1_organizer_events__event_id__unpublish_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/v1/organizer/payout-account": {
@@ -595,6 +750,11 @@ export interface components {
             /** Phone */
             phone?: string | null;
         };
+        /** CancelEventRequest */
+        CancelEventRequest: {
+            /** Reason */
+            reason?: string | null;
+        };
         /**
          * ConfirmRequest
          * @description For checklist steps that are a simple confirmation.
@@ -633,6 +793,8 @@ export interface components {
         };
         /** EventCreate */
         EventCreate: {
+            /** Capacity */
+            capacity?: number | null;
             /** Category */
             category?: string | null;
             /** Cover Image Url */
@@ -644,6 +806,10 @@ export interface components {
              * Format: date-time
              */
             ends_at: string;
+            /** Registration Closes At */
+            registration_closes_at?: string | null;
+            /** Registration Opens At */
+            registration_opens_at?: string | null;
             /**
              * Starts At
              * Format: date-time
@@ -657,6 +823,8 @@ export interface components {
             /** Title */
             title: string;
             venue: components["schemas"]["VenueInput"];
+            /** @default public */
+            visibility: components["schemas"]["EventVisibility"];
         };
         /** EventRead */
         EventRead: {
@@ -691,8 +859,12 @@ export interface components {
             published_at: string | null;
             /** Registration Closes At */
             registration_closes_at: string | null;
+            /** Registration Closes At Local */
+            readonly registration_closes_at_local: string | null;
             /** Registration Opens At */
             registration_opens_at: string | null;
+            /** Registration Opens At Local */
+            readonly registration_opens_at_local: string | null;
             seating_mode: components["schemas"]["SeatingMode"];
             /** Slug */
             slug: string;
@@ -763,6 +935,8 @@ export interface components {
          *     the service resolves them, because the current zone lives in the database.
          */
         EventUpdate: {
+            /** Capacity */
+            capacity?: number | null;
             /** Category */
             category?: string | null;
             /** Cover Image Url */
@@ -771,6 +945,10 @@ export interface components {
             description?: string | null;
             /** Ends At */
             ends_at?: string | null;
+            /** Registration Closes At */
+            registration_closes_at?: string | null;
+            /** Registration Opens At */
+            registration_opens_at?: string | null;
             /** Starts At */
             starts_at?: string | null;
             /** Timezone */
@@ -778,6 +956,7 @@ export interface components {
             /** Title */
             title?: string | null;
             venue?: components["schemas"]["VenueInput"] | null;
+            visibility?: components["schemas"]["EventVisibility"] | null;
         };
         /**
          * EventVisibility
@@ -993,6 +1172,17 @@ export interface components {
             /** Website Url */
             website_url?: string | null;
         };
+        /** OrganizerSummary */
+        OrganizerSummary: {
+            /** Contact Email */
+            contact_email: string;
+            /** Contact Phone */
+            contact_phone: string | null;
+            /** Display Name */
+            display_name: string;
+            /** Website Url */
+            website_url: string | null;
+        };
         /**
          * PaymentPurpose
          * @description SRS 3.2: the two things money is ever collected for.
@@ -1085,6 +1275,94 @@ export interface components {
             /** Bank Name */
             bank_name: string;
         };
+        /** PublicEventList */
+        PublicEventList: {
+            /** Items */
+            items: components["schemas"]["PublicEventRead"][];
+            /** Total */
+            total: number;
+        };
+        /**
+         * PublicEventRead
+         * @description An event as attendees see it (SRS 4.2), also used for the organizer's preview.
+         */
+        PublicEventRead: {
+            /** Category */
+            category: string | null;
+            /** Cover Image Url */
+            cover_image_url: string | null;
+            /** Description */
+            description: string | null;
+            /**
+             * Ends At
+             * Format: date-time
+             */
+            ends_at: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            organizer: components["schemas"]["OrganizerSummary"];
+            /** Paid Sales Enabled */
+            paid_sales_enabled: boolean;
+            /**
+             * Preview
+             * @default false
+             */
+            preview: boolean;
+            /** Registration Closes At */
+            registration_closes_at: string | null;
+            /** Registration Open */
+            registration_open: boolean;
+            /** Registration Opens At */
+            registration_opens_at: string | null;
+            /** Slug */
+            slug: string;
+            /**
+             * Starts At
+             * Format: date-time
+             */
+            starts_at: string;
+            status: components["schemas"]["EventStatus"];
+            /** Ticket Types */
+            ticket_types: components["schemas"]["PublicTicketTypeRead"][];
+            /** Timezone */
+            timezone: string;
+            /** Title */
+            title: string;
+            venue: components["schemas"]["VenueRead"] | null;
+            visibility: components["schemas"]["EventVisibility"];
+        };
+        /**
+         * PublicTicketTypeRead
+         * @description What attendees see. No sold/reserved counts, only whether any are left.
+         */
+        PublicTicketTypeRead: {
+            /** Description */
+            description: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Free */
+            is_free: boolean;
+            /** Max Per Order */
+            max_per_order: number;
+            /** Name */
+            name: string;
+            /** On Sale */
+            on_sale: boolean;
+            /** Price Kzt */
+            price_kzt: number;
+            /** Quantity Available */
+            quantity_available: number;
+            /** Sales End At */
+            sales_end_at: string | null;
+            /** Sales Start At */
+            sales_start_at: string | null;
+        };
         /**
          * RefreshRequest
          * @description The scanner app sends its refresh token in the body; the web app uses the cookie.
@@ -1141,6 +1419,49 @@ export interface components {
              */
             outcome: "succeed" | "fail";
         };
+        /** StaffAssign */
+        StaffAssign: {
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
+            /**
+             * Role
+             * @default event_admin
+             * @enum {string}
+             */
+            role: "event_admin" | "check_in_staff";
+        };
+        /** StaffRead */
+        StaffRead: {
+            /**
+             * Assigned At
+             * Format: date-time
+             */
+            assigned_at: string;
+            /** Email */
+            email: string;
+            /** Full Name */
+            full_name: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            role: components["schemas"]["StaffRole"];
+            /**
+             * User Id
+             * Format: uuid
+             */
+            user_id: string;
+        };
+        /**
+         * StaffRole
+         * @description SRS 4.8 / 2.3: an organizer authorises a user against one event.
+         * @enum {string}
+         */
+        StaffRole: "event_admin" | "check_in_staff";
         /** TicketRead */
         TicketRead: {
             /** Attendee Email */
@@ -1393,6 +1714,7 @@ export type SchemaAcceptedResponse = components['schemas']['AcceptedResponse'];
 export type SchemaActivationRead = components['schemas']['ActivationRead'];
 export type SchemaActivationStatus = components['schemas']['ActivationStatus'];
 export type SchemaAttendeeInput = components['schemas']['AttendeeInput'];
+export type SchemaCancelEventRequest = components['schemas']['CancelEventRequest'];
 export type SchemaConfirmRequest = components['schemas']['ConfirmRequest'];
 export type SchemaEmailRequest = components['schemas']['EmailRequest'];
 export type SchemaErrorBody = components['schemas']['ErrorBody'];
@@ -1415,17 +1737,24 @@ export type SchemaOrderRead = components['schemas']['OrderRead'];
 export type SchemaOrderStatus = components['schemas']['OrderStatus'];
 export type SchemaOrganizerProfileRead = components['schemas']['OrganizerProfileRead'];
 export type SchemaOrganizerProfileUpdate = components['schemas']['OrganizerProfileUpdate'];
+export type SchemaOrganizerSummary = components['schemas']['OrganizerSummary'];
 export type SchemaPaymentPurpose = components['schemas']['PaymentPurpose'];
 export type SchemaPaymentRead = components['schemas']['PaymentRead'];
 export type SchemaPaymentStatus = components['schemas']['PaymentStatus'];
 export type SchemaPayoutAccountRead = components['schemas']['PayoutAccountRead'];
 export type SchemaPayoutAccountStatus = components['schemas']['PayoutAccountStatus'];
 export type SchemaPayoutAccountUpsert = components['schemas']['PayoutAccountUpsert'];
+export type SchemaPublicEventList = components['schemas']['PublicEventList'];
+export type SchemaPublicEventRead = components['schemas']['PublicEventRead'];
+export type SchemaPublicTicketTypeRead = components['schemas']['PublicTicketTypeRead'];
 export type SchemaRefreshRequest = components['schemas']['RefreshRequest'];
 export type SchemaRegisterRequest = components['schemas']['RegisterRequest'];
 export type SchemaResetPasswordRequest = components['schemas']['ResetPasswordRequest'];
 export type SchemaSeatingMode = components['schemas']['SeatingMode'];
 export type SchemaSimulatedPaymentRequest = components['schemas']['SimulatedPaymentRequest'];
+export type SchemaStaffAssign = components['schemas']['StaffAssign'];
+export type SchemaStaffRead = components['schemas']['StaffRead'];
+export type SchemaStaffRole = components['schemas']['StaffRole'];
 export type SchemaTicketRead = components['schemas']['TicketRead'];
 export type SchemaTicketStatus = components['schemas']['TicketStatus'];
 export type SchemaTicketTypeCreate = components['schemas']['TicketTypeCreate'];
@@ -1729,6 +2058,80 @@ export interface operations {
             };
             /** @description Bad Request */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_events_api_v1_events_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+                /** @description Search title or category */
+                q?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicEventList"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    read_event_api_v1_events__slug__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicEventRead"];
+                };
+            };
+            /** @description Not Found */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2866,6 +3269,388 @@ export interface operations {
             };
         };
     };
+    cancel_event_api_v1_organizer_events__event_id__cancel_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CancelEventRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventRead"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    preview_event_api_v1_organizer_events__event_id__preview_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicEventRead"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    publish_event_api_v1_organizer_events__event_id__publish_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventRead"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_staff_api_v1_organizer_events__event_id__staff_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffRead"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    assign_staff_api_v1_organizer_events__event_id__staff_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StaffAssign"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffRead"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    revoke_staff_api_v1_organizer_events__event_id__staff__assignment_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                assignment_id: string;
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     list_ticket_types_api_v1_organizer_events__event_id__ticket_types_get: {
         parameters: {
             query?: never;
@@ -3084,6 +3869,73 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TicketTypeRead"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    unpublish_event_api_v1_organizer_events__event_id__unpublish_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventRead"];
                 };
             };
             /** @description Unauthorized */

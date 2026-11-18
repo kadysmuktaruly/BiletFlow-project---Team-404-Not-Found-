@@ -257,6 +257,25 @@ organizer's estimated payout. They are never added to what the attendee pays.
 **Emails** (all in Mailpit during development): verification, password reset, order
 confirmation with an inline QR image per ticket (free and paid), and DEMO payment failure.
 
+### Organizer event management (SRS 4.2, 4.5, 4.8)
+
+| Endpoint | Purpose |
+|---|---|
+| `POST /organizer/events/{id}/publish` | Needs a verified email, a venue, a visible ticket type and a future end time. |
+| `POST /organizer/events/{id}/unpublish` | Hides the page and pauses registration. Issued tickets stay valid. |
+| `POST /organizer/events/{id}/cancel` | Cancels every valid ticket (they fail at the door) and releases unpaid orders. Refunds arrive with SRS 4.9. |
+| `PATCH /organizer/events/{id}` | Also sets `visibility` (`public`, `unlisted`, `private`), the registration window and `capacity` (across all ticket types). |
+| `GET /organizer/events/{id}/preview` | The public page as attendees will see it, whatever the status. |
+| `GET/POST /organizer/events/{id}/staff`, `DELETE …/{assignment_id}` | Assign existing users as `event_admin` (can undo check-ins) or `check_in_staff` (scan only). |
+| `GET /events`, `GET /events/{slug}` | Public pages. Only published, public, upcoming events are listed. Unlisted events open by link. Private events open only for their organizer and staff (404 for everyone else). |
+
+Publishing, unpublishing, cancelling, capacity and visibility changes, and staff changes are
+written to the audit log.
+
+In the web app, each event has its own area at `/organizer/events/{id}`, with tabs for details
+(including visibility, registration window and capacity), ticket types with live counts, the
+paid-sales checklist (DEMO), staff, and a preview, plus Publish, Unpublish and Cancel.
+
 ## Data model conventions
 
 - **UUID primary keys** everywhere, generated both in Python and by the database (`gen_random_uuid()`).

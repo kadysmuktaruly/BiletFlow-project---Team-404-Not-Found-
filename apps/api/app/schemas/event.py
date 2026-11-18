@@ -16,6 +16,7 @@ from pydantic import (
 )
 
 from app.enums import EventStatus, EventVisibility, SeatingMode
+from app.schemas.ticket_type import PublicTicketTypeRead
 
 
 def _valid_timezone(name: str) -> str:
@@ -57,6 +58,11 @@ class _EventFields(BaseModel):
     starts_at: datetime
     ends_at: datetime
     timezone: TimeZoneName = "Asia/Almaty"
+    # SRS 4.2: who can find it, when registration opens and closes, and the event's capacity.
+    visibility: EventVisibility = EventVisibility.PUBLIC
+    registration_opens_at: datetime | None = None
+    registration_closes_at: datetime | None = None
+    capacity: int | None = Field(default=None, ge=1, le=1_000_000)
 
 
 class EventCreate(_EventFields):
@@ -67,6 +73,16 @@ class EventCreate(_EventFields):
         self.ends_at = localize(self.ends_at, tz)
         if self.ends_at < self.starts_at:
             raise ValueError("The event must end after it starts.")
+        if self.registration_opens_at:
+            self.registration_opens_at = localize(self.registration_opens_at, tz)
+        if self.registration_closes_at:
+            self.registration_closes_at = localize(self.registration_closes_at, tz)
+        if (
+            self.registration_opens_at
+            and self.registration_closes_at
+            and self.registration_closes_at <= self.registration_opens_at
+        ):
+            raise ValueError("Registration must close after it opens.")
         return self
 
 
@@ -82,6 +98,14 @@ class EventUpdate(BaseModel):
     starts_at: datetime | None = None
     ends_at: datetime | None = None
     timezone: TimeZoneName | None = None
+    visibility: EventVisibility | None = None
+    registration_opens_at: datetime | None = None
+    registration_closes_at: datetime | None = None
+    capacity: int | None = Field(default=None, ge=1, le=1_000_000)
+
+
+class CancelEventRequest(BaseModel):
+    reason: str | None = Field(default=None, max_length=2000)
 
 
 def localize(value: datetime, tz: ZoneInfo) -> datetime:
@@ -122,3 +146,56 @@ class EventRead(BaseModel):
     @property
     def ends_at_local(self) -> str:
         return self.ends_at.astimezone(ZoneInfo(self.timezone)).strftime("%Y-%m-%dT%H:%M")
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def registration_opens_at_local(self) -> str | None:
+        return _local(self.registration_opens_at, self.timezone)
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def registration_closes_at_local(self) -> str | None:
+        return _local(self.registration_closes_at, self.timezone)
+
+
+def _local(value: datetime | None, tz: str) -> str | None:
+    return value.astimezone(ZoneInfo(tz)).strftime("%Y-%m-%dT%H:%M") if value else None
+
+
+class OrganizerSummary(BaseModel):
+    display_name: str
+    contact_email: str
+    contact_phone: str | None
+    website_url: str | None
+
+
+class PublicEventRead(BaseModel):
+    """An event as attendees see it (SRS 4.2), also used for the organizer's preview."""
+
+    id: uuid.UUID
+    slug: str
+    title: str
+    description: str | None
+    category: str | None
+    cover_image_url: str | None
+    status: EventStatus
+    visibility: EventVisibility
+    venue: VenueRead | None
+    starts_at: datetime
+    ends_at: datetime
+    timezone: str
+    registration_opens_at: datetime | None
+    registration_closes_at: datetime | None
+    # Whether registration is open right now (published, not suspended, inside the window).
+    registration_open: bool
+    # Whether paid tickets can be bought (SRS 4.5). Free tickets don't depend on it.
+    paid_sales_enabled: bool
+    organizer: OrganizerSummary
+    ticket_types: list[PublicTicketTypeRead]
+    # True only on the organizer's preview of an unpublished event.
+    preview: bool = False
+
+
+class PublicEventList(BaseModel):
+    items: list[PublicEventRead]
+    total: int
