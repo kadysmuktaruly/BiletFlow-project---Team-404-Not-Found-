@@ -4,8 +4,9 @@ Self-service event ticketing for Kazakhstan. Organizers create events, sell gene
 or assigned-seat tickets in KZT, run promo campaigns, and check attendees in at the door with a
 QR scanner. Attendees buy tickets, receive them by email, and can open support cases.
 
-> **Status:** early development. The backend data model (27 SQLAlchemy models and the initial
-> Alembic migration) is in place. The HTTP API, web app, and scanner app come in later tasks.
+> **Status:** early development. The data model, accounts and sign-in, organizer profiles and
+> draft events are in place in the API and the web app. Ticketing, checkout, check-in and
+> the scanner app follow; see [`docs/plan-reports-3-4.md`](docs/plan-reports-3-4.md).
 > Section references like "SRS 4.3.1" throughout the code point to the project's Software
 > Requirements Specification.
 
@@ -28,27 +29,33 @@ QR scanner. Attendees buy tickets, receive them by email, and can open support c
 ```
 biletflow/
 ├── apps/
-│   └── api/                    # FastAPI backend (Python 3.12, async SQLAlchemy)
-│       ├── app/
-│       │   ├── config.py       # Settings read from environment / .env
-│       │   ├── db.py           # Async engine and session dependency
-│       │   ├── enums.py        # Every enum, stored as a native Postgres enum
-│       │   └── models/         # user, event, seating, order, campaign, support, audit
-│       ├── migrations/         # Alembic (async); 0001_initial_schema.py
-│       └── tests/constraints/  # SQL checks for database-enforced guarantees
-├── packages/api-types/         # (planned) shared API types
-├── docker-compose.yml          # Postgres 16 (api and web services come later)
+│   ├── api/                    # FastAPI backend (Python 3.12, async SQLAlchemy)
+│   │   ├── app/
+│   │   │   ├── config.py       # Settings read from environment / .env
+│   │   │   ├── deps.py         # Auth and permission dependencies
+│   │   │   ├── models/         # user, event, seating, order, campaign, support, audit
+│   │   │   ├── routers/        # Thin HTTP layer under /api/v1
+│   │   │   ├── schemas/        # Request and response models
+│   │   │   ├── services/       # Business logic
+│   │   │   └── i18n/           # Email strings in kk / ru / en
+│   │   ├── migrations/         # Alembic (async); 0001_initial_schema.py
+│   │   └── tests/              # pytest + httpx on a throwaway *_test database
+│   └── web/                    # Next.js app (App Router, Tailwind, next-intl)
+│       ├── messages/           # Every user-facing string, in kk.json / ru.json / en.json
+│       └── src/
+├── packages/api-types/         # TypeScript types generated from the API's OpenAPI schema
+├── scripts/gen-api-types.sh    # Regenerates packages/api-types
+├── docs/                       # SRS, decisions, plans, demo scripts
+├── docker-compose.yml          # db, api, mailpit
 └── .env.example                # All environment variables, documented
 ```
-
-Planned but not yet built: `apps/web` (Next.js frontend) and `apps/scanner` (Expo mobile app
-for check-in staff).
 
 ## Tech stack
 
 - **API:** FastAPI, Pydantic v2, SQLAlchemy 2.0 (async only), asyncpg, Alembic
 - **Database:** PostgreSQL 16
-- **Tooling:** [uv](https://docs.astral.sh/uv/), Ruff, mypy (strict), pytest
+- **Web:** Next.js 16 (App Router, TypeScript, Tailwind CSS), next-intl, openapi-fetch
+- **Tooling:** [uv](https://docs.astral.sh/uv/), Ruff, mypy (strict), pytest, npm workspaces
 
 ## Getting started
 
@@ -82,6 +89,33 @@ uv run pytest              # tests
 uv run alembic check       # confirm the models and migrations match
 ```
 
+### Web app
+
+Requirements: Node.js 22. JavaScript workspaces use npm.
+
+```bash
+npm install                        # from the repo root
+npm run dev -w @biletflow/web      # http://localhost:3000 (needs the API on :8000)
+npm run lint -w @biletflow/web     # eslint + checks kk/ru/en have the same message keys
+npm run typecheck --workspaces --if-present
+```
+
+Every user-facing string lives in `apps/web/messages/{kk,ru,en}.json`; nothing is
+hard-coded in components. API errors are shown by translating their `error.code` under
+`errors.*`. The app talks to the API through a typed client (`src/lib/api.ts`). The access
+token is kept in memory, and the refresh token is the httpOnly cookie set by the API.
+
+### API types
+
+`packages/api-types` is generated from the FastAPI OpenAPI schema. Never edit it by hand.
+After changing an endpoint or schema, run:
+
+```bash
+npm run gen:api-types              # from the repo root; needs uv and npm install
+```
+
+CI fails if the committed types don't match the API.
+
 ### Tests
 
 `uv run pytest` needs the Compose database running (`docker compose up -d db`). It never
@@ -100,9 +134,12 @@ check covers.
 
 ### Continuous integration
 
-`.github/workflows/ci.yml` runs on every pull request, whatever its base branch. The API job
-runs ruff check, ruff format --check, strict mypy, `alembic upgrade head`, `alembic check`,
-and pytest against a Postgres 16 service.
+`.github/workflows/ci.yml` runs on every pull request, whatever its base branch:
+
+- **API:** ruff check, ruff format --check, strict mypy, `alembic upgrade head`,
+  `alembic check`, and pytest against a Postgres 16 service.
+- **Web:** eslint, the kk/ru/en key check, `tsc` for every workspace, and a production build.
+- **API types:** regenerates `packages/api-types` and fails if it differs from what's committed.
 
 ### Project documents
 

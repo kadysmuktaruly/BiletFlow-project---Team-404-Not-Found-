@@ -52,3 +52,42 @@ jobs:
       # Uses its own biletflow_test database; includes tests/constraints/verify_constraints.sql.
       - name: Tests
         run: uv run pytest -q
+
+  web:
+    name: Web (eslint, i18n keys, tsc, build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Lint and check kk/ru/en message keys match
+        run: npm run lint -w @biletflow/web
+      - name: Type check
+        run: npm run typecheck --workspaces --if-present
+      - name: Production build (catches prerender errors)
+        run: npm run build -w @biletflow/web
+
+  api-types:
+    name: API types match the OpenAPI schema
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.12.5"
+          enable-cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run gen:api-types
+      - name: Fail if packages/api-types is stale
+        run: |
+          git diff --exit-code -- packages/api-types || {
+            echo "::error::packages/api-types is out of date. Run 'npm run gen:api-types' and commit the result."
+            exit 1
+          }
