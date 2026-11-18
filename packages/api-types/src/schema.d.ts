@@ -398,6 +398,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/me/tickets/{ticket_id}/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The ticket as a print-optimized A4 PDF
+         * @description SRS 4.7: event, date and time, venue, ticket type, attendee, seat when assigned, ticket number and the same QR as the digital ticket. No price or payment data. Text is in your account language.
+         */
+        get: operations["my_ticket_pdf_api_v1_me_tickets__ticket_id__pdf_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/me/tickets/{ticket_id}/qr.svg": {
         parameters: {
             query?: never;
@@ -675,6 +695,26 @@ export interface paths {
          * @description New checkouts get `promo_disabled`. Orders already placed keep their discount.
          */
         post: operations["disable_campaign_api_v1_organizer_events__event_id__campaigns__campaign_id__disable_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/organizer/events/{event_id}/campaigns/{campaign_id}/qr.{fmt}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download the Campaign QR (SVG, or an A5 PDF poster)
+         * @description Purple, dashed-frame design with a printed 'PROMO · NOT A TICKET' banner, so it can't be mistaken for a ticket (SRS 4.14). It encodes the campaign link only. `lang` picks the language of the printed text (default: your account language).
+         */
+        get: operations["campaign_qr_api_v1_organizer_events__event_id__campaigns__campaign_id__qr__fmt__get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -3336,6 +3376,64 @@ export interface operations {
             };
         };
     };
+    my_ticket_pdf_api_v1_me_tickets__ticket_id__pdf_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ticket_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     my_ticket_qr_api_v1_me_tickets__ticket_id__qr_svg_get: {
         parameters: {
             query?: never;
@@ -4534,6 +4632,69 @@ export interface operations {
                 };
             };
             /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    campaign_qr_api_v1_organizer_events__event_id__campaigns__campaign_id__qr__fmt__get: {
+        parameters: {
+            query?: {
+                lang?: ("kk" | "ru" | "en") | null;
+            };
+            header?: never;
+            path: {
+                campaign_id: string;
+                event_id: string;
+                fmt: "svg" | "pdf";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": unknown;
+                    "image/svg+xml": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
             422: {
                 headers: {
                     [name: string]: unknown;

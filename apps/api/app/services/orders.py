@@ -56,6 +56,7 @@ from app.schemas.order import (
 from app.services import order_emails, promotions
 from app.services.mail import Outbound
 from app.tickets.numbers import order_reference, ticket_number
+from app.tickets.pdf import TicketDocument
 from app.tickets.tokens import sign_admission_token
 
 logger = logging.getLogger(__name__)
@@ -595,3 +596,40 @@ async def get_own_ticket(session: AsyncSession, user: User, ticket_id: uuid.UUID
     if ticket is None:
         raise AppError(404, "ticket_not_found", "Ticket not found.")
     return ticket
+
+
+async def ticket_documents(
+    session: AsyncSession, tickets: Sequence[Ticket]
+) -> list[TicketDocument]:
+    """What the printed PDF shows for each ticket (SRS 4.7). No money fields."""
+    if not tickets:
+        return []
+    reads = await tickets_read(session, tickets)
+    events = {
+        e.id: e
+        for e in await session.scalars(
+            select(Event).where(Event.id.in_({t.event_id for t in tickets}))
+        )
+    }
+    documents = []
+    for ticket, read in zip(tickets, reads, strict=True):
+        summary = _event_summary(events[ticket.event_id])
+        documents.append(
+            TicketDocument(
+                ticket_number=read.ticket_number,
+                status=read.status.value,
+                qr_payload=read.qr_payload,
+                ticket_type_name=read.ticket_type_name,
+                attendee_name=read.attendee_name,
+                event_title=summary.title,
+                starts_at=summary.starts_at,
+                ends_at=summary.ends_at,
+                timezone=summary.timezone,
+                venue_name=summary.venue_name,
+                venue_address=summary.venue_address,
+                seat_section=read.seat_section,
+                seat_row=read.seat_row,
+                seat_number=read.seat_number,
+            )
+        )
+    return documents

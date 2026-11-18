@@ -2,6 +2,7 @@
 payment-failure notice."""
 
 import html
+from datetime import UTC, datetime
 from zoneinfo import ZoneInfo
 
 from sqlalchemy import select
@@ -14,6 +15,7 @@ from app.i18n.emails import TICKET_LABELS
 from app.models import Event, Order, Ticket, User
 from app.services.mail import Attachment, Outbound, render
 from app.services.notifications import record_email
+from app.tickets.pdf import render_ticket_pdf
 from app.tickets.qr import qr_png
 
 
@@ -33,7 +35,7 @@ def _venue(event: Event) -> str:
 
 async def confirmation(session: AsyncSession, order: Order) -> Outbound:
     """Call after `confirm_order`, in the same transaction."""
-    from app.services.orders import tickets_read  # avoid an import cycle
+    from app.services.orders import ticket_documents, tickets_read  # avoid an import cycle
 
     user = await session.get_one(User, order.user_id)
     event = await session.get_one(Event, order.event_id)
@@ -43,15 +45,25 @@ async def confirmation(session: AsyncSession, order: Order) -> Outbound:
         await session.scalars(select(Ticket).where(Ticket.order_id == order.id).order_by(Ticket.id))
     )
     reads = await tickets_read(session, tickets)
+    documents = await ticket_documents(session, tickets)
+    printed_at = datetime.now(UTC)
 
     attachments: list[Attachment] = []
     text_blocks: list[str] = []
     html_blocks: list[str] = []
-    for read in reads:
+    for read, document in zip(reads, documents, strict=True):
         cid = f"qr-{read.id}@biletflow"
         attachments.append(
             Attachment(
                 f"ticket-{read.ticket_number}.png", qr_png(read.qr_payload), "image/png", cid
+            )
+        )
+        # SRS 4.7 / UC7: the print-optimized PDF of the same ticket, attached.
+        attachments.append(
+            Attachment(
+                f"ticket-{read.ticket_number}.pdf",
+                render_ticket_pdf(document, locale, printed_at),
+                "application/pdf",
             )
         )
         text_blocks.append(

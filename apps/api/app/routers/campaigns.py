@@ -5,11 +5,14 @@
 """
 
 import uuid
+from typing import Literal
 
 from fastapi import APIRouter, status
+from fastapi.responses import Response
 
 from app.deps import CurrentUser, OptionalUser, OwnedEvent, SessionDep
 from app.errors import error_responses
+from app.i18n import Locale, normalize_locale
 from app.schemas.promo import (
     CampaignCreate,
     CampaignRead,
@@ -19,6 +22,7 @@ from app.schemas.promo import (
     PromoValidateRequest,
 )
 from app.services import promotions
+from app.tickets.campaign_qr import campaign_qr_pdf, campaign_qr_svg
 
 router = APIRouter(
     prefix="/organizer/events/{event_id}/campaigns",
@@ -96,6 +100,46 @@ async def disable_campaign(
     campaign = await promotions.get_for_event(session, event, campaign_id)
     campaign = await promotions.disable(session, event, campaign, user)
     return await promotions.to_read(session, campaign)
+
+
+@router.get(
+    "/{campaign_id}/qr.{fmt}",
+    response_class=Response,
+    responses={
+        200: {"content": {"image/svg+xml": {}, "application/pdf": {}}},
+        **error_responses(422),
+    },
+    summary="Download the Campaign QR (SVG, or an A5 PDF poster)",
+    description=(
+        "Purple, dashed-frame design with a printed 'PROMO · NOT A TICKET' banner, so it "
+        "can't be mistaken for a ticket (SRS 4.14). It encodes the campaign link only. "
+        "`lang` picks the language of the printed text (default: your account language)."
+    ),
+)
+async def campaign_qr(
+    campaign_id: uuid.UUID,
+    fmt: Literal["svg", "pdf"],
+    event: OwnedEvent,
+    user: CurrentUser,
+    session: SessionDep,
+    lang: Locale | None = None,
+) -> Response:
+    campaign = await promotions.get_for_event(session, event, campaign_id)
+    read = await promotions.to_read(session, campaign)
+    locale = normalize_locale(lang or user.locale)
+    args = (read.campaign_url, event.title, read.name, read.code, locale)
+    filename = f"campaign-qr-{read.code}.{fmt}"
+    if fmt == "pdf":
+        return Response(
+            campaign_qr_pdf(*args),
+            media_type="application/pdf",
+            headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        )
+    return Response(
+        campaign_qr_svg(*args),
+        media_type="image/svg+xml",
+        headers={"Content-Disposition": f'inline; filename="{filename}"'},
+    )
 
 
 @public_router.post(
