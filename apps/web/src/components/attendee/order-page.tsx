@@ -93,7 +93,7 @@ export function OrderPage() {
           {order.tickets.map((ticket) => (
             <li key={ticket.id}>
               <TicketCard
-                qr={<TicketQr ticketId={ticket.id} ticketNumber={ticket.ticket_number} />}
+                qr={<TicketQr ticketId={ticket.id} ticketNumber={ticket.ticket_number} enlargeable={ticket.status === "valid"} />}
                 number={ticket.ticket_number}
                 details={`${ticket.ticket_type_name} · ${ticket.attendee_name}`}
               >

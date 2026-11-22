@@ -4,6 +4,7 @@ import type { Schemas } from "@biletflow/api-types";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
+import { AddToCalendar } from "@/components/add-to-calendar";
 import { TicketPdfButton } from "@/components/ticket-pdf-button";
 import { TicketQr } from "@/components/ticket-qr";
 import { TicketCard } from "@/components/ticket-card";
@@ -62,12 +63,17 @@ export function MyTicketsPage() {
                 {when(event.starts_at, event.timezone)}
                 {event.venue_name ? ` · ${event.venue_name}` : ""}
               </p>
+              {group.some((ticket) => ticket.status === "valid") && (
+                <div className="mt-2">
+                  <AddToCalendar slug={event.slug} title={event.title} />
+                </div>
+              )}
             </div>
             <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {group.map((ticket) => (
                 <li key={ticket.id}>
                   <TicketCard
-                    qr={<TicketQr ticketId={ticket.id} ticketNumber={ticket.ticket_number} />}
+                    qr={<TicketQr ticketId={ticket.id} ticketNumber={ticket.ticket_number} enlargeable={ticket.status === "valid"} />}
                     number={ticket.ticket_number}
                     status={{ label: t(`tickets.status.${ticket.status}`), tone: STATUS_TONE[ticket.status] }}
                     details={`${ticket.ticket_type_name} · ${ticket.attendee_name}`}

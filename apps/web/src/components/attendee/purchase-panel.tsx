@@ -148,7 +148,8 @@ export function PurchasePanel({
       )}
       <div className="flex items-baseline justify-between gap-3 text-ink">
         <span className="font-semibold">{t("purchase.total")}</span>
-        <PriceTag size="lg">{total === 0 ? t("event.view.free") : money(total)}</PriceTag>
+        {/* "Free" only for a chosen free ticket; with nothing chosen yet the total is just 0. */}
+        <PriceTag size="lg">{total === 0 && selected.length > 0 ? t("event.view.free") : money(total)}</PriceTag>
       </div>
     </div>
   );

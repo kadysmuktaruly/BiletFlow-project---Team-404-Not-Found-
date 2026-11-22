@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 
 import { Link } from "@/i18n/navigation";
 
+import { AddToCalendar } from "@/components/add-to-calendar";
 import { EventView, type PublicEvent } from "@/components/event-view";
 import { Alert, LINK } from "@/components/ui";
 import { api, unwrap } from "@/lib/api";
@@ -44,11 +45,12 @@ export function EventPage() {
       ticketSlot={
         <>
           <PurchasePanel event={event} initialPromo={promo} campaignRejection={promoRejected} />
+          {event.status !== "cancelled" && <AddToCalendar slug={event.slug} title={event.title} />}
           {status === "authenticated" && (
-            <div className="space-y-2 border-t border-line pt-4">
+            <div className="flex flex-wrap items-baseline gap-x-5 gap-y-2 border-t border-line pt-4">
               <Link
                 href={{ pathname: "/support/new", query: { event: event.id } }}
-                className={`inline-block text-sm ${LINK}`}
+                className={`text-sm ${LINK}`}
               >
                 {ts("getHelp")}
               </Link>

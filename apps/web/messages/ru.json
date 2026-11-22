@@ -41,7 +41,8 @@
     "myOrders": "Мои заказы",
     "support": "Поддержка",
     "admin": "Админ",
-    "analytics": "Аналитика"
+    "analytics": "Аналитика",
+    "mainLabel": "Основное меню"
   },
   "home": {
     "title": "Находите мероприятия и получайте билеты за секунды",
@@ -586,7 +587,10 @@
       "refunded": "Возвращён"
     },
     "downloadPdf": "Скачать PDF",
-    "downloadPdfLabel": "Скачать билет {number} в PDF"
+    "downloadPdfLabel": "Скачать билет {number} в PDF",
+    "fullScreen": "На весь экран",
+    "fullScreenLabel": "Показать QR-код билета {number} на весь экран",
+    "closeFullScreen": "Закрыть"
   },
   "campaignLink": {
     "opening": "Открываем событие…",
@@ -866,5 +870,9 @@
       "staff": "Сотрудники",
       "admin": "Администратор платформы"
     }
+  },
+  "calendar": {
+    "add": "Добавить в календарь",
+    "addLabel": "Добавить «{title}» в календарь (файл .ics)"
   }
 }

@@ -41,7 +41,8 @@
     "myOrders": "Менің тапсырыстарым",
     "support": "Қолдау",
     "admin": "Әкімші",
-    "analytics": "Талдау"
+    "analytics": "Талдау",
+    "mainLabel": "Негізгі мәзір"
   },
   "home": {
     "title": "Іс-шараларды тауып, билетті бірнеше секундта алыңыз",
@@ -586,7 +587,10 @@
       "refunded": "Қайтарылды"
     },
     "downloadPdf": "PDF жүктеу",
-    "downloadPdfLabel": "{number} билетін PDF ретінде жүктеу"
+    "downloadPdfLabel": "{number} билетін PDF ретінде жүктеу",
+    "fullScreen": "Толық экранда көрсету",
+    "fullScreenLabel": "{number} билетінің QR-кодын толық экранда көрсету",
+    "closeFullScreen": "Жабу"
   },
   "campaignLink": {
     "opening": "Іс-шара ашылуда…",
@@ -866,5 +870,9 @@
       "staff": "Қызметкерлер",
       "admin": "Платформа әкімшісі"
     }
+  },
+  "calendar": {
+    "add": "Күнтізбеге қосу",
+    "addLabel": "«{title}» іс-шарасын күнтізбеге қосу (.ics файлы)"
   }
 }

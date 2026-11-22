@@ -29,7 +29,7 @@ export function ReportEvent({ slug }: { slug: string }) {
   }
   return (
     <form
-      className="space-y-3 rounded-card border border-line bg-surface p-4"
+      className="w-full space-y-3 rounded-card border border-line bg-surface p-4"
       aria-labelledby="report-title"
       onSubmit={async (e) => {
         e.preventDefault();

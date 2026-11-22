@@ -41,7 +41,8 @@
     "myOrders": "My orders",
     "support": "Support",
     "admin": "Admin",
-    "analytics": "Analytics"
+    "analytics": "Analytics",
+    "mainLabel": "Main"
   },
   "home": {
     "title": "Find events and get your tickets in seconds",
@@ -586,7 +587,10 @@
       "refunded": "Refunded"
     },
     "downloadPdf": "Download PDF",
-    "downloadPdfLabel": "Download ticket {number} as a PDF"
+    "downloadPdfLabel": "Download ticket {number} as a PDF",
+    "fullScreen": "Show full screen",
+    "fullScreenLabel": "Show the QR code for ticket {number} full screen",
+    "closeFullScreen": "Close"
   },
   "campaignLink": {
     "opening": "Opening the event…",
@@ -866,5 +870,9 @@
       "staff": "Staff",
       "admin": "Platform admin"
     }
+  },
+  "calendar": {
+    "add": "Add to calendar",
+    "addLabel": "Add {title} to your calendar (.ics file)"
   }
 }
