@@ -4,9 +4,10 @@ Self-service event ticketing for Kazakhstan. Organizers create events, sell gene
 or assigned-seat tickets in KZT, run promo campaigns, and check attendees in at the door with a
 QR scanner. Attendees buy tickets, receive them by email, and can open support cases.
 
-> **Status:** early development. The data model, accounts and sign-in, organizer profiles and
-> draft events are in place in the API and the web app. Ticketing, checkout, check-in and
-> the scanner app follow; see [`docs/plan-reports-3-4.md`](docs/plan-reports-3-4.md).
+> **Status:** feature-complete for the course demo. Accounts, events, ticketing and DEMO
+> checkout, promo campaigns, PDF tickets, check-in with the scanner app, refunds, support,
+> notifications, the admin portal, analytics and event history are built and tested; see
+> [`docs/STATUS.md`](docs/STATUS.md) and [Pitch demo rehearsal](#pitch-demo-rehearsal).
 > Section references like "SRS 4.3.1" throughout the code point to the project's Software
 > Requirements Specification.
 
@@ -217,6 +218,34 @@ npm run e2e -w @biletflow/web             # E2E_BASE_URL / E2E_API_URL to point 
 Running it again within a minute can hit the login rate limit (5 sign-ins per email per
 minute). Wait a minute, or run the API with `RATE_LIMIT_ENABLED=false` as CI does.
 
+#### Pitch demo rehearsal
+
+`apps/web/e2e/pitch-demo.spec.ts` replays the live demo from the pitch: Aliya opens the Jazz
+Night, switches to Kazakh and back, buys one Standard ticket with `JAZZ15` (8,000 → 6,800 KZT)
+through the DEMO payment, the email with the PDF arrives in Mailpit, My tickets shows the QR
+full screen and offers **Add to calendar**, and the staff scan returns `valid`, then
+`already_used` with the check-in time.
+
+```bash
+WEB_BUILD_TARGET=runtime docker compose up -d --build
+docker compose ps                                   # all four "healthy"
+npm run e2e -w @biletflow/web -- pitch-demo         # about 5 seconds
+```
+
+- The demo seed moves the Student Tech Meetup and the Jazz Night forward by whole weeks
+  (same weekday and local time) whenever the API starts less than a week before they end, so
+  an old database still has events to buy and scan. Restart the API to refresh:
+  `docker compose restart api`.
+- For a clean list of events on stage (no leftovers from testing), start from an empty
+  database: `docker compose down -v`, then `up` again. This deletes all local data.
+- If port 3000 is taken by something else, run on another port and point the links at it:
+  `WEB_PORT=3210 PUBLIC_BASE_URL=http://localhost:3210 WEB_BUILD_TARGET=runtime docker compose up -d`
+  and `E2E_BASE_URL=http://localhost:3210` for the tests. Make sure nothing else listens on
+  that port (`lsof -nP -iTCP:3210 -sTCP:LISTEN`): `localhost` may resolve to another
+  server's IPv6 socket first.
+- Each run uses one `JAZZ15` redemption (50 in the seed) and one Aliya sign-in (5 per
+  minute).
+
 ### Continuous integration
 
 `.github/workflows/ci.yml` runs on every pull request, whatever its base branch:
@@ -332,11 +361,12 @@ confirmation with an inline QR image per ticket (free and paid), and DEMO paymen
 |---|---|
 | `POST /organizer/events/{id}/publish` | Needs a verified email, a venue, a visible ticket type and a future end time. |
 | `POST /organizer/events/{id}/unpublish` | Hides the page and pauses registration. Issued tickets stay valid. |
-| `POST /organizer/events/{id}/cancel` | Cancels every valid ticket (they fail at the door) and releases unpaid orders. Refunds arrive with SRS 4.9. |
+| `POST /organizer/events/{id}/cancel` | Cancels every valid ticket (they fail at the door), releases unpaid orders and refunds every paid order in full (DEMO, see SRS 4.9 below). |
 | `PATCH /organizer/events/{id}` | Also sets `visibility` (`public`, `unlisted`, `private`), the registration window and `capacity` (across all ticket types). |
 | `GET /organizer/events/{id}/preview` | The public page as attendees will see it, whatever the status. |
 | `GET/POST /organizer/events/{id}/staff`, `DELETE …/{assignment_id}` | Assign existing users as `event_admin` (can undo check-ins) or `check_in_staff` (scan only). |
 | `GET /events`, `GET /events/{slug}` | Public pages. Only published, public, upcoming events are listed. Unlisted events open by link. Private events open only for their organizer and staff (404 for everyone else). |
+| `GET /events/{slug}/calendar.ics?lang=` | The event as an iCalendar file, with the same visibility rules. Times are written in the event's IANA zone (`DTSTART;TZID=Asia/Almaty:…` with a VTIMEZONE), so calendars show its local time; zones with daylight saving fall back to UTC. **Add to calendar** is on the event page and on My tickets. |
 
 Publishing, unpublishing, cancelling, capacity and visibility changes, and staff changes are
 written to the audit log.
