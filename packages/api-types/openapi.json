@@ -8815,6 +8815,75 @@
         ]
       }
     },
+    "/api/v1/events/{slug}/calendar.ics": {
+      "get": {
+        "description": "An iCalendar file for any event you can open by slug (same rules as the event page). Times are in the event's IANA time zone, so calendars show its local time. `lang` picks the language of the event link inside it.",
+        "operationId": "event_calendar_api_v1_events__slug__calendar_ics_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "lang",
+            "required": false,
+            "schema": {
+              "default": "kk",
+              "enum": [
+                "kk",
+                "ru",
+                "en"
+              ],
+              "title": "Lang",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/calendar": {}
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Add the event to a calendar (.ics)",
+        "tags": [
+          "events"
+        ]
+      }
+    },
     "/api/v1/events/{slug}/report": {
       "post": {
         "description": "Signed-in users report an event they can see (fraud, misleading, inappropriate, spam, other). A Platform Admin reviews it. One open report per person per event (`409 report_already_open`).",

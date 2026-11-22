@@ -623,6 +623,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/events/{slug}/calendar.ics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Add the event to a calendar (.ics)
+         * @description An iCalendar file for any event you can open by slug (same rules as the event page). Times are in the event's IANA time zone, so calendars show its local time. `lang` picks the language of the event link inside it.
+         */
+        get: operations["event_calendar_api_v1_events__slug__calendar_ics_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/events/{slug}/report": {
         parameters: {
             query?: never;
@@ -5632,6 +5652,48 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PublicEventRead"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    event_calendar_api_v1_events__slug__calendar_ics_get: {
+        parameters: {
+            query?: {
+                lang?: "kk" | "ru" | "en";
+            };
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/calendar": unknown;
                 };
             };
             /** @description Not Found */
