@@ -120,6 +120,31 @@ async def _event(
     return event, True
 
 
+async def _keep_upcoming(session: AsyncSession, event: Event, *, days_ahead: int) -> None:
+    """Move a demo event forward by whole weeks (same weekday and local time) once it is less
+    than a week away, so a database seeded weeks ago still has upcoming events to buy and
+    scan. Its registration window and ticket sales windows move with it."""
+    now = datetime.now(UTC)
+    if event.ends_at - now >= timedelta(days=7):
+        return
+    target = now + timedelta(days=days_ahead)
+    shift = timedelta(weeks=-(-(target - event.starts_at) // timedelta(weeks=1)))
+    event.starts_at += shift
+    event.ends_at += shift
+    if event.registration_opens_at is not None:
+        event.registration_opens_at += shift
+    if event.registration_closes_at is not None:
+        event.registration_closes_at += shift
+    for ticket_type in await session.scalars(
+        select(TicketType).where(TicketType.event_id == event.id)
+    ):
+        if ticket_type.sales_start_at is not None:
+            ticket_type.sales_start_at += shift
+        if ticket_type.sales_end_at is not None:
+            ticket_type.sales_end_at += shift
+    await session.flush()
+
+
 async def _assign(
     session: AsyncSession, event: Event, staff: User, by: User, role: StaffRole
 ) -> None:
@@ -243,6 +268,8 @@ async def seed() -> None:
             )
         await session.flush()
 
+        await _keep_upcoming(session, meetup, days_ahead=14)
+        await _keep_upcoming(session, jazz, days_ahead=21)
         await _assign(session, meetup, staff, organizer_user, StaffRole.EVENT_ADMIN)
         await _assign(session, jazz, staff, organizer_user, StaffRole.EVENT_ADMIN)
         await session.commit()
