@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react-native";
 
 import { ResultView } from "@/components/result-view";
 import i18n from "@/i18n";
-import { formatTime, invalidReasonKey, RESULT_STATES } from "@/lib/checkin";
+import { campaignRejection, formatTime, invalidReasonKey, isCampaignQr, RESULT_STATES } from "@/lib/checkin";
 
 beforeEach(async () => {
   await i18n.changeLanguage("en");
@@ -49,5 +49,24 @@ describe("ResultView", () => {
     await i18n.changeLanguage("kk");
     await render(<ResultView state="already_used" />);
     expect(screen.getByText("Пайдаланылған")).toBeTruthy();
+  });
+});
+
+describe("isCampaignQr", () => {
+  it("recognizes Campaign QR codes and links (same rule as the API)", () => {
+    expect(isCampaignQr("BFC1.q8Zk2mWv0dX9yTnE4hRp")).toBe(true);
+    expect(isCampaignQr("https://biletflow.kz/c/BFC1.q8Zk2mWv0dX9yTnE4hRp")).toBe(true);
+    expect(isCampaignQr("  BFC1.x ")).toBe(true);
+  });
+
+  it("never treats a ticket or anything else as a campaign", () => {
+    expect(isCampaignQr("BFT1.AAAAAAAAAAAAAAAAAAAAAA.bWFj")).toBe(false);
+    expect(isCampaignQr("BFT1.BFC1.x")).toBe(false); // the server decides about this one
+    expect(isCampaignQr("hello")).toBe(false);
+    expect(isCampaignQr("")).toBe(false);
+  });
+
+  it("only ever rejects", () => {
+    expect(campaignRejection()).toMatchObject({ result: "invalid", reason: "campaign_qr_not_admission", ticket: null });
   });
 });

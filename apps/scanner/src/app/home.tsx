@@ -3,7 +3,7 @@ import { useCameraPermissions } from "expo-camera";
 import { Link, Redirect, router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FlatList, Linking, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
+import { AppState, FlatList, Linking, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
 
 import { Banner, Body, Button, colors, Screen, Title } from "@/components/ui";
 import { api, errorKey, unwrap } from "@/lib/api";
@@ -14,7 +14,7 @@ type CheckInEvent = Schemas["CheckInEvent"];
 export default function HomeScreen() {
   const { t, i18n } = useTranslation();
   const { status, user, logout } = useAuth();
-  const [permission, requestPermission] = useCameraPermissions();
+  const [permission, requestPermission, getPermission] = useCameraPermissions();
   const [events, setEvents] = useState<CheckInEvent[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -30,6 +30,14 @@ export default function HomeScreen() {
       setRefreshing(false);
     }
   }, [t, i18n]);
+
+  // Back from the phone's Settings: read the camera permission again.
+  useEffect(() => {
+    const sub = AppState.addEventListener("change", (state) => {
+      if (state === "active") void getPermission();
+    });
+    return () => sub.remove();
+  }, [getPermission]);
 
   useEffect(() => {
     if (status !== "authenticated") return;

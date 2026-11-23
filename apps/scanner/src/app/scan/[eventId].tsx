@@ -1,10 +1,10 @@
 import { CameraView, useCameraPermissions, type BarcodeScanningResult } from "expo-camera";
-import { router, Stack, useFocusEffect, useLocalSearchParams } from "expo-router";
-import { useCallback, useRef, useState } from "react";
+import { router, Stack, useFocusEffect, useIsFocused, useLocalSearchParams } from "expo-router";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, AppState, Linking, Pressable, StyleSheet, Text, View } from "react-native";
 
-import { Body, Button, Screen } from "@/components/ui";
+import { Banner, Body, Button, Screen } from "@/components/ui";
 import { fetchStats, type CheckInStats } from "@/lib/checkin";
 
 const STATS_POLL_MS = 10_000;
@@ -14,15 +14,26 @@ type Params = { eventId: string; title?: string; timezone?: string; canUndo?: st
 export default function ScanScreen() {
   const { t } = useTranslation();
   const { eventId, title, timezone, canUndo } = useLocalSearchParams<Params>();
-  const [permission, requestPermission] = useCameraPermissions();
+  const [permission, requestPermission, getPermission] = useCameraPermissions();
   const [stats, setStats] = useState<CheckInStats | null>(null);
+  const focused = useIsFocused();
   // The camera reports the same code many times a second; handle one scan at a time.
   const handling = useRef(false);
+
+  // Coming back from the phone's Settings: read the permission again, so the camera starts
+  // without restarting the app.
+  useEffect(() => {
+    const sub = AppState.addEventListener("change", (state) => {
+      if (state === "active") void getPermission();
+    });
+    return () => sub.remove();
+  }, [getPermission]);
 
   // Live counts (SRS 4.8), refreshed while this screen is in front, including after
   // coming back from a result.
   useFocusEffect(
     useCallback(() => {
+      handling.current = false;
       let active = true;
       const load = () =>
         fetchStats(eventId)
@@ -39,23 +50,45 @@ export default function ScanScreen() {
 
   function onScanned({ data }: BarcodeScanningResult) {
     if (handling.current) return;
+    // Stays set until this screen is in front again, so a ticket still in view while the
+    // result is showing can't open a second result.
     handling.current = true;
     router.push({ pathname: "/result", params: { eventId, payload: data, timezone, canUndo } });
-    setTimeout(() => {
-      handling.current = false;
-    }, 1500);
   }
 
   const counts = stats ? t("counts", { checkedIn: stats.checked_in, registered: stats.registered }) : " ";
   const openSearch = () =>
     router.push({ pathname: "/search/[eventId]", params: { eventId, title, timezone, canUndo } });
+  const header = <Stack.Screen options={{ title: title ?? t("scan.title") }} />;
 
-  if (!permission?.granted) {
+  if (!permission) {
     return (
       <Screen>
-        <Stack.Screen options={{ title: title ?? t("scan.title") }} />
-        <Body>{t("scan.permissionNeeded")}</Body>
-        <Button title={t("home.allowCamera")} onPress={() => void requestPermission()} />
+        {header}
+        <ActivityIndicator testID="camera-permission-loading" size="large" />
+      </Screen>
+    );
+  }
+
+  if (!permission.granted) {
+    // The OS won't show its prompt again once the user said "don't ask" (Android) or denied
+    // once (iOS): the only way back is the Settings app.
+    const blocked = !permission.canAskAgain;
+    return (
+      <Screen>
+        {header}
+        {blocked ? (
+          <>
+            <Banner kind="error">{t("home.cameraBlocked")}</Banner>
+            <Button title={t("home.openSettings")} onPress={() => void Linking.openSettings()} />
+            <Button title={t("common.retry")} variant="secondary" onPress={() => void getPermission()} />
+          </>
+        ) : (
+          <>
+            <Body>{t("scan.permissionNeeded")}</Body>
+            <Button title={t("home.allowCamera")} onPress={() => void requestPermission()} />
+          </>
+        )}
         <Button title={t("scan.search")} variant="secondary" onPress={openSearch} />
       </Screen>
     );
@@ -63,13 +96,16 @@ export default function ScanScreen() {
 
   return (
     <View style={styles.container}>
-      <Stack.Screen options={{ title: title ?? t("scan.title") }} />
-      <CameraView
-        style={StyleSheet.absoluteFill}
-        facing="back"
-        barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
-        onBarcodeScanned={onScanned}
-      />
+      {header}
+      {focused ? (
+        <CameraView
+          testID="camera"
+          style={StyleSheet.absoluteFill}
+          facing="back"
+          barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
+          onBarcodeScanned={onScanned}
+        />
+      ) : null}
       <View style={styles.overlay} pointerEvents="box-none">
         <Text accessibilityLiveRegion="polite" style={styles.counts}>
           {counts}

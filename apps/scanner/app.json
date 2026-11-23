@@ -39,7 +39,7 @@
     ],
     "scheme": "biletflow-scanner",
     "experiments": {
-      "typedRoutes": true
+      "typedRoutes": false
     }
   }
 }

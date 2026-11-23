@@ -91,7 +91,13 @@
       "unrecognized": "Not a BiletFlow ticket, or the code was changed.",
       "wrong_event": "This ticket is for a different event.",
       "campaign_qr_not_admission": "This is a promo QR code, not a ticket."
-    }
+    },
+    "notCheckedIn": {
+      "title": "Not checked in",
+      "text": "The ticket was not checked in. Do not admit yet. Try again.",
+      "offline": "No connection to BiletFlow. This ticket was NOT checked in. Check Wi-Fi or mobile data, then try again."
+    },
+    "undoFailed": "The check-in was not undone."
   },
   "counts": "{{checkedIn}} of {{registered}} checked in",
   "search": {
