@@ -25,6 +25,7 @@ each one. `apps/web/e2e/core-flow.spec.ts` runs the full purchase flow through t
 | `/orders` | signed in | List my orders, open one | `my-orders` |
 | `/tickets` | signed in | My tickets with QR codes, download the PDF | `my-tickets` |
 | `/notifications` | signed in | Read notifications, mark one or all as read, open the linked page | `notifications` |
+| `/account` | signed in | See the account type; switch between attendee and organizer (with a confirmation; blocked while the organizer has live events) | `account` |
 | `/support` | signed in | List cases (opened and handled), open one, start a new one | `support-list` |
 | `/support/new` | signed in | Open a case (category, subject, message), with context from `?event=` / `?order=` / `?ticket=` | `support-new` |
 | `/support/[caseId]` | case participant | Read the thread, reply; handlers: internal notes, status, assignment | `support-case` |

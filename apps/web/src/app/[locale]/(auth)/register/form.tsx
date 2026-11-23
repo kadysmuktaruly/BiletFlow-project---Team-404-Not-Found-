@@ -4,7 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
-import { Alert, Button, Card, Field, PageTitle } from "@/components/ui";
+import { Alert, Button, buttonClass, Card, Field, PageTitle } from "@/components/ui";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { api, ApiError, unwrap } from "@/lib/api";
@@ -69,11 +69,17 @@ export function RegisterForm() {
   }
 
   const fields = error instanceof ApiError ? error.fields : {};
+  const emailTaken = error instanceof ApiError && error.code === "email_taken";
   return (
     <Card>
       <PageTitle>{t("register.title")}</PageTitle>
       <form onSubmit={onSubmit} className="space-y-4" noValidate>
         {error ? <Alert kind="error">{errorMessage(error)}</Alert> : null}
+        {emailTaken && (
+          <Link href="/login" className={`${buttonClass("secondary")} w-full`}>
+            {t("register.signInInstead")}
+          </Link>
+        )}
         <Field
           name="full_name"
           label={t("fullName")}

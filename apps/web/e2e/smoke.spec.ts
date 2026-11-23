@@ -170,6 +170,18 @@ const ROUTES: Route[] = [
     },
   },
   {
+    name: "account",
+    role: "attendee",
+    path: () => "/account",
+    check: async (page) => {
+      await expect(heading(page, en.account.title)).toBeVisible();
+      await expect(heading(page, `${en.account.roleHeading}: ${en.account.roleAttendee}`)).toBeVisible();
+      // Only opens the confirmation; the smoke run never changes the demo attendee's role.
+      await page.getByRole("button", { name: en.account.becomeOrganizer }).click();
+      await expect(page.getByRole("alertdialog", { name: en.account.confirmOrganizerTitle })).toBeVisible();
+    },
+  },
+  {
     name: "support-list",
     role: "attendee",
     path: () => "/support",

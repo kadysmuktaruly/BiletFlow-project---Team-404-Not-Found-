@@ -66,8 +66,9 @@
       "roleOrganizer": "Organize events",
       "submit": "Create account",
       "doneTitle": "Check your inbox",
-      "done": "If {email} can be used for a new account, we've sent a link to confirm it. Open the link to finish signing up.",
-      "haveAccount": "Already have an account?"
+      "done": "We've sent a link to {email}. Open it to finish signing up.",
+      "haveAccount": "Already have an account?",
+      "signInInstead": "Sign in"
     },
     "login": {
       "title": "Sign in",
@@ -498,7 +499,10 @@
     "report_already_reviewed": "This report has already been reviewed.",
     "report_not_found": "Report not found.",
     "invalid_date_range": "Pick a range of at most a year, with the end after the start.",
-    "rate_limited": "Too many attempts. Please wait a minute and try again."
+    "rate_limited": "Too many attempts. Please wait a minute and try again.",
+    "email_taken": "This email is already registered. Sign in instead, or reset your password if you've forgotten it.",
+    "organizer_has_active_events": "You have published or unpublished events. Cancel them, or wait until they're completed, before switching to attendee.",
+    "role_change_not_allowed": "This account's role can't be changed here."
   },
   "events": {
     "title": "Upcoming events",
@@ -866,5 +870,23 @@
       "staff": "Staff",
       "admin": "Platform admin"
     }
+  },
+  "account": {
+    "title": "Account",
+    "roleHeading": "Account type",
+    "current": "You're signed in as {email}.",
+    "roleAttendee": "Attendee",
+    "roleOrganizer": "Organizer",
+    "attendeeText": "You can buy tickets and follow your orders. Become an organizer to create and sell your own events. You'll still be able to buy tickets.",
+    "organizerText": "You can create events and sell tickets, and still buy tickets yourself. Switching to attendee hides the organizer pages. Your events and profile are kept.",
+    "becomeOrganizer": "Become an organizer",
+    "switchToAttendee": "Switch to attendee",
+    "confirmOrganizerTitle": "Become an organizer?",
+    "confirmOrganizerText": "You'll get My events, Analytics and an organizer profile. You can switch back at any time.",
+    "confirmAttendeeTitle": "Switch to attendee?",
+    "confirmAttendeeText": "The organizer pages will be hidden. Your events, profile and payout details are kept, and come back if you switch again.",
+    "switched": "Your account type is now: {role}.",
+    "seeEvents": "Go to My events",
+    "fixedRole": "Your account type is set by the platform and can't be changed here."
   }
 }
