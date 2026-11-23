@@ -700,6 +700,7 @@
       "orders": "Orders",
       "payments": "Payments",
       "activations": "Paid sales",
+      "promotions": "Promo codes",
       "reports": "Reports",
       "settings": "Settings"
     },
@@ -740,7 +741,10 @@
       "reason": "Reason",
       "reporter": "Reporter",
       "checklist": "Checklist",
-      "fee": "Fee"
+      "fee": "Fee",
+      "code": "Code",
+      "campaign": "Campaign",
+      "used": "Used"
     },
     "role": {
       "attendee": "Attendee",

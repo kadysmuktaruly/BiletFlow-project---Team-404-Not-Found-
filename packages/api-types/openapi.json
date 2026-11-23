@@ -543,6 +543,154 @@
         "title": "AdminPaymentList",
         "type": "object"
       },
+      "AdminPromotion": {
+        "description": "SRS 4.12 \"Review ... promotional-code activity\": one campaign and its code, with the\nsame exact sales report the organizer sees (SRS 4.14). DEMO figures.",
+        "properties": {
+          "campaign_id": {
+            "format": "uuid",
+            "title": "Campaign Id",
+            "type": "string"
+          },
+          "campaign_name": {
+            "title": "Campaign Name",
+            "type": "string"
+          },
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "demo": {
+            "const": true,
+            "default": true,
+            "title": "Demo",
+            "type": "boolean"
+          },
+          "disabled_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Disabled At"
+          },
+          "discount_kzt": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discount Kzt"
+          },
+          "discount_percent": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discount Percent"
+          },
+          "discount_type": {
+            "$ref": "#/components/schemas/DiscountType"
+          },
+          "event_id": {
+            "format": "uuid",
+            "title": "Event Id",
+            "type": "string"
+          },
+          "event_title": {
+            "title": "Event Title",
+            "type": "string"
+          },
+          "max_redemptions": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Redemptions"
+          },
+          "organizer_email": {
+            "title": "Organizer Email",
+            "type": "string"
+          },
+          "redeemed_count": {
+            "title": "Redeemed Count",
+            "type": "integer"
+          },
+          "report": {
+            "$ref": "#/components/schemas/CampaignReport"
+          },
+          "status": {
+            "enum": [
+              "active",
+              "scheduled",
+              "expired",
+              "exhausted",
+              "disabled"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "campaign_id",
+          "campaign_name",
+          "event_id",
+          "event_title",
+          "organizer_email",
+          "code",
+          "status",
+          "discount_type",
+          "discount_percent",
+          "discount_kzt",
+          "max_redemptions",
+          "redeemed_count",
+          "report",
+          "created_at",
+          "disabled_at"
+        ],
+        "title": "AdminPromotion",
+        "type": "object"
+      },
+      "AdminPromotionList": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AdminPromotion"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "truncated": {
+            "title": "Truncated",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "items",
+          "truncated"
+        ],
+        "title": "AdminPromotionList",
+        "type": "object"
+      },
       "AdminReport": {
         "properties": {
           "created_at": {
@@ -6983,6 +7131,82 @@
           }
         ],
         "summary": "Search DEMO payments (failures, refunds…)",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/promotions": {
+      "get": {
+        "description": "Every campaign with its code, status and exact DEMO sales report (SRS 4.12).",
+        "operationId": "promotions_api_v1_admin_promotions_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 200,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminPromotionList"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Promo-code activity across the platform",
         "tags": [
           "admin"
         ]

@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 
 from app.enums import (
     ActivationStatus,
+    DiscountType,
     EventReportReason,
     EventReportStatus,
     EventStatus,
@@ -17,6 +18,7 @@ from app.enums import (
     PaymentStatus,
     UserRole,
 )
+from app.schemas.promo import CampaignReport, EffectiveStatus
 
 
 class SuspendRequest(BaseModel):
@@ -165,6 +167,35 @@ class AdminEventList(BaseModel):
 
 class AdminOrderList(BaseModel):
     items: list[AdminOrder]
+    # True when there were more matches than shown; narrow the search.
+    truncated: bool
+
+
+class AdminPromotion(BaseModel):
+    """SRS 4.12 "Review ... promotional-code activity": one campaign and its code, with the
+    same exact sales report the organizer sees (SRS 4.14). DEMO figures."""
+
+    campaign_id: uuid.UUID
+    campaign_name: str
+    event_id: uuid.UUID
+    event_title: str
+    organizer_email: str
+    code: str
+    status: EffectiveStatus
+    discount_type: DiscountType
+    discount_percent: int | None
+    discount_kzt: int | None
+    max_redemptions: int | None
+    # Pending checkouts hold a redemption too, so this can be above report.redemptions.
+    redeemed_count: int
+    report: CampaignReport
+    demo: Literal[True] = True
+    created_at: datetime
+    disabled_at: datetime | None
+
+
+class AdminPromotionList(BaseModel):
+    items: list[AdminPromotion]
     # True when there were more matches than shown; narrow the search.
     truncated: bool
 

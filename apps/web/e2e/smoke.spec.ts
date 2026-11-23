@@ -267,10 +267,19 @@ const ROUTES: Route[] = [
     path: () => "/admin",
     check: async (page) => {
       await expect(heading(page, en.admin.title)).toBeVisible();
-      for (const tab of ["overview", "users", "events", "reports"] as const) {
+      for (const tab of ["overview", "users", "events", "promotions", "reports"] as const) {
         const nav = page.getByRole("navigation", { name: en.admin.title });
         await expect(nav.getByText(en.admin.tabs[tab], { exact: true })).toBeVisible();
       }
+    },
+  },
+  {
+    // SRS 4.12 promo-code activity: the seeded JAZZ15 campaign with its DEMO report.
+    name: "admin promo codes",
+    role: "admin",
+    path: () => "/admin?tab=promotions",
+    check: async (page) => {
+      await expect(page.getByRole("row", { name: /JAZZ15/ })).toBeVisible();
     },
   },
 ];

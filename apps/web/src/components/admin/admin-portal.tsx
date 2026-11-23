@@ -13,7 +13,7 @@ import { saveDownload } from "@/lib/download";
 import { useMoney } from "@/lib/format";
 import { useErrorMessage } from "@/lib/use-error-message";
 
-const TABS = ["overview", "users", "events", "orders", "payments", "activations", "reports", "settings"] as const;
+const TABS = ["overview", "users", "events", "orders", "payments", "activations", "promotions", "reports", "settings"] as const;
 type Tab = (typeof TABS)[number];
 
 /** The Platform Admin portal (SRS 4.12). The API enforces the role; tabs live in `?tab=`. */
@@ -47,6 +47,7 @@ export function AdminPortal() {
       {tab === "orders" && <Orders />}
       {tab === "payments" && <Payments />}
       {tab === "activations" && <Activations />}
+      {tab === "promotions" && <Promotions />}
       {tab === "reports" && <Reports />}
       {tab === "settings" && <Settings />}
     </div>
@@ -400,6 +401,50 @@ function Activations() {
               </tr>
             );
           })}
+        </Table>
+      )}
+      <ListState error={list.error} loading={!list.data && !list.error} truncated={list.data?.truncated} />
+    </div>
+  );
+}
+
+/** SRS 4.12 "Review ... promotional-code activity": every campaign, read-only, DEMO figures. */
+function Promotions() {
+  const t = useTranslations("admin");
+  const tc = useTranslations("common");
+  const tp = useTranslations("organizer.campaigns");
+  const money = useMoney();
+  const [query, setQuery] = useState("");
+  const list = useList(() => unwrap(api.GET("/api/v1/admin/promotions", { params: { query: { q: query.trim() || null } } })), query);
+  return (
+    <div className="space-y-4">
+      <p className="flex items-center gap-2 text-sm text-ink-muted"><DemoBadge label={tc("demo")} /> {tp("demoNote")}</p>
+      <Toolbar query={query} setQuery={setQuery} />
+      {list.data && (
+        <Table
+          head={[t("col.code"), t("col.campaign"), t("col.event"), t("col.organizer"), tp("discountType"), t("col.status"), t("col.used"), tp("report.orders"), tp("report.ticketsSold"), tp("report.gross"), tp("report.discount"), tp("report.net")]}
+          empty={list.data.items.length === 0}
+        >
+          {list.data.items.map((p) => (
+            <tr key={p.campaign_id}>
+              <th scope="row" className="px-3 py-2 text-left font-mono font-medium">{p.code}</th>
+              <td className="px-3 py-2">{p.campaign_name}</td>
+              <td className="px-3 py-2">{p.event_title}</td>
+              <td className="px-3 py-2">{p.organizer_email}</td>
+              <td className="px-3 py-2">
+                {p.discount_type === "percentage" ? tp("percentOff", { value: p.discount_percent ?? 0 }) : tp("amountOff", { amount: money(p.discount_kzt ?? 0) })}
+              </td>
+              <td className="px-3 py-2">{tp(`status.${p.status}`)}</td>
+              <td className="px-3 py-2">
+                {p.max_redemptions == null ? tp("used", { count: p.redeemed_count }) : tp("usedOf", { count: p.redeemed_count, max: p.max_redemptions })}
+              </td>
+              <td className="px-3 py-2">{p.report.orders}</td>
+              <td className="px-3 py-2">{p.report.tickets_sold}</td>
+              <td className="px-3 py-2">{money(p.report.gross_revenue_kzt)}</td>
+              <td className="px-3 py-2">{money(p.report.discount_kzt)}</td>
+              <td className="px-3 py-2">{money(p.report.net_revenue_kzt)}</td>
+            </tr>
+          ))}
         </Table>
       )}
       <ListState error={list.error} loading={!list.data && !list.error} truncated={list.data?.truncated} />
