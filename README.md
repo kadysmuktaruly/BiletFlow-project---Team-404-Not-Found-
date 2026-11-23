@@ -199,7 +199,9 @@ check covers.
 `apps/web/e2e/core-flow.spec.ts` runs the SRS 13.4 core flow in Chromium against a running
 stack with the demo seed:
 
-1. The organizer creates a campaign.
+1. The organizer creates an event in the UI, adds a paid ticket type, completes the DEMO
+   paid-sales checklist, publishes it, adds the scanner account as door staff, and creates a
+   campaign.
 2. The attendee opens its Campaign QR link, sees the code applied, and buys a ticket with the
    DEMO payment.
 3. The confirmation shows the discount, the PDF downloads, and a support case opens from the
@@ -213,6 +215,11 @@ docker compose up -d                      # the stack, with demo data
 npx playwright install chromium           # once
 npm run e2e -w @biletflow/web             # E2E_BASE_URL / E2E_API_URL to point elsewhere
 ```
+
+The API-only versions of the flows are in `apps/api/tests/e2e/` and run with `pytest`:
+`test_report3_flow.py` (free and paid registration) and `test_uc1_free_event_flow.py` (SRS
+UC1: a free-only event is created, previewed and published without activation, and hands out
+valid tickets).
 
 Running it again within a minute can hit the login rate limit (5 sign-ins per email per
 minute). Wait a minute, or run the API with `RATE_LIMIT_ENABLED=false` as CI does.
