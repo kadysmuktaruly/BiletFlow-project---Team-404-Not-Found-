@@ -1,19 +1,21 @@
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, ScrollView, StyleSheet, Text } from "react-native";
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, View } from "react-native";
 
-import { ResultView } from "@/components/result-view";
-import { Banner, Body, Button, colors } from "@/components/ui";
-import { errorKey } from "@/lib/api";
+import { NotCheckedInView, ResultView } from "@/components/result-view";
+import { Banner, Button, colors } from "@/components/ui";
+import { errorKey, isNetworkError } from "@/lib/api";
 import {
+  campaignRejection,
   checkInTicket,
   formatTime,
   invalidReasonKey,
+  isCampaignQr,
   scanTicket,
   undoCheckIn,
   type CheckInStats,
-  type ScanResult,
+  type DoorResult,
 } from "@/lib/checkin";
 
 type Params = {
@@ -25,25 +27,35 @@ type Params = {
   canUndo?: string;
 };
 
+type Failure = { offline: boolean; detail: string | null };
+
 /** The live check-in result (SRS 4.8): color, symbol and words for all five states, the
  * attendee, why an invalid code failed, live counts, and an authorized undo. */
 export default function ResultScreen() {
   const { t, i18n } = useTranslation();
   const { eventId, payload, ticketId, timezone, canUndo } = useLocalSearchParams<Params>();
-  const [result, setResult] = useState<ScanResult | null>(null);
+  const [result, setResult] = useState<DoorResult | null>(null);
   const [stats, setStats] = useState<CheckInStats | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [failure, setFailure] = useState<Failure | null>(null);
+  const [undoError, setUndoError] = useState<string | null>(null);
   const [undone, setUndone] = useState(false);
   const [busy, setBusy] = useState(false);
   const message = useCallback((err: unknown) => t(errorKey(err, (k) => i18n.exists(k))), [t, i18n]);
-
-  const request = useCallback(
-    () => (ticketId ? checkInTicket(eventId, ticketId) : scanTicket(eventId, payload ?? "")),
-    [eventId, payload, ticketId],
+  const fail = useCallback(
+    (err: unknown) =>
+      setFailure(isNetworkError(err) ? { offline: true, detail: null } : { offline: false, detail: message(err) }),
+    [message],
   );
-  const show = useCallback((r: ScanResult) => {
+
+  const request = useCallback((): Promise<DoorResult> => {
+    if (ticketId) return checkInTicket(eventId, ticketId);
+    // A promo QR is never a ticket: reject it on the phone, even with no connection (SRS 4.14).
+    if (payload && isCampaignQr(payload)) return Promise.resolve(campaignRejection());
+    return scanTicket(eventId, payload ?? "");
+  }, [eventId, payload, ticketId]);
+  const show = useCallback((r: DoorResult) => {
     setResult(r);
-    setStats(r.stats);
+    if (r.stats) setStats(r.stats);
   }, []);
 
   // One check-in request per screen, even if the effect runs twice: the server records the
@@ -52,18 +64,16 @@ export default function ResultScreen() {
   useEffect(() => {
     if (started.current) return;
     started.current = true;
-    request()
-      .then(show)
-      .catch((err: unknown) => setError(message(err)));
-  }, [request, show, message]);
+    request().then(show).catch(fail);
+  }, [request, show, fail]);
 
   async function retry() {
-    setError(null);
+    setFailure(null);
     setBusy(true);
     try {
       show(await request());
     } catch (err) {
-      setError(message(err));
+      fail(err);
     } finally {
       setBusy(false);
     }
@@ -79,12 +89,13 @@ export default function ResultScreen() {
         style: "destructive",
         onPress: async () => {
           setBusy(true);
+          setUndoError(null);
           try {
             const r = await undoCheckIn(eventId, id);
             setStats(r.stats);
             setUndone(true);
           } catch (err) {
-            setError(message(err));
+            setUndoError(`${t("result.undoFailed")} ${message(err)}`);
           } finally {
             setBusy(false);
           }
@@ -95,13 +106,21 @@ export default function ResultScreen() {
 
   const ticket = result?.ticket;
   const reasonKey = result ? invalidReasonKey(result) : null;
+  // Owners and event admins can reverse a check-in: right after it ("valid") or when they
+  // find it later ("already used"). The API enforces the same rule.
+  const undoable = canUndo === "true" && !!ticket && (result?.result === "valid" || result?.result === "already_used");
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Stack.Screen options={{ title: t("result.title") }} />
-      {!result && !error ? <Body>{t("result.checking")}</Body> : null}
-      {error ? (
+      {!result && !failure ? (
+        <View testID="result-checking" accessible accessibilityLiveRegion="polite" style={styles.checking}>
+          <ActivityIndicator size="large" color={colors.ink} />
+          <Text style={styles.checkingText}>{t("result.checking")}</Text>
+        </View>
+      ) : null}
+      {failure ? (
         <>
-          <Banner kind="error">{error}</Banner>
+          <NotCheckedInView offline={failure.offline} detail={failure.detail} />
           <Button title={t("common.retry")} busy={busy} onPress={() => void retry()} />
         </>
       ) : null}
@@ -118,12 +137,13 @@ export default function ResultScreen() {
         />
       ) : null}
       {undone ? <Banner kind="success">{t("result.undone")}</Banner> : null}
+      {undoError ? <Banner kind="error">{undoError}</Banner> : null}
       {stats ? (
         <Text accessibilityLiveRegion="polite" style={styles.counts}>
           {t("counts", { checkedIn: stats.checked_in, registered: stats.registered })}
         </Text>
       ) : null}
-      {result?.result === "valid" && canUndo === "true" && !undone ? (
+      {undoable && !undone ? (
         <Button title={t("result.undo")} variant="secondary" busy={busy} onPress={confirmUndo} />
       ) : null}
       <Button title={t("result.scanNext")} onPress={() => router.back()} />
@@ -133,5 +153,7 @@ export default function ResultScreen() {
 
 const styles = StyleSheet.create({
   container: { padding: 24, gap: 16, backgroundColor: colors.background, flexGrow: 1 },
+  checking: { alignItems: "center", gap: 16, paddingVertical: 48 },
+  checkingText: { fontSize: 20, fontWeight: "700", color: colors.ink, textAlign: "center" },
   counts: { fontSize: 18, fontWeight: "700", color: colors.ink, textAlign: "center" },
 });

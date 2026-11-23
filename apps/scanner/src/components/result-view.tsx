@@ -62,6 +62,31 @@ export function ResultView({ state, details = {} }: { state: ResultState; detail
   );
 }
 
+/**
+ * The request failed: no connection, a timeout or a server error. Red, ✕ and the words "Not
+ * checked in", so it can never be mistaken for a success (SRS 4.8; no offline queue, §8).
+ */
+export function NotCheckedInView({ offline, detail }: { offline: boolean; detail?: string | null }) {
+  const { t } = useTranslation();
+  const look = LOOK.invalid;
+  const text = offline ? t("result.notCheckedIn.offline") : t("result.notCheckedIn.text");
+  return (
+    <View
+      testID="result-not-checked-in"
+      accessible
+      accessibilityRole="alert"
+      accessibilityLiveRegion="assertive"
+      accessibilityLabel={[t("result.notCheckedIn.title"), text, detail].filter(Boolean).join(". ")}
+      style={[styles.panel, { backgroundColor: look.background }]}
+    >
+      <Text style={[styles.symbol, { color: look.foreground }]}>{look.symbol}</Text>
+      <Text style={[styles.title, { color: look.foreground }]}>{t("result.notCheckedIn.title")}</Text>
+      <Text style={[styles.text, { color: look.foreground }]}>{text}</Text>
+      {detail ? <Text style={[styles.text, styles.bold, { color: look.foreground }]}>{detail}</Text> : null}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   panel: { borderRadius: 16, padding: 28, alignItems: "center", gap: 10 },
   symbol: { fontSize: 72, fontWeight: "800", lineHeight: 80 },

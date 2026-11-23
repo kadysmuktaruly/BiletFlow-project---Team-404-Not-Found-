@@ -9,9 +9,29 @@ export type ResultState = (typeof RESULT_STATES)[number];
 export type ScanResult = Schemas["ScanResult"];
 export type CheckInStats = Schemas["CheckInStats"];
 export type CheckInTicket = Schemas["CheckInTicket"];
+/** What the result screen shows: a server answer, or a local Campaign QR rejection (no counts). */
+export type DoorResult = Omit<ScanResult, "stats"> & { stats: CheckInStats | null };
 
 export function isResultState(value: unknown): value is ResultState {
   return typeof value === "string" && (RESULT_STATES as readonly string[]).includes(value);
+}
+
+const ADMISSION_PREFIX = "BFT1.";
+const CAMPAIGN_PREFIX = "BFC1.";
+
+/**
+ * A Campaign QR (SRS 4.14): `BFC1.<token>` or a link to `/c/BFC1.<token>`. Same rule as the
+ * API's `_invalid_reason`. The phone may use this only to *reject*: a Campaign QR never
+ * admits anyone, even when the API can't be reached. Admission is always decided by the
+ * server.
+ */
+export function isCampaignQr(payload: string): boolean {
+  return payload.includes(CAMPAIGN_PREFIX) && !payload.trim().startsWith(ADMISSION_PREFIX);
+}
+
+/** The result shown for a Campaign QR without asking the server. */
+export function campaignRejection(): DoorResult {
+  return { result: "invalid", reason: "campaign_qr_not_admission", ticket: null, method: null, stats: null };
 }
 
 /**
