@@ -325,7 +325,7 @@ kk/ru/en templates *(team)*: Pass, `test_every_template_exists_in_kk_ru_en_with_
 | HIS-5 | Publish/cancel, price/capacity, refunds, promo, support status, check-ins and reversals | §4.16 | Pass | `test_timeline_shows_the_events_story` (`event.published`, `ticket_type.quantity_changed`, `promo.created`, check-in and reversal); `support_case.status_changed` in `test_support.py`; `promo.disabled` in `test_update_limits_and_dates_and_disable`; `ticket_type.price_changed` in `test_price_and_quantity_changes_are_audited`; refunds in `test_refunds.py` | Yes | The timeline is read from the audit log, so every audited action appears. |
 | HIS-6 | Timestamp, actor, action, entity, description | §4.16 | Pass | `test_timeline_shows_the_events_story` | Yes | |
 | HIS-7 | Filter by date range and type | §4.16 | Pass | the same test filters by `category=promo` and `date_from` | Yes | |
-| HIS-8 | Authorized staff and Platform Admins only | §4.16, §7 | Pass | `test_past_events_are_read_only_but_keep_their_records` / timeline auth in `test_history.py` | Yes | Check-in staff are excluded (`decisions.md`). |
+| HIS-8 | Authorized staff and Platform Admins only | §4.16, §7 | Pass | `test_timeline_shows_the_events_story`: event admin and Platform Admin get 200, check-in staff, strangers and other owners get 404 | Yes | Check-in staff are excluded (`decisions.md`). |
 | HIS-9 | Not editable through organizer interfaces; *(decision, beyond the SRS)* append-only in the DB | §4.16 | Pass | `test_audit_entries_cannot_be_edited_or_deleted` (`test_audit.py`: UPDATE and DELETE raise `DBAPIError` from a database trigger); `tests/constraints/verify_constraints.sql` | Yes | |
 
 ## Use cases end to end (§5)
