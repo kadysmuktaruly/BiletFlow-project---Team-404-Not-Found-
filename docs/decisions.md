@@ -24,6 +24,62 @@ changes, update this file in the same PR.
 - **`PromoCodeTicketType` (the 27th model)** stores a code's "applicable ticket types". No rows
   means the code applies to every ticket type on the event.
 
+## Why FastAPI and PostgreSQL (SRS §9)
+
+SRS §9 asks for the backend and database choice "with a short rationale covering team
+familiarity, development speed, data-model requirements, and deployment complexity".
+
+- **Team familiarity.** *To be completed by the team: which members knew Python, FastAPI
+  and SQL beforehand, compared with Node/Express, Go or Spring Boot.* The web and scanner
+  apps are TypeScript either way (SRS §9), so the choice only affects the backend owners.
+- **Development speed.** FastAPI derives request validation and the OpenAPI schema from
+  Pydantic models, and `packages/api-types` is generated from that schema. So the web app and
+  the scanner get typed clients without hand-written API code. Async SQLAlchemy plus asyncpg
+  lets one process serve the API, the order-expiry sweep and email delivery.
+- **Data-model requirements.** The SRS model (§6) is relational: orders → items → tickets,
+  inventory counters, promo limits, check-ins, audit. The hard rules have to hold under
+  concurrency: no overselling (§4.3), atomic promo limits (§7), one check-in per ticket
+  (§4.8), an append-only audit log (§4.16). PostgreSQL enforces them with row locks, CHECK
+  constraints, partial unique indexes and a trigger (`tests/constraints/`). We'd have to
+  rebuild much of that by hand on MongoDB. Integer KZT (`BigInteger`) and TIMESTAMPTZ come
+  for free.
+- **Deployment complexity.** Two official images (`postgres:16-alpine`, the API's Python
+  image) plus the web app in one `docker compose up` (SRS §8). One backend, no
+  microservices (§9). Alembic migrations run on start.
+
+## Adding currencies and languages later (SRS §7)
+
+SRS §7: "The architecture should support additional currencies and languages in future
+releases." Today everything is KZT and kk / ru / en. This is how each would grow.
+
+**A new language** needs no code change outside the message files:
+1. Web: add `apps/web/messages/<locale>.json` with every key and add the locale to
+   `src/i18n/routing.ts`. `npm run lint` fails until its keys match kk / ru / en
+   (`scripts/check-messages.mjs`), and `scripts/check-hardcoded.mjs` keeps text out of
+   components.
+2. Scanner: add `apps/scanner/src/locales/<locale>.json` and register it in the i18n setup;
+   `npm run lint -w @biletflow/scanner` checks the keys.
+3. API: emails, notifications and PDF tickets read their text from per-locale templates.
+   `test_every_template_exists_in_kk_ru_en_with_the_same_placeholders` and
+   `test_document_strings_have_the_same_keys_in_every_locale` name every locale, so add it
+   there. Users already store `locale`, and unknown locales fall back to Kazakh.
+
+**A new currency** is a deliberate model change, because money columns are named `*_kzt` on
+purpose (whole tenge, never floats; `money_kzt()` in `app/models/base.py`):
+1. Add a `currency` column (ISO 4217) to `Event` and `TicketType`, with a new Alembic
+   migration that defaults existing rows to `KZT`. `Order`, `Payment` and `Refund` already
+   have a `currency` column (default `KZT`). Keep amounts as integers in the currency's
+   minor unit.
+2. Rename the `*_kzt` columns to `*_minor` in the same migration, and replace `money_kzt()`
+   with a `money_minor()` helper. Totals, discounts and refunds stay per order, so an order
+   never mixes currencies.
+3. Read the display currency from the event instead of the `CURRENCY` setting, and format it
+   with the locale (`useMoney()` in the web app, the PDF and email renderers).
+4. Payout reporting groups by currency; it never sums across currencies.
+
+Nothing in the MVP blocks this. The `CURRENCY` setting, the existing `currency` columns and
+the locale-aware money formatting are the seams.
+
 ## Behaviour assumptions (Reports 2–4)
 
 - Self-registration may choose only `attendee` or `organizer`. Platform admins are created by

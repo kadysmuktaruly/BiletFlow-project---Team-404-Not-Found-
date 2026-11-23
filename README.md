@@ -126,12 +126,14 @@ Requirements: Node.js 22. JavaScript workspaces use npm.
 ```bash
 npm install                        # from the repo root
 npm run dev -w @biletflow/web      # http://localhost:3000 (needs the API on :8000)
-npm run lint -w @biletflow/web     # eslint + checks kk/ru/en have the same message keys
+npm run lint -w @biletflow/web     # eslint, kk/ru/en key parity, and no hard-coded UI text
 npm run typecheck --workspaces --if-present
 ```
 
 Every user-facing string lives in `apps/web/messages/{kk,ru,en}.json`; nothing is
-hard-coded in components. API errors are shown by translating their `error.code` under
+hard-coded in components, and `scripts/check-hardcoded.mjs` (run by `npm run lint`) fails on
+text between JSX tags or in `title` / `placeholder` / `aria-label` / `label` / `alt` / `hint`
+props, the same rules as the scanner's i18n test. API errors are shown by translating their `error.code` under
 `errors.*`. The app talks to the API through a typed client (`src/lib/api.ts`). The access
 token is kept in memory, and the refresh token is the httpOnly cookie set by the API.
 
