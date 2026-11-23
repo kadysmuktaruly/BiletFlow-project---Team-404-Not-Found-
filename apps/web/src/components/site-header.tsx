@@ -75,7 +75,7 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-surface/95 backdrop-blur supports-[backdrop-filter]:bg-surface/85">
       <nav
-        aria-label="Main"
+        aria-label={t("main")}
         className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 sm:px-6"
       >
         <Link href="/" className="font-display order-1 inline-flex items-center gap-2 rounded-md text-xl text-ink">

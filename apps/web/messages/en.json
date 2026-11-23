@@ -41,7 +41,8 @@
     "myOrders": "My orders",
     "support": "Support",
     "admin": "Admin",
-    "analytics": "Analytics"
+    "analytics": "Analytics",
+    "main": "Main"
   },
   "home": {
     "title": "Find events and get your tickets in seconds",

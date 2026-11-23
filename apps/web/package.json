@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint && node scripts/check-messages.mjs",
+    "lint": "eslint && node scripts/check-messages.mjs && node scripts/check-hardcoded.mjs",
+    "check:hardcoded": "node scripts/check-hardcoded.mjs",
     "check:i18n": "node scripts/check-messages.mjs",
     "typecheck": "next typegen && tsc --noEmit",
     "e2e": "playwright test"
