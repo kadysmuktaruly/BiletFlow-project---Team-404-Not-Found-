@@ -179,7 +179,7 @@ API section for that SRS area (or a named doc in `docs/`).
 | PAY-6 | Failed or abandoned payments never create valid tickets | §4.6 | Pass | `test_failed_payment_no_tickets_and_releases`, `test_abandon_releases`, `test_expired_order_cannot_be_paid` | Yes | |
 | PAY-7 | Organizer sees gross, fees, refunds, estimated payout | §4.6 | Pass | `test_figures_for_one_event` (`gross_kzt`, `processing_fees_kzt`, `refunds_kzt`, `estimated_payout_kzt`) | Yes | |
 | PAY-8 | Demo records never presented as real | §4.6 | Pass | `demo` / `is_simulated` flags in `test_payments.py`, `test_refunds.py`; the analytics `"demo": True`; the CSV export marks payments DEMO (`test_csv_export_is_safe_and_audited`) | Yes | |
-| PAY-9 | Card data is never stored | §7 | Partial | `Payment` in `app/models/order.py` has only `card_brand` / `card_last4` (no PAN or CVV, by design, see its docstring); the payment request takes only `outcome` | Yes | **Gap: no test.** Nothing checks that card data sent with a payment is refused and never stored. **Fix:** a test that posts card-looking fields and asserts a 422 and no stored card data. |
+| PAY-9 | Card data is never stored | §7 | Fixed ([#38](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/38), open) | `Payment` in `app/models/order.py` has only `card_brand` / `card_last4` (no PAN or CVV, by design, see its docstring); the payment request takes only `outcome` | Yes | **Fixed by** `test_card_data_sent_with_a_payment_is_never_stored`: card fields sent by a client are dropped, never stored or echoed, and the model has no card-number or CVV column. Before: **Gap: no test.** Nothing checks that card data sent with a payment is refused and never stored. **Fix:** a test that posts card-looking fields and asserts a 422 and no stored card data. |
 
 ## Digital and printable tickets (§4.7, §7)
 
@@ -220,7 +220,7 @@ These rows reuse [`scanner-requirements-check.md`](scanner-requirements-check.md
 | ORD-3 | Organizers cancel free registrations | §4.9 | Pass | `test_cancel_free_registration` | Yes | |
 | ORD-4 | Full refunds through the simulation, idempotent | §4.9 | Pass | `test_full_refund_invalidates_tickets_returns_stock_audits_and_notifies`, `test_refund_is_idempotent`, `test_concurrent_refund_requests_refund_once`, `test_only_the_event_owner_refunds_or_cancels` | Yes | |
 | ORD-5 | Refunded / cancelled tickets fail at check-in | §4.9 | Pass | `test_cancelled_and_refunded_tickets_are_rejected_live`; the refund test scans and gets `refunded` | Yes | |
-| ORD-6 | Every payment and refund action is audited | §4.9 | Partial | refunds: `test_full_refund_invalidates_tickets_returns_stock_audits_and_notifies`; activation-fee payments: `activation.*` entries in `test_full_checklist_enables_paid_checkout`; `app/services/payments.py` writes `payment.succeeded` / `payment.failed` | Yes | **Gap: no test for ticket-payment audit entries.** The code writes them, but no test asserts them. **Fix:** assert both entries in `test_payments.py`. |
+| ORD-6 | Every payment and refund action is audited | §4.9 | Fixed ([#38](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/38), open) | refunds: `test_full_refund_invalidates_tickets_returns_stock_audits_and_notifies`; activation-fee payments: `activation.*` entries in `test_full_checklist_enables_paid_checkout`; `app/services/payments.py` writes `payment.succeeded` / `payment.failed` | Yes | **Fixed by** `test_ticket_payments_are_audited_whether_they_succeed_or_fail`. Before: **Gap: no test for ticket-payment audit entries.** The code writes them, but no test asserts them. **Fix:** assert both entries in `test_payments.py`. |
 | ORD-7 | Cancelling an event cancels tickets, notifies, fully refunds paid orders (team decision) | §4.9 | Pass | `test_cancelling_an_event_refunds_every_paid_order` (`test_refunds.py`); `test_cancellation_notifies_ticket_holders` | Yes | Recorded in `decisions.md`. |
 
 ## Notifications (§4.10)
@@ -262,7 +262,7 @@ kk/ru/en templates *(team)*: Pass, `test_every_template_exists_in_kk_ru_en_with_
 | ADM-4 | Inspect activation records | §4.12 | Pass | `/admin/activations` in `test_only_platform_admins` and `test_suspending_paid_sales_stops_paid_checkout_only` | Yes | |
 | ADM-5 | Monitor refunds, disputes, payment failures | §4.12 | Partial | `test_orders_payments_and_summary` (`/admin/payments?status=failed`, `refunds` and `payments_failed` in the summary) | Yes | **Gap: there's no "dispute" concept.** Refunds and failures can be monitored. Disputes don't exist as such, and "advanced dispute workflows" are excluded (§8). Admins can open every support case, so a payment or refund support case could count as a dispute. That needs a decision (see the end of this report). |
 | ADM-6 | Configure the activation fee and platform settings | §4.12 | Pass | `test_activation_fee_is_a_runtime_setting` | Yes | |
-| ADM-7 | Review escalated support cases and promo-code activity | §4.12 | Partial | support: `list_cases` / `read_case` give Platform Admins every case (`app/services/support.py`); `test_organizer_cases_go_to_the_platform` | Yes | **Gap: admins can't see promo-code activity.** There is no admin endpoint or page for campaigns, codes or redemptions; only organizers see them, for their own events. **Fix:** a read-only `GET /admin/promotions` (code, event, status, redemptions / limit, discount given) with a test, plus an admin tab. |
+| ADM-7 | Review escalated support cases and promo-code activity | §4.12 | Fixed ([#40](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/40), open) | support: `list_cases` / `read_case` give Platform Admins every case (`app/services/support.py`); `test_organizer_cases_go_to_the_platform` | Yes | **Fixed by** `GET /admin/promotions` and an admin **Promo codes** tab; `test_promo_code_activity_across_the_platform`. Before: **Gap: admins can't see promo-code activity.** There is no admin endpoint or page for campaigns, codes or redemptions; only organizers see them, for their own events. **Fix:** a read-only `GET /admin/promotions` (code, event, status, redemptions / limit, discount given) with a test, plus an admin tab. |
 | ADM-8 | Export operational reports (CSV *(team)*) | §4.12 | Pass | `test_csv_export_is_safe_and_audited` | Yes | Users, events, orders, payments. The test also covers formula injection. |
 | ADM-9 | Every admin action is audited | §7 | Pass | `admin.*` audit entries asserted in `test_admin.py` (suspend with reason, export, fee change, report review) | Yes | |
 
@@ -387,13 +387,13 @@ Extra models, not in §6: `PaidSalesActivation`, `PromoCodeTicketType`, `EventRe
 | ID | Requirement | SRS § | Status | Evidence | Docs | Notes |
 |---|---|---|---|---|---|---|
 | NFR-1 | Modern desktop and mobile browsers, 390px | §7 | Pass | Playwright `smoke.spec.ts` visits every route at desktop and 390×844 and fails on horizontal overflow | Yes | Chromium only. Safari and Firefox are in the manual checklist. |
-| NFR-2 | Kazakh and Russian, English extra; no hard-coded strings and key parity *(team)* | §7 | Partial | key parity: `check-messages.mjs` (web, 712 keys), `check-locales.mjs` (scanner, 80 keys), `test_every_template_exists_in_kk_ru_en…`, `test_document_strings_have_the_same_keys_in_every_locale`; scanner: `i18n.test.ts` "has no hard-coded text in screens or components" | Yes | The SRS part passes. **Gap *(team)*: no hard-coded-string check for the web app.** The scanner has one, the web app doesn't. Not an SRS failure. Native proofreading is in the manual checklist. |
+| NFR-2 | Kazakh and Russian, English extra; no hard-coded strings and key parity *(team)* | §7 | Fixed ([#41](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/41), open) | key parity: `check-messages.mjs` (web, 712 keys), `check-locales.mjs` (scanner, 80 keys), `test_every_template_exists_in_kk_ru_en…`, `test_document_strings_have_the_same_keys_in_every_locale`; scanner: `i18n.test.ts` "has no hard-coded text in screens or components" | Yes | **Fixed by** `apps/web/scripts/check-hardcoded.mjs` in `npm run lint`. It found and fixed one case (the header nav's aria-label). Before: The SRS part passes. **Gap *(team)*: no hard-coded-string check for the web app.** The scanner has one, the web app doesn't. Not an SRS failure. Native proofreading is in the manual checklist. |
 | NFR-3 | Integer KZT only | §7 | Pass | `money_kzt()` in `app/models/base.py`; no `Float` / `Numeric` in `app/models/`; `alembic check` | Yes | |
-| NFR-4 | *(decision)* In transit via Caddy; at rest via host encryption, real at-rest deferred | §7 | Missing | `docker-compose.yml` has no proxy; `docs/https-proxy-proposal.md` is still "proposed" | No | **Fix:** the Caddy service (in progress, branch `fix/srs-https-proxy`). At rest is a recorded decision (`decisions.md`); the README needs a line on it. |
+| NFR-4 | *(decision)* In transit via Caddy; at rest via host encryption, real at-rest deferred | §7 | Fixed ([#36](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/36), open) | `docker-compose.yml` has no proxy; `docs/https-proxy-proposal.md` is still "proposed" | No | **Fixed by** the Caddy service on `https://localhost:8443` (internal TLS), the Secure cookie behind HTTPS, and the at-rest note in the README; Playwright 8/8 through HTTPS. Before: **Fix:** the Caddy service ([#36](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/36)). At rest is a recorded decision (`decisions.md`); the README needs a line on it. |
 | NFR-5 | Organizer and admin actions auditable | §7 | Pass | HIS-5, ADM-9, `test_audit.py` | Yes | |
-| NFR-6 | Event pages meet WCAG 2.1 AA (axe through Playwright) | §7 | Missing | `@axe-core/playwright` isn't installed and no test runs axe | Partial (`design-direction.md` has a contrast table) | **Fix:** an axe Playwright spec for the event list, event, checkout and ticket pages. |
-| NFR-7 | Checkout survives a spike: 50 checkouts on the last 10 tickets | §7 | Partial | `test_last_ticket_sold_once_under_concurrency`, `test_capacity_holds_across_ticket_types_under_concurrency` (small concurrent runs) | No | **Gap: no load test at the asked size.** **Fix:** a pytest/httpx asyncio test with 50 concurrent checkouts on 10 tickets: exactly 10 sold, every other response a clean 409, no 5xx. |
-| NFR-8 | Architecture allows more currencies and languages; document how | §7 | Partial | `CURRENCY=KZT` setting, `*_kzt` columns; next-intl locales and `messages/*.json` | No | **Gap: not documented.** **Fix:** a short `decisions.md` section on adding a locale (a messages file plus key parity) and a currency (a currency column plus migration; the `_kzt` naming is deliberate). |
+| NFR-6 | Event pages meet WCAG 2.1 AA (axe through Playwright) | §7 | Fixed ([#39](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/39), open) | `@axe-core/playwright` isn't installed and no test runs axe | Partial (`design-direction.md` has a contrast table) | **Fixed by** `apps/web/e2e/accessibility.spec.ts` (axe, WCAG 2.0/2.1 A+AA, 30 page scans in kk/ru/en at desktop and 390px). It found and fixed one serious violation (WCAG 2.5.3 on the PDF button). Before: **Fix:** an axe Playwright spec for the event list, event, checkout and ticket pages. |
+| NFR-7 | Checkout survives a spike: 50 checkouts on the last 10 tickets | §7 | Fixed ([#37](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/37), open) | `test_last_ticket_sold_once_under_concurrency`, `test_capacity_holds_across_ticket_types_under_concurrency` (small concurrent runs) | No | **Fixed by** `test_fifty_concurrent_checkouts_for_the_last_ten_tickets`: exactly 10 sold, 40 clean 409s, no 5xx. **One unreproduced hang** in 1 of 5 local full-suite runs; see the PR. Before: **Gap: no load test at the asked size.** **Fix:** a pytest/httpx asyncio test with 50 concurrent checkouts on 10 tickets: exactly 10 sold, every other response a clean 409, no 5xx. |
+| NFR-8 | Architecture allows more currencies and languages; document how | §7 | Fixed ([#41](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/41), open) | `CURRENCY=KZT` setting, `*_kzt` columns; next-intl locales and `messages/*.json` | No | **Fixed by** "Adding currencies and languages later" in `decisions.md`. Before: **Gap: not documented.** **Fix:** a short `decisions.md` section on adding a locale (a messages file plus key parity) and a currency (a currency column plus migration; the `_kzt` naming is deliberate). |
 | NFR-9 | Backup and restore script, run once | §7 | Pass | `scripts/backup-db.sh`, `scripts/restore-db.sh`; run on 2026-11-23 (see Checks run) | Yes | |
 | NFR-10 | No secrets in the repo; history scan | §7 | Pass | gitleaks over 154 commits: 1 false positive (see Checks run); CI job `scripts/check-secrets.py` | Yes | |
 | NFR-11 | *(team)* Login and sign-up rate limiting | — | Pass | `test_rate_limit.py` (6 tests) | Yes | |
@@ -402,9 +402,9 @@ Extra models, not in §6: `PaidSalesActivation`, `PromoCodeTicketType`, `EventRe
 
 | ID | Requirement | SRS § | Status | Evidence | Docs | Notes |
 |---|---|---|---|---|---|---|
-| DEL-1 | `docker compose up` runs db, api, web, mailpit, Caddy; seeding *(team)* | §8 | Partial | `docker compose up --build` healthy (see Checks run); seeding: `test_seed_is_idempotent` | Yes | **Gap: no proxy service.** Fixed together with NFR-4. Seeding *(team)* passes. |
+| DEL-1 | `docker compose up` runs db, api, web, mailpit, Caddy; seeding *(team)* | §8 | Fixed ([#36](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/36), open) | `docker compose up --build` healthy (see Checks run); seeding: `test_seed_is_idempotent` | Yes | **Fixed by** the Caddy service in a plain `docker compose up` (5 services healthy). Before: **Gap: no proxy service.** Fixed together with NFR-4. Seeding *(team)* passes. |
 | DEL-2 | One backend, no needless microservices | §9 | Pass | `apps/api` is the only backend | Yes | |
-| DEL-3 | Backend and DB choice with rationale | §9 | Partial | `decisions.md`: "Python (FastAPI, async SQLAlchemy) and PostgreSQL 16" | Partial | **Gap: no rationale.** §9 asks for team familiarity, development speed, data-model needs and deployment complexity. **Fix:** a short rationale in `decisions.md`. |
+| DEL-3 | Backend and DB choice with rationale | §9 | Partial ([#41](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/41), open) | `decisions.md`: "Python (FastAPI, async SQLAlchemy) and PostgreSQL 16" | Partial | Rationale added in `decisions.md`, but **the team-familiarity point is left for the team to fill in**, so this stays Partial until then. Before: **Gap: no rationale.** §9 asks for team familiarity, development speed, data-model needs and deployment complexity. **Fix:** a short rationale in `decisions.md`. |
 | DEL-4 | API, interface, payment and QR tests in CI | §9 | Pass | `.github/workflows/ci.yml`: pytest, web lint/tsc/build, scanner jest, Playwright e2e; the last 3 runs on `main` passed | Yes | |
 | DEL-5 | README: setup, every feature, demo flow; OpenAPI | §13.4 | Pass | README "Getting started", one API section per SRS area, "End-to-end test (Playwright)" with the core-flow steps; `docs/demo-report-3.md`; `/openapi.json` and `/docs` | Yes | |
 
@@ -422,13 +422,13 @@ which belongs to the bonus seating feature and isn't an exclusion.
 
 | Row(s) | Branch | Fix | Status |
 |---|---|---|---|
-| NFR-4, DEL-1 | `fix/srs-https-proxy` | Caddy service with internal TLS in front of web and api, the Secure cookie on HTTPS, README | In progress |
-| NFR-6 | `fix/srs-accessibility` | `@axe-core/playwright` (devDependency) and an axe spec for the event, checkout and ticket pages | To do |
-| NFR-7 | `fix/srs-load-test` | 50 concurrent checkouts on 10 tickets | To do |
-| PAY-9, ORD-6 | `fix/srs-payments-tests` | card-data and payment-audit tests | To do |
-| ADM-7 | `fix/srs-admin-promotions` | admin promo-code activity endpoint, test and tab | To do |
-| NFR-8, DEL-3 | `fix/srs-docs` | currency/language and stack-rationale notes in `decisions.md` | To do |
-| NFR-2 *(team)* | `fix/srs-docs` | web hard-coded-string check like the scanner's | To do |
+| NFR-4, DEL-1 | `fix/srs-https-proxy` | Caddy service with internal TLS in front of web and api, the Secure cookie on HTTPS, README | [#36](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/36) |
+| NFR-6 | `fix/srs-accessibility` | `@axe-core/playwright` (devDependency) and an axe spec for the event, checkout and ticket pages | [#39](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/39) |
+| NFR-7 | `fix/srs-load-test` | 50 concurrent checkouts on 10 tickets | [#37](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/37) |
+| PAY-9, ORD-6 | `fix/srs-payments-tests` | card-data and payment-audit tests | [#38](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/38) |
+| ADM-7 | `fix/srs-admin-promotions` | admin promo-code activity endpoint, test and tab | [#40](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/40) |
+| NFR-8, DEL-3 | `fix/srs-docs` | currency/language and stack-rationale notes in `decisions.md` | [#41](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/41) |
+| NFR-2 *(team)* | `fix/srs-docs` | web hard-coded-string check like the scanner's | [#41](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/41) |
 
 ## Open decisions
 
@@ -441,7 +441,40 @@ which belongs to the bonus seating feature and isn't an exclusion.
 
 ## Totals (both parts)
 
-To be filled in when the fixes land.
+Checked on 2026-11-23. 191 checklist rows, plus DM-1 (Pass) and the §8 exclusions (confirmed
+absent).
+
+| Status | Rows | Which |
+|---|---|---|
+| Pass | 154 | everything not listed below |
+| Fixed | 15 | earlier in [#33](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/33): MOB-2, MOB-7, MOB-10. In this check: CORE-1, SC-1, UC-1 ([#35](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/35)); NFR-4, DEL-1 ([#36](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/36)); NFR-7 ([#37](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/37)); PAY-9, ORD-6 ([#38](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/38)); NFR-6 ([#39](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/39)); ADM-7 ([#40](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/40)); NFR-2 *(team)*, NFR-8 ([#41](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/41)) |
+| Partial | 4 | EVT-2 and ADM-5 / ROLE-6 (waiting on the open decisions above); DEL-3 (the team has to write the familiarity point) |
+| Missing | 0 | |
+| Deferred | 0 | |
+| Manual | 1 | MOB-11 (plus the manual checklist below) |
+| Bonus–not built | 17 | SEAT-1..7, CAL-1..6, UC-6, UC-8, PRM-12 (GA4), SUP-10 |
+| Bonus–built | 0 | |
+| Excluded | confirmed | nothing from §8 is present |
+
+"Fixed" rows link PRs that are **open, not merged**, with CI green at the time of writing.
+Until they merge, `main` still has those gaps.
+
+**Remaining gaps:**
+1. EVT-2: one cover image by URL, no uploads or gallery. Needs a decision (open decision 1).
+2. ADM-5 / ROLE-6: no explicit "dispute" view. Needs a decision (open decision 2).
+3. DEL-3: the rationale is written ([#41](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/41)) except team familiarity, which only the team can fill in.
+4. NFR-7 follow-up: one unreproduced test hang (1 of 5 local runs). The likely cause is the
+   ticket PDFs rendering while the inventory row lock is held; see [#37](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/37).
+5. The manual checklist below.
+
+**PR links:** report [#34](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/34) · fixes [#35](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/35), [#36](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/36), [#37](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/37),
+[#38](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/38), [#39](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/39), [#40](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/40), [#41](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/41).
+
+**Merge notes:** [#35](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/35) and [#39](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/39) both edit `apps/web/e2e/core-flow.spec.ts`
+(different lines). [#35](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/35), [#36](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/36), [#39](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/39), [#40](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/40) and [#41](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/41)
+all edit the README, and [#39](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/39), [#40](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/40) and [#41](https://github.com/kadysmuktaruly/BiletFlow-project---Team-404-Not-Found-/pull/41) all edit
+`apps/web/messages/*.json` (different keys). Each was branched from `main`, so whichever
+merges later may need a quick rebase.
 
 ## Manual checklist
 
