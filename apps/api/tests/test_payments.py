@@ -17,6 +17,7 @@ from app.enums import (
 )
 from app.main import API_PREFIX
 from app.models import (
+    AuditLogEntry,
     Event,
     Notification,
     Order,
@@ -337,3 +338,66 @@ async def test_processing_fee_recorded_for_organizer_not_charged_to_attendee(
     assert (
         await session.get_one(Payment, paid.json()["payment"]["id"])
     ).status is PaymentStatus.SUCCEEDED
+
+
+async def test_ticket_payments_are_audited_whether_they_succeed_or_fail(
+    client: httpx.AsyncClient, session: AsyncSession
+) -> None:
+    """SRS 4.9: "All payment and refund actions shall be recorded in an audit log"."""
+    event, tt, buyer = await _paid_setup(session)
+    paid = await _reserve(client, buyer, event, tt, qty=1)
+    declined = await _reserve(client, buyer, event, tt, qty=1)
+
+    ok = await _pay(client, buyer, paid["id"], "succeed", f"audit-ok-{uuid.uuid4()}")
+    bad = await _pay(client, buyer, declined["id"], "fail", f"audit-bad-{uuid.uuid4()}")
+    assert (ok.status_code, bad.status_code) == (201, 201)
+
+    entries = list(
+        await session.scalars(
+            select(AuditLogEntry)
+            .where(AuditLogEntry.entity_type == "payment")
+            .order_by(AuditLogEntry.occurred_at)
+        )
+    )
+    assert [(e.action_type, e.entity_id, e.actor_user_id, e.event_id) for e in entries] == [
+        ("payment.succeeded", uuid.UUID(ok.json()["payment"]["id"]), buyer.id, event.id),
+        ("payment.failed", uuid.UUID(bad.json()["payment"]["id"]), buyer.id, event.id),
+    ]
+    assert all("DEMO" in e.description and "7500 KZT" in e.description for e in entries)
+
+
+async def test_card_data_sent_with_a_payment_is_never_stored(
+    client: httpx.AsyncClient, session: AsyncSession
+) -> None:
+    """SRS 7: "Payment-card data shall not be stored directly by the platform". The DEMO
+    request has no card fields. Anything card-like a client sends is dropped: it isn't stored
+    on the payment, echoed back, or written to the audit log."""
+    event, tt, buyer = await _paid_setup(session)
+    order = await _reserve(client, buyer, event, tt, qty=1)
+    pan, cvv = "4111111111111111", "737"
+
+    response = await client.post(
+        f"{ORDERS}/{order['id']}/payments",
+        headers={**bearer(buyer), "Idempotency-Key": f"card-{uuid.uuid4()}"},
+        json={
+            "outcome": "succeed",
+            "card_number": pan,
+            "cvv": cvv,
+            "expiry": "12/29",
+            "card": {"number": pan, "cvc": cvv},
+        },
+    )
+    assert response.status_code == 201, response.text
+    assert pan not in response.text
+
+    payment = await session.scalar(select(Payment).where(Payment.order_id == order["id"]))
+    assert payment is not None
+    # Only the simulated provider's display values, never what the client sent.
+    assert (payment.card_brand, payment.card_last4) == ("DEMO", "4242")
+    stored = " ".join(str(getattr(payment, column.key)) for column in Payment.__table__.columns)
+    assert pan not in stored and cvv not in stored.split()
+    audit_text = " ".join(await session.scalars(select(AuditLogEntry.description)))
+    assert pan not in audit_text
+    # The model has nowhere to put a full card number or a security code.
+    columns = {c.key for c in Payment.__table__.columns}
+    assert not {"card_number", "pan", "cvv", "cvc", "expiry"} & columns
