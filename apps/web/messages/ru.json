@@ -586,7 +586,7 @@
       "refunded": "Возвращён"
     },
     "downloadPdf": "Скачать PDF",
-    "downloadPdfLabel": "Скачать билет {number} в PDF"
+    "downloadPdfLabel": "Скачать PDF: билет {number}"
   },
   "campaignLink": {
     "opening": "Открываем событие…",

@@ -586,7 +586,7 @@
       "refunded": "Refunded"
     },
     "downloadPdf": "Download PDF",
-    "downloadPdfLabel": "Download ticket {number} as a PDF"
+    "downloadPdfLabel": "Download PDF: ticket {number}"
   },
   "campaignLink": {
     "opening": "Opening the event…",

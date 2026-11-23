@@ -586,7 +586,7 @@
       "refunded": "Қайтарылды"
     },
     "downloadPdf": "PDF жүктеу",
-    "downloadPdfLabel": "{number} билетін PDF ретінде жүктеу"
+    "downloadPdfLabel": "PDF жүктеу: {number} билеті"
   },
   "campaignLink": {
     "opening": "Іс-шара ашылуда…",
