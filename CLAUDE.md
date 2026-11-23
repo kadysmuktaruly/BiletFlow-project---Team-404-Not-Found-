@@ -4,9 +4,12 @@ Guidance for AI coding sessions in this repo. README.md is the source of truth f
 project's current state. Read it first.
 
 BiletFlow is self-service event ticketing for Kazakhstan (CSCI 361 university project).
-"SRS x.y" references point to the Software Requirements Specification. It is not in the
-repo yet, so treat the model docstrings and the task prompt as the spec, and say so when
-that matters.
+"SRS x.y" references point to the Software Requirements Specification, which is in the
+repo: `docs/srs/BiletFlow_SRS_v0.3.pdf` is the authoritative copy, and `docs/srs/srs.md` is
+a searchable text extract of it. Check requirements against the SRS itself. Cite the
+section (e.g. "SRS 4.8") in code, tests and docs. If the SRS, a model docstring and the task
+prompt disagree, say so rather than picking one silently. The scanner app's compliance
+with the SRS is tracked in `docs/scanner-requirements-check.md`.
 
 ## Stack (do not change)
 
