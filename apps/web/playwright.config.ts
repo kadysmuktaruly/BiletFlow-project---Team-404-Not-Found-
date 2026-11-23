@@ -2,7 +2,8 @@ import { defineConfig, devices } from "@playwright/test";
 
 // End-to-end tests against a running stack: the web app (E2E_BASE_URL, default
 // http://localhost:3000) and the API (E2E_API_URL, default http://localhost:8000) with the
-// demo seed loaded. Locally: `docker compose up -d`, then `npm run e2e -w @biletflow/web`.
+// demo seed loaded. Locally: `docker compose up -d`, then `npm run e2e -w @biletflow/web`
+// (or E2E_BASE_URL=https://localhost:8443 to go through the Caddy HTTPS proxy).
 // CI starts both itself (see .github/workflows/ci.yml, job "End-to-end").
 export default defineConfig({
   testDir: "./e2e",
@@ -13,6 +14,8 @@ export default defineConfig({
   reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : "list",
   use: {
     baseURL: process.env.E2E_BASE_URL ?? "http://localhost:3000",
+    // The docker compose proxy uses Caddy's local CA, which a fresh browser doesn't trust.
+    ignoreHTTPSErrors: true,
     locale: "en-US",
     trace: "retain-on-failure",
     screenshot: "only-on-failure",

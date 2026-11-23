@@ -40,8 +40,10 @@ class Settings(BaseSettings):
     jwt_refresh_ttl_seconds: int = 60 * 60 * 24 * 30
     email_verify_ttl_seconds: int = 60 * 60 * 24
     password_reset_ttl_seconds: int = 60 * 60
-    # The refresh cookie's Secure flag. Off for http://localhost, on everywhere else.
-    cookie_secure: bool = False
+    # The refresh cookie's Secure flag. Unset (the default) follows PUBLIC_BASE_URL: on when
+    # the site is served over https:// (the Caddy proxy in docker compose), off for plain
+    # http://localhost. See `secure_cookies`.
+    cookie_secure: bool | None = None
 
     # SRS 4.10 transactional email. Mailpit in development.
     smtp_host: str = "localhost"
@@ -99,6 +101,11 @@ class Settings(BaseSettings):
         # as an empty signing key.
         return _DEV_JWT_SECRET if value in ("", None) else value
 
+    @field_validator("cookie_secure", mode="before")
+    @classmethod
+    def _empty_cookie_secure_means_auto(cls, value: object) -> object:
+        return None if value == "" else value
+
     @field_validator("ticket_signing_secret", mode="before")
     @classmethod
     def _empty_ticket_secret_means_unset(cls, value: object) -> object:
@@ -121,6 +128,13 @@ class Settings(BaseSettings):
                 f"when ENVIRONMENT={self.environment!r}"
             )
         return self
+
+    @property
+    def secure_cookies(self) -> bool:
+        """SRS 7 (encryption in transit): Secure cookies whenever the site is HTTPS."""
+        if self.cookie_secure is not None:
+            return self.cookie_secure
+        return self.public_base_url.startswith("https://")
 
     @property
     def cors_origin_list(self) -> list[str]:

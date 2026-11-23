@@ -68,8 +68,29 @@ outside Docker you also need [uv](https://docs.astral.sh/uv/) and Node.js 22.
 ```bash
 cp .env.example .env        # optional; the defaults work
 docker compose up -d --build
-docker compose ps           # wait for db, api, web and mailpit to be "healthy"
+docker compose ps           # wait for db, api, web, mailpit and caddy to be "healthy"
 ```
+
+Open **https://localhost:8443**. The Caddy container serves the web app and the API on that
+one HTTPS origin (SRS 7, encryption in transit): `/api/*` goes to the API, everything else to
+the web app. The certificate comes from Caddy's own local CA, so the browser warns until you
+trust it, which you do once per laptop:
+
+```bash
+docker compose exec caddy caddy trust     # or accept the browser warning
+```
+
+Behind HTTPS the refresh cookie is `Secure` automatically (`COOKIE_SECURE` unset follows
+`PUBLIC_BASE_URL`), and email and Campaign QR links use `https://`. The plain ports stay open:
+`http://localhost:3000` still works (the web app forwards `/api/v1` to the API itself), and
+the scanner app talks to `http://<LAN IP>:8000`, because phones don't trust Caddy's local CA.
+That is the "plain HTTP on the closed demo LAN" option in
+[`docs/https-proxy-proposal.md`](docs/https-proxy-proposal.md). Set `HTTPS_PORT` to use
+another port; `PUBLIC_BASE_URL` follows it.
+
+**Data at rest** is not encrypted by BiletFlow itself. The demo relies on the host's disk
+encryption (FileVault, BitLocker or LUKS) for the Postgres volume. Application-level or managed
+at-rest encryption is deferred (`docs/decisions.md`).
 
 By default the web container runs `next dev`, which fits a 2 GB Docker VM; each page compiles
 the first time you open it. For the demo, run the production build instead (it needs a Docker
@@ -81,8 +102,9 @@ WEB_BUILD_TARGET=runtime docker compose up -d --build
 
 | Service | URL |
 |---|---|
-| Web app | http://localhost:3000 |
-| API and OpenAPI docs | http://localhost:8000/docs |
+| Web app and API over HTTPS (Caddy) | https://localhost:8443 |
+| Web app, plain HTTP | http://localhost:3000 |
+| API and OpenAPI docs | http://localhost:8000/docs (also https://localhost:8443/api/v1/…) |
 | Mailpit (every email the app sends) | http://localhost:8025 |
 | Postgres | `localhost:5433` |
 
@@ -607,3 +629,6 @@ All variables are documented in [`.env.example`](.env.example). The main ones:
 | `ACTIVATION_FEE_KZT` | `5000` | Paid sales activation fee (placeholder amount, non-refundable) |
 | `PROCESSING_FEE_BPS` | `300` | Processing charge taken from the organizer's payout (DEMO) |
 | `CURRENCY` | `KZT` | Currency for the initial release |
+| `HTTPS_PORT` | `8443` | Host port for the Caddy HTTPS proxy |
+| `PUBLIC_BASE_URL` | `https://localhost:8443` in Docker | Origin for email and Campaign QR links; https makes the cookie Secure |
+| `COOKIE_SECURE` | unset | Force the refresh cookie's Secure flag on or off; unset follows `PUBLIC_BASE_URL` |

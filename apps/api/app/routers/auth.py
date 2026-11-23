@@ -50,7 +50,7 @@ def _session_response(user: User, response: Response, x_client: str | None) -> T
             refresh,
             max_age=settings.jwt_refresh_ttl_seconds,
             httponly=True,
-            secure=settings.cookie_secure,
+            secure=settings.secure_cookies,
             samesite="lax",
             path=COOKIE_PATH,
         )
@@ -158,7 +158,7 @@ async def logout(response: Response) -> None:
         REFRESH_COOKIE,
         path=COOKIE_PATH,
         httponly=True,
-        secure=settings.cookie_secure,
+        secure=settings.secure_cookies,
         samesite="lax",
     )
 

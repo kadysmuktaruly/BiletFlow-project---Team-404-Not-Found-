@@ -1,0 +1,23 @@
+# HTTPS entry point for the docker compose stack (SRS 7: encryption in transit).
+# https://localhost:8443 (HTTPS_PORT) → /api/* to the API, everything else to the web app.
+# `tls internal` uses Caddy's own local certificate authority; nothing leaves the machine.
+# Trust it once per laptop with `docker compose exec caddy caddy trust` (see README).
+{
+	# No automatic HTTP→HTTPS redirect listener; only the HTTPS port is published.
+	auto_https disable_redirects
+}
+
+localhost {
+	tls internal
+	encode gzip
+
+	handle /api/* {
+		reverse_proxy api:8000
+	}
+	handle {
+		reverse_proxy web:3000
+	}
+
+	# Short max-age: this is a demo certificate on localhost.
+	header Strict-Transport-Security "max-age=300"
+}
