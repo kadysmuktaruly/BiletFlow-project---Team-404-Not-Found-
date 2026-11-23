@@ -44,8 +44,9 @@ Do not add, swap, or remove frameworks or major libraries without asking first.
   `app/schemas/`, and auth/permission dependencies in `app/deps.py`.
 - Use one error response shape everywhere:
   `{"error": {"code", "message", "details"}}`.
-- Auth, login, and forgot-password responses must not reveal whether an email is
-  registered.
+- Login, resend-verification, and forgot-password responses must not reveal whether an
+  email is registered. Register is the one exception: it returns `409 email_taken`
+  (decided 2026-11-23, see `docs/decisions.md`).
 - A resource the caller may not see returns 404, not 403.
 - Put all user-facing web strings in one module (translations come later).
 

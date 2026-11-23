@@ -62,7 +62,8 @@ class VerifyEmailResponse(BaseModel):
 
 
 class AcceptedResponse(BaseModel):
-    """Returned by register, resend-verification and forgot-password whatever the email,
-    so the response never reveals whether an account exists."""
+    """Returned by resend-verification and forgot-password whatever the email, so the
+    response never reveals whether an account exists. Register returns it for a new account
+    (a taken email gets 409 `email_taken`)."""
 
     status: Literal["accepted"] = "accepted"

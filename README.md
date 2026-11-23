@@ -249,16 +249,19 @@ clients translate.
 
 | Endpoint | Purpose |
 |---|---|
-| `POST /auth/register` | Create an `attendee` or `organizer` account and email a verification link. `platform_admin` cannot be self-assigned. |
+| `POST /auth/register` | Create an `attendee` or `organizer` account and email a verification link. `platform_admin` cannot be self-assigned. An email that already has an account (any capitalisation) gets `409 email_taken` and no email is sent. |
 | `POST /auth/verify-email` | Confirm the email with the token from that link. The first confirmation also signs the user in; opening the link again only confirms. |
 | `POST /auth/resend-verification` | Send the link again. |
 | `POST /auth/login` | Returns a 15-minute access token. An account must confirm its email first (`email_not_confirmed`, checked only after the password matches). Browsers get the refresh token as an httpOnly `bf_refresh` cookie; clients sending `X-Client: scanner` get it in the body. |
 | `POST /auth/refresh`, `POST /auth/logout` | Rotate the session, or clear the cookie. |
 | `POST /auth/forgot-password`, `POST /auth/reset-password` | Email a single-use reset link, then set a new password. Resetting signs out every other session. |
-| `GET /me`, `PATCH /me` | The signed-in user. Name, phone and language can be changed; role and email cannot. |
+| `GET /me`, `PATCH /me` | The signed-in user. Name, phone and language can be changed here; email cannot. |
+| `PUT /me/role` | Switch between `attendee` and `organizer`. Becoming an organizer creates an organizer profile, or reuses the earlier one. Switching to attendee keeps the profile and events, and is refused with `409 organizer_has_active_events` while any event is published or unpublished. Platform and event admins get `403 role_change_not_allowed`. Each switch is written to the audit log (`user.role_changed`). |
 
-Register, resend-verification, forgot-password and login never reveal whether an email is
-registered. Passwords are hashed with Argon2. In development every email lands in Mailpit at
+Resend-verification, forgot-password and login never reveal whether an email is registered.
+Register is the exception: it says `email_taken`, because a silent "check your inbox" confused
+people who already had an account (see `docs/decisions.md`). Its rate limit slows anyone
+checking many emails. Passwords are hashed with Argon2. In development every email lands in Mailpit at
 http://localhost:8025.
 
 Role checks are reusable dependencies in `app/deps.py` (`CurrentUser`, `require_role`,
@@ -555,7 +558,9 @@ selection, then attendee names (one per ticket). A free order is confirmed strai
 paid order goes to `/checkout/{orderId}`, the **DEMO payment** page: succeed, fail, or cancel
 and release the tickets. `/orders/{orderId}` is the confirmation with QR codes, and `/tickets`
 (**My tickets**) lists every ticket with its QR code and status. Checkout requires sign-in;
-the event page sends visitors to sign in and brings them back.
+the event page sends visitors to sign in and brings them back. `/account` (**Account** in the
+header) shows the account type and switches between attendee and organizer after a
+confirmation.
 
 **Promo codes on the web (SRS 4.14).** The event page has a promo code field. The server quotes
 the discount for the chosen tickets and the panel shows the code, the discount and the new

@@ -1556,8 +1556,9 @@ export interface components {
     schemas: {
         /**
          * AcceptedResponse
-         * @description Returned by register, resend-verification and forgot-password whatever the email,
-         *     so the response never reveals whether an account exists.
+         * @description Returned by resend-verification and forgot-password whatever the email, so the
+         *     response never reveals whether an account exists. Register returns it for a new account
+         *     (a taken email gets 409 `email_taken`).
          */
         AcceptedResponse: {
             /**

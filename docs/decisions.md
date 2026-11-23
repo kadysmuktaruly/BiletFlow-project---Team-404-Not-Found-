@@ -91,3 +91,14 @@ changes, update this file in the same PR.
   cancelled. A promo redemption stays counted after a refund (it was used).
 - Cancelling an event cancels its valid tickets and pending orders and refunds every paid order
   in full, each with the fixed idempotency key `event-cancel:<order id>`.
+- **Register says when an email is taken** (2026-11-23). `POST /auth/register` returns
+  `409 email_taken` instead of the same "check your inbox" reply, because people who already had
+  an account waited for an email that never came. This lets anyone check whether an email is
+  registered, which the team accepted. The register rate limit (5 per 10 minutes per IP) slows
+  bulk checking. Login, resend-verification and forgot-password still reveal nothing.
+- **Users switch between attendee and organizer themselves** (`PUT /me/role`, 2026-11-23).
+  Organizers can buy tickets too, so the switch only adds or hides the organizer pages. The
+  organizer profile is never deleted, so switching back restores events, profile and payout
+  account. Leaving the organizer role is refused while any event is published or unpublished,
+  because nobody else could manage it. Platform admins are appointed and event admins come
+  from StaffAssignment, so neither can use the switch.
