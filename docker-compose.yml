@@ -1,6 +1,7 @@
-# Full local stack for BiletFlow: `docker compose up` starts db, api, web and mailpit, each
-# with a health check. Demo data is seeded on start (SEED_DEMO_DATA=true). The scanner app
-# runs on a phone via Expo; see README.
+# Full local stack for BiletFlow: `docker compose up` starts db, api, web, mailpit and the
+# Caddy HTTPS proxy, each with a health check. Open https://localhost:8443 (HTTPS_PORT).
+# Demo data is seeded on start (SEED_DEMO_DATA=true). The plain ports stay published: the
+# web app on :3000 and the API on :8000, which the scanner app uses over the LAN (see README).
 services:
   db:
     image: postgres:16-alpine
@@ -43,9 +44,10 @@ services:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-biletflow}:${POSTGRES_PASSWORD:-biletflow}@db:5432/${POSTGRES_DB:-biletflow}
       SMTP_HOST: mailpit
       SMTP_PORT: "1025"
-      # Where email links point, and the web origin CORS allows. Override both if you
-      # publish the web app on another port (WEB_PORT) or open it via a LAN IP.
-      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:3000}
+      # Where email links and Campaign QR links point, and the web origin CORS allows. The
+      # default is the Caddy HTTPS origin; an https:// value also makes the refresh cookie
+      # Secure (COOKIE_SECURE unset). Override if you change HTTPS_PORT or use a LAN IP.
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-https://localhost:${HTTPS_PORT:-8443}}
       CORS_ORIGINS: ${CORS_ORIGINS:-}
       SEED_DEMO_DATA: ${SEED_DEMO_DATA:-true}
     ports:
@@ -75,11 +77,15 @@ services:
       # build, and `--target runtime` builds the production image (see apps/web/Dockerfile).
       target: ${WEB_BUILD_TARGET:-dev}
       args:
-        # Baked into the browser bundle: the API as seen from the user's browser.
-        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8000}
+        # Baked into the browser bundle: the API as seen from the user's browser. Empty means
+        # the page's own origin (/api/v1), which works both through Caddy and on :3000.
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL-}
     environment:
       # Read by `next dev` at compile time (the production stage bakes it in as a build arg).
-      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8000}
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL-}
+      # On plain http://localhost:3000 the web app forwards /api/v1 to the API itself
+      # (src/proxy.ts); through Caddy, /api never reaches the web app.
+      API_PROXY_TARGET: ${API_PROXY_TARGET:-http://api:8000}
     ports:
       - "${WEB_PORT:-3000}:3000"
     depends_on:
@@ -93,5 +99,32 @@ services:
       retries: 10
     restart: unless-stopped
 
+  # HTTPS reverse proxy (SRS 7, docs/https-proxy-proposal.md): one origin for web and API,
+  # with a certificate from Caddy's local CA. Trust it once: `docker compose exec caddy
+  # caddy trust`, or accept the browser warning.
+  caddy:
+    image: caddy:2.8-alpine
+    ports:
+      - "${HTTPS_PORT:-8443}:443"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      # Keeps the local CA and certificate across restarts, so you trust it only once.
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      api:
+        condition: service_healthy
+      web:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- --no-check-certificate https://localhost/api/v1/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+    restart: unless-stopped
+
 volumes:
   pgdata:
+  caddy_data:
+  caddy_config:

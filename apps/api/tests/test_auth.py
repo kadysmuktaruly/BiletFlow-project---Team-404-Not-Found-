@@ -199,6 +199,26 @@ async def test_login_sets_httponly_refresh_cookie_for_browsers(
     assert me.json()["email"] == "web@example.com"
 
 
+async def test_refresh_cookie_is_secure_when_the_site_is_https(
+    client: httpx.AsyncClient, session: AsyncSession, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """SRS 7: behind the Caddy HTTPS proxy (PUBLIC_BASE_URL=https://...) the refresh cookie
+    gets the Secure flag; on plain http://localhost it doesn't."""
+    from app.config import get_settings
+
+    await make_user(session, email="tls@example.com")
+    await session.commit()
+    login = {"email": "tls@example.com", "password": DEFAULT_PASSWORD}
+
+    plain = await client.post(f"{AUTH}/login", json=login)
+    assert "Secure" not in plain.headers["set-cookie"]
+
+    monkeypatch.setattr(get_settings(), "public_base_url", "https://localhost:8443")
+    tls = await client.post(f"{AUTH}/login", json=login)
+    assert tls.status_code == 200
+    assert "Secure" in tls.headers["set-cookie"]
+
+
 async def test_login_returns_refresh_token_in_body_for_scanner(
     client: httpx.AsyncClient, session: AsyncSession
 ) -> None:

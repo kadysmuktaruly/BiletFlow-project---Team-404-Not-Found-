@@ -128,6 +128,19 @@ def test_production_requires_real_secrets() -> None:
     assert ok.jwt_secret == "x" * 32
 
 
+def test_secure_cookies_follow_the_public_url_unless_set() -> None:
+    """SRS 7: behind the HTTPS proxy the refresh cookie is Secure without extra config."""
+
+    def make(**kwargs: object) -> Settings:
+        return Settings(_env_file=None, **kwargs)  # type: ignore[arg-type]
+
+    assert make(public_base_url="https://localhost:8443").secure_cookies is True
+    assert make(public_base_url="http://localhost:3000").secure_cookies is False
+    assert make(public_base_url="http://localhost:3000", cookie_secure=True).secure_cookies
+    assert not make(public_base_url="https://x.kz", cookie_secure=False).secure_cookies
+    assert make(public_base_url="https://x.kz", cookie_secure="").secure_cookies is True
+
+
 def test_cors_origin_list_includes_public_base_url_and_extras() -> None:
     settings = Settings(
         public_base_url="http://localhost:3000/",

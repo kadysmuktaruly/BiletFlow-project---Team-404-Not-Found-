@@ -1,7 +1,18 @@
 # Proposal: HTTPS reverse proxy for the demo stack
 
-**Status: proposed, not added.** The Report 6 plan asks to propose this before adding it.
-Approve or change it in the PR, and a follow-up PR adds it.
+**Status: accepted and added (Nov 23, SRS check NFR-4 / DEL-1), with two changes.**
+
+1. **No profile.** SRS check DEL-1 wants the proxy in a plain `docker compose up`, so the
+   `caddy` service always runs, on `https://localhost:8443` (`HTTPS_PORT`). Port 443 on the
+   host isn't used by default, because it often needs extra privileges.
+2. **One web bundle for both origins.** `NEXT_PUBLIC_API_BASE_URL` is empty in Docker, so the
+   browser calls `/api/v1` on whatever origin it is on: Caddy forwards it on HTTPS, and the
+   web app's own proxy (`API_PROXY_TARGET=http://api:8000`) forwards it on
+   `http://localhost:3000`.
+
+Scanner: option (a), plain HTTP on the LAN to `:8000`. The Secure cookie follows
+`PUBLIC_BASE_URL` (`Settings.secure_cookies`). See the README's "Getting started". The
+original proposal follows.
 
 ## Why
 
