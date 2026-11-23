@@ -21,6 +21,7 @@ from tests.factories import (
     make_ticket_type,
     make_user,
 )
+from tests.test_promotions import create_campaign, items, make_shop, order
 
 ADMIN = f"{API_PREFIX}/admin"
 
@@ -70,6 +71,7 @@ async def test_only_platform_admins(client: httpx.AsyncClient, session: AsyncSes
         "/payments",
         "/activations",
         "/reports",
+        "/promotions",
         "/settings",
         "/export/users.csv",
     ):
@@ -378,3 +380,68 @@ async def test_csv_export_is_safe_and_audited(
         await client.get(f"{ADMIN}/export/secrets.csv", headers=bearer(admin))
     ).status_code == 422
     assert (await actions(session)).count("admin.exported") == 4
+
+
+async def test_promo_code_activity_across_the_platform(
+    client: httpx.AsyncClient, session: AsyncSession
+) -> None:
+    """SRS 4.12 "Review ... promotional-code activity": admins see every campaign with its
+    code, status and the same exact DEMO sales report as the organizer (SRS 4.14)."""
+    admin = await admin_user(session)
+    jazz = await make_shop(session, title="Almaty Jazz Night")
+    rock = await make_shop(session, title="Astana Rock Fest")
+    buyer = await make_user(session)
+    await session.commit()
+
+    used = await create_campaign(
+        client, jazz, name="Autumn launch", code="Admin10", discount_percent=10, max_redemptions=5
+    )
+    other = await create_campaign(client, rock, name="Rock early bird", code="ROCK5")
+    placed = await order(client, jazz, buyer, items((jazz.standard, 2)), code="admin10")
+    assert placed.status_code == 201, placed.text
+    paid = await client.post(
+        f"{API_PREFIX}/orders/{placed.json()['id']}/payments",
+        headers={**bearer(buyer), "Idempotency-Key": f"adm-{uuid.uuid4()}"},
+        json={"outcome": "succeed"},
+    )
+    assert paid.status_code == 201, paid.text
+    disabled = await client.post(
+        f"{rock.campaigns}/{other['id']}/disable", headers=bearer(rock.owner)
+    )
+    assert disabled.status_code == 200, disabled.text
+
+    url = f"{ADMIN}/promotions"
+    everything = (await client.get(url, headers=bearer(admin))).json()
+    assert everything["truncated"] is False
+    assert [p["code"] for p in everything["items"]] == ["ROCK5", "Admin10"]  # newest first
+    rock_row, jazz_row = everything["items"]
+    assert (rock_row["status"], rock_row["event_title"]) == ("disabled", "Astana Rock Fest")
+    assert rock_row["disabled_at"] is not None
+    assert jazz_row["status"] == "active"
+    assert jazz_row["organizer_email"] == jazz.owner.email
+    assert (jazz_row["discount_type"], jazz_row["discount_percent"]) == ("percentage", 10)
+    assert (jazz_row["redeemed_count"], jazz_row["max_redemptions"]) == (1, 5)
+    assert jazz_row["demo"] is True
+    assert jazz_row["report"] == {
+        "redemptions": 1,
+        "orders": 1,
+        "tickets_sold": 2,
+        "gross_revenue_kzt": 20_000,
+        "discount_kzt": 2_000,
+        "net_revenue_kzt": 18_000,
+    }
+    # The admin view and the organizer's campaign page report the same figures.
+    organizer_view = (
+        await client.get(f"{jazz.campaigns}/{used['id']}", headers=bearer(jazz.owner))
+    ).json()
+    assert organizer_view["report"] == jazz_row["report"]
+
+    async def search(q: str) -> list[str]:
+        found = (await client.get(url, headers=bearer(admin), params={"q": q})).json()
+        return [p["code"] for p in found["items"]]
+
+    assert await search("admin10") == ["Admin10"]  # codes are case-insensitive
+    assert await search("early bird") == ["ROCK5"]
+    assert await search("jazz") == ["Admin10"]
+    assert await search(rock.owner.email) == ["ROCK5"]
+    assert await search("nothing-matches") == []

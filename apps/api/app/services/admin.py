@@ -31,6 +31,8 @@ from app.models import (
     PaidSalesActivation,
     Payment,
     PlatformSettings,
+    PromoCode,
+    PromotionalCampaign,
     Refund,
     SupportCase,
     User,
@@ -44,6 +46,8 @@ from app.schemas.admin import (
     AdminOrderList,
     AdminPayment,
     AdminPaymentList,
+    AdminPromotion,
+    AdminPromotionList,
     AdminReport,
     AdminReportList,
     AdminSummary,
@@ -54,7 +58,7 @@ from app.schemas.admin import (
     SettingsRead,
     SettingsUpdate,
 )
-from app.services import audit, platform_settings
+from app.services import audit, platform_settings, promotions
 
 LIMIT = 100
 EXPORT_LIMIT = 10_000
@@ -516,6 +520,59 @@ async def list_payments(
 ) -> AdminPaymentList:
     payments, more = await _page(session, _payments_query(q, status), LIMIT)
     return AdminPaymentList(items=await _admin_payments(session, payments), truncated=more)
+
+
+# --- promo-code activity --------------------------------------------------------------------
+
+
+async def list_promotions(session: AsyncSession, q: str | None) -> AdminPromotionList:
+    """SRS 4.12: every campaign on the platform, newest first, searchable by code, campaign
+    name, event title or organizer email. Read-only; the numbers come from the same report
+    as the organizer's campaign page."""
+    query = (
+        select(PromotionalCampaign)
+        .join(Event, Event.id == PromotionalCampaign.event_id)
+        .join(OrganizerProfile, OrganizerProfile.id == Event.organizer_profile_id)
+        .join(User, User.id == OrganizerProfile.user_id)
+        .order_by(PromotionalCampaign.created_at.desc())
+    )
+    if q and q.strip():
+        code_match = select(PromoCode.campaign_id).where(_like(PromoCode.code, q))
+        query = query.where(
+            or_(
+                PromotionalCampaign.id.in_(code_match),
+                _like(PromotionalCampaign.name, q),
+                _like(Event.title, q),
+                _like(User.email, q),
+            )
+        )
+    campaigns, more = await _page(session, query, LIMIT)
+    items = []
+    for campaign in campaigns:
+        read = await promotions.to_read(session, campaign)
+        event = await session.get_one(Event, campaign.event_id)
+        profile = await session.get_one(OrganizerProfile, event.organizer_profile_id)
+        owner = await session.get_one(User, profile.user_id)
+        items.append(
+            AdminPromotion(
+                campaign_id=campaign.id,
+                campaign_name=campaign.name,
+                event_id=event.id,
+                event_title=event.title,
+                organizer_email=owner.email,
+                code=read.code,
+                status=read.status,
+                discount_type=campaign.discount_type,
+                discount_percent=campaign.discount_percent,
+                discount_kzt=campaign.discount_kzt,
+                max_redemptions=read.max_redemptions,
+                redeemed_count=read.redeemed_count,
+                report=read.report,
+                created_at=campaign.created_at,
+                disabled_at=campaign.disabled_at,
+            )
+        )
+    return AdminPromotionList(items=items, truncated=more)
 
 
 # --- reported events ------------------------------------------------------------------------

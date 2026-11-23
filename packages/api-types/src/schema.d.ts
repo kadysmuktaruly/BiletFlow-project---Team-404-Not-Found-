@@ -169,6 +169,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/promotions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Promo-code activity across the platform
+         * @description Every campaign with its code, status and exact DEMO sales report (SRS 4.12).
+         */
+        get: operations["promotions_api_v1_admin_promotions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/reports": {
         parameters: {
             query?: never;
@@ -1757,6 +1777,66 @@ export interface components {
         AdminPaymentList: {
             /** Items */
             items: components["schemas"]["AdminPayment"][];
+            /** Truncated */
+            truncated: boolean;
+        };
+        /**
+         * AdminPromotion
+         * @description SRS 4.12 "Review ... promotional-code activity": one campaign and its code, with the
+         *     same exact sales report the organizer sees (SRS 4.14). DEMO figures.
+         */
+        AdminPromotion: {
+            /**
+             * Campaign Id
+             * Format: uuid
+             */
+            campaign_id: string;
+            /** Campaign Name */
+            campaign_name: string;
+            /** Code */
+            code: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Demo
+             * @default true
+             * @constant
+             */
+            demo: true;
+            /** Disabled At */
+            disabled_at: string | null;
+            /** Discount Kzt */
+            discount_kzt: number | null;
+            /** Discount Percent */
+            discount_percent: number | null;
+            discount_type: components["schemas"]["DiscountType"];
+            /**
+             * Event Id
+             * Format: uuid
+             */
+            event_id: string;
+            /** Event Title */
+            event_title: string;
+            /** Max Redemptions */
+            max_redemptions: number | null;
+            /** Organizer Email */
+            organizer_email: string;
+            /** Redeemed Count */
+            redeemed_count: number;
+            report: components["schemas"]["CampaignReport"];
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "active" | "scheduled" | "expired" | "exhausted" | "disabled";
+        };
+        /** AdminPromotionList */
+        AdminPromotionList: {
+            /** Items */
+            items: components["schemas"]["AdminPromotion"][];
             /** Truncated */
             truncated: boolean;
         };
@@ -3794,6 +3874,8 @@ export type SchemaAdminOrder = components['schemas']['AdminOrder'];
 export type SchemaAdminOrderList = components['schemas']['AdminOrderList'];
 export type SchemaAdminPayment = components['schemas']['AdminPayment'];
 export type SchemaAdminPaymentList = components['schemas']['AdminPaymentList'];
+export type SchemaAdminPromotion = components['schemas']['AdminPromotion'];
+export type SchemaAdminPromotionList = components['schemas']['AdminPromotionList'];
 export type SchemaAdminReport = components['schemas']['AdminReport'];
 export type SchemaAdminReportList = components['schemas']['AdminReportList'];
 export type SchemaAdminSummary = components['schemas']['AdminSummary'];
@@ -4375,6 +4457,55 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminPaymentList"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    promotions_api_v1_admin_promotions_get: {
+        parameters: {
+            query?: {
+                q?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminPromotionList"];
                 };
             };
             /** @description Unauthorized */

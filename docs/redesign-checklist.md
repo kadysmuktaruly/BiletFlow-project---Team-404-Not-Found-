@@ -42,7 +42,7 @@ each one. `apps/web/e2e/core-flow.spec.ts` runs the full purchase flow through t
 | `/organizer/events/[id]/orders` | owner | Search and filter orders, DEMO refund, cancel a free registration | `organizer-event-orders` |
 | `/organizer/events/[id]/analytics` | owner | The event's analytics | `organizer-event-analytics` |
 | `/organizer/events/[id]/history` | owner | The activity timeline with filters | `organizer-event-history` |
-| `/admin` | platform admin | Tabs: overview, users, events, orders, payments, paid sales, reports, settings; search, suspend or resume, export CSV, the activation fee | `admin` |
+| `/admin` | platform admin | Tabs: overview, users, events, orders, payments, paid sales, promo codes (`?tab=promotions`, SRS 4.12), reports, settings; search, suspend or resume, export CSV, the activation fee | `admin` |
 
 ## Baseline (before the redesign, branch `feat/r6-web-redesign` at `dd3cc02`)
 

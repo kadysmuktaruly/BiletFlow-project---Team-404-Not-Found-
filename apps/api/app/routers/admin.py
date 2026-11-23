@@ -24,6 +24,7 @@ from app.schemas.admin import (
     AdminEventList,
     AdminOrderList,
     AdminPaymentList,
+    AdminPromotionList,
     AdminReport,
     AdminReportList,
     AdminSummary,
@@ -183,6 +184,21 @@ async def payments(
     status: PaymentStatus | None = None,
 ) -> AdminPaymentList:
     return await admin_service.list_payments(session, q, status)
+
+
+# --- promo-code activity --------------------------------------------------------------------
+
+
+@router.get(
+    "/promotions",
+    response_model=AdminPromotionList,
+    summary="Promo-code activity across the platform",
+    description="Every campaign with its code, status and exact DEMO sales report (SRS 4.12).",
+)
+async def promotions(
+    _: PlatformAdminUser, session: SessionDep, q: Search = None
+) -> AdminPromotionList:
+    return await admin_service.list_promotions(session, q)
 
 
 # --- reports and settings -------------------------------------------------------------------

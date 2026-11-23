@@ -482,6 +482,7 @@ Platform Admins only (403 for anyone else). Every change is written to the audit
 | `GET /admin/events`, `POST /admin/events/{id}/suspend` / `unsuspend` | Suspending stops all sales on the next request and hides the event; issued tickets stay valid. |
 | `POST /admin/events/{id}/paid-sales/suspend` / `resume` | Stop paid checkout and payment only (fraud suspected). |
 | `GET /admin/activations`, `/admin/orders`, `/admin/payments` | Paid-sales activation records, orders and DEMO payments (filter failed or refunded). |
+| `GET /admin/promotions` | Promo-code activity: every campaign with its code, status, usage and the same exact DEMO report the organizer sees (redemptions, orders, tickets, gross, discount, net). Search by code, campaign, event or organizer email. Read-only. |
 | `GET /admin/reports`, `POST /admin/reports/{id}/review` | Reported events: dismiss, or suspend the event. |
 | `GET/PUT /admin/settings` | The activation fee. With no saved value, `ACTIVATION_FEE_KZT` applies. A change affects fees paid from then on. |
 | `GET /admin/export/{users,events,orders,payments}.csv` | CSV, up to 10,000 rows; formula-like cells are escaped. |
