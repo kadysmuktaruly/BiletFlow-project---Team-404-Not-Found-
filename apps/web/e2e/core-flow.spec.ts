@@ -77,7 +77,7 @@ test("campaign QR → promo purchase → ticket → door → analytics", async (
   // 4. The printable PDF and a support case from the order.
   const [pdf] = await Promise.all([
     attendee.waitForEvent("download"),
-    attendee.getByRole("button", { name: /Download ticket .* as a PDF/ }).first().click(),
+    attendee.getByRole("button", { name: /Download PDF: ticket / }).first().click(),
   ]);
   expect(pdf.suggestedFilename()).toMatch(/^ticket-BFT-.*\.pdf$/);
   await attendee.getByRole("link", { name: "Get help" }).click();

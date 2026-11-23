@@ -138,7 +138,7 @@ const ROUTES: Route[] = [
     path: (ids) => `/orders/${ids.orderId}`,
     check: async (page) => {
       await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-      await expect(page.getByRole("button", { name: /Download ticket .* as a PDF/ }).first()).toBeVisible();
+      await expect(page.getByRole("button", { name: /Download PDF: ticket / }).first()).toBeVisible();
       await expect(page.getByRole("link", { name: en.support.getHelp })).toBeVisible();
     },
   },
@@ -158,7 +158,7 @@ const ROUTES: Route[] = [
     check: async (page) => {
       await expect(heading(page, en.tickets.title)).toBeVisible();
       await expect(page.getByRole("img", { name: /QR code for ticket/ }).first()).toBeVisible();
-      await expect(page.getByRole("button", { name: /Download ticket .* as a PDF/ }).first()).toBeVisible();
+      await expect(page.getByRole("button", { name: /Download PDF: ticket / }).first()).toBeVisible();
     },
   },
   {

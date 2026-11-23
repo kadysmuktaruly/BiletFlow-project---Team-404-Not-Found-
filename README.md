@@ -214,6 +214,11 @@ npx playwright install chromium           # once
 npm run e2e -w @biletflow/web             # E2E_BASE_URL / E2E_API_URL to point elsewhere
 ```
 
+`apps/web/e2e/accessibility.spec.ts` runs axe-core (`@axe-core/playwright`, a dev-only
+dependency) against the event list, event page, DEMO checkout, order confirmation and My
+tickets, in kk, ru and en, at desktop and 390px, and fails on any WCAG 2.0/2.1 A or AA
+violation (SRS 7). Automated rules don't replace the manual screen-reader and keyboard pass.
+
 Running it again within a minute can hit the login rate limit (5 sign-ins per email per
 minute). Wait a minute, or run the API with `RATE_LIMIT_ENABLED=false` as CI does.
 
