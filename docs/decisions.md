@@ -91,3 +91,19 @@ changes, update this file in the same PR.
   cancelled. A promo redemption stays counted after a refund (it was used).
 - Cancelling an event cancels its valid tickets and pending orders and refunds every paid order
   in full, each with the fixed idempotency key `event-cancel:<order id>`.
+
+## SRS compliance check decisions (Nov 23)
+
+These come from the whole-project SRS check (`docs/srs-requirements-check-task.md`,
+results in `docs/srs-compliance.md`).
+
+- **Encryption (SRS §7, NFR-4).** In transit: the demo stack serves web and API through one
+  Caddy reverse proxy with Caddy's internal TLS (see `docs/https-proxy-proposal.md`). At
+  rest: BiletFlow relies on the host's volume or disk encryption for the PostgreSQL data.
+  Real application-level or managed at-rest encryption is **deferred** past the MVP.
+- **Audit log is append-only in the database (HIS-9).** SRS §4.16 only requires that audit
+  entries can't be edited or deleted through organizer interfaces. BiletFlow goes further:
+  UPDATE and DELETE on the audit log are blocked at the database level, and a test proves it.
+  This is beyond the SRS.
+- **Processing charges (BIZ-6)** are deducted from the organizer's estimated payout. See
+  "Who pays processing charges" in the §12 table above.
