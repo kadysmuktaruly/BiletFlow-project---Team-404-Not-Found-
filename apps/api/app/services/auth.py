@@ -2,12 +2,16 @@
 
 Two rules shape this module:
 
-* **No email enumeration.** Register, resend-verification and forgot-password behave the
-  same, and take about as long, whether or not the email is registered. Login gives one
-  error for an unknown email and a wrong password, and still runs a full Argon2 check
-  against a dummy hash when the email is unknown.
-* **The server decides the role.** Registration accepts only `attendee` or `organizer`
-  (enforced by the request schema), and nothing here reads a role from a token.
+* **No email enumeration, except at registration.** Resend-verification and
+  forgot-password behave the same, and take about as long, whether or not the email is
+  registered. Login gives one error for an unknown email and a wrong password, and still
+  runs a full Argon2 check against a dummy hash when the email is unknown. Registration
+  is the exception (decided 2026-11-23): a taken email gets `email_taken`, because a
+  silent "check your inbox" confused people who already had an account. The register
+  rate limit slows anyone probing many emails.
+* **The server decides the role.** Registration and `change_role` accept only `attendee`
+  or `organizer` (enforced by the request schemas), and nothing here reads a role from a
+  token.
 """
 
 import uuid
@@ -19,9 +23,9 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
-from app.enums import NotificationType, UserRole
+from app.enums import EventStatus, NotificationType, UserRole
 from app.errors import AppError
-from app.models import OrganizerProfile, User
+from app.models import Event, OrganizerProfile, User
 from app.schemas.auth import RegisterRequest
 from app.security import (
     TokenType,
@@ -31,6 +35,7 @@ from app.security import (
     password_fingerprint,
     verify_password,
 )
+from app.services import audit
 from app.services.mail import Outbound, OutgoingEmail, render
 from app.services.notifications import record_email
 
@@ -57,11 +62,21 @@ def _verification_email(user: User) -> OutgoingEmail:
     )
 
 
+def _email_taken() -> AppError:
+    return AppError(409, "email_taken", "This email is already registered. Sign in instead.")
+
+
+def _add_organizer_profile(session: AsyncSession, user: User) -> None:
+    session.add(
+        OrganizerProfile(user_id=user.id, display_name=user.full_name, contact_email=user.email)
+    )
+
+
 async def register(session: AsyncSession, data: RegisterRequest) -> Outbound:
     # Hash first, whatever happens next, so both branches cost the same.
     hashed = await hash_password(data.password)
     if await get_user_by_email(session, data.email) is not None:
-        return []
+        raise _email_taken()
 
     user = User(
         email=data.email,
@@ -76,17 +91,67 @@ async def register(session: AsyncSession, data: RegisterRequest) -> Outbound:
     except IntegrityError:
         # Lost a race with a concurrent registration for the same email.
         await session.rollback()
-        return []
+        raise _email_taken() from None
     if user.role is UserRole.ORGANIZER:
-        session.add(
-            OrganizerProfile(user_id=user.id, display_name=user.full_name, contact_email=user.email)
-        )
+        _add_organizer_profile(session, user)
     msg = _verification_email(user)
     notification = await record_email(
         session, user_id=user.id, type=NotificationType.ACCOUNT_VERIFICATION, msg=msg
     )
     await session.commit()
     return [(msg, notification.id)]
+
+
+# Roles a user may switch between themselves. Platform admins are appointed, and event
+# admins come from StaffAssignment, so neither can be chosen or left this way.
+SELF_SERVICE_ROLES = frozenset({UserRole.ATTENDEE, UserRole.ORGANIZER})
+# Events that are on sale or still have holders, so they need an organizer to manage them.
+LIVE_EVENT_STATUSES = (EventStatus.PUBLISHED, EventStatus.UNPUBLISHED)
+
+
+async def change_role(session: AsyncSession, user: User, role: UserRole) -> User:
+    """Switch between attendee and organizer.
+
+    The organizer profile is never deleted, so switching back restores the user's events,
+    profile and payout account. Leaving the organizer role is refused while the user has
+    live events, because nobody else could manage them.
+    """
+    if user.role not in SELF_SERVICE_ROLES or role not in SELF_SERVICE_ROLES:
+        raise AppError(403, "role_change_not_allowed", "This account's role can't be changed.")
+    if role is user.role:
+        return user
+
+    profile = await session.scalar(
+        select(OrganizerProfile).where(OrganizerProfile.user_id == user.id)
+    )
+    if role is UserRole.ORGANIZER:
+        if profile is None:
+            _add_organizer_profile(session, user)
+    elif profile is not None:
+        live = await session.scalar(
+            select(func.count())
+            .select_from(Event)
+            .where(Event.organizer_profile_id == profile.id, Event.status.in_(LIVE_EVENT_STATUSES))
+        )
+        if live:
+            raise AppError(
+                409,
+                "organizer_has_active_events",
+                "Cancel or finish your live events before switching to attendee.",
+            )
+
+    previous = user.role
+    user.role = role
+    audit.record(
+        session,
+        actor_id=user.id,
+        action="user.role_changed",
+        entity_type="user",
+        entity_id=user.id,
+        description=f"{previous} → {role}",
+    )
+    await session.commit()
+    return user
 
 
 async def authenticate(session: AsyncSession, email: str, password: str) -> User:

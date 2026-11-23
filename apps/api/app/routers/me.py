@@ -8,12 +8,14 @@ from fastapi import APIRouter, Query, status
 from fastapi.responses import Response
 
 from app.deps import CurrentUser, SessionDep
+from app.enums import UserRole
 from app.errors import error_responses
 from app.i18n import normalize_locale
 from app.models import User
 from app.schemas.notification import NotificationList, NotificationRead, UnreadCount
 from app.schemas.order import MyTicketRead, OrderRead
-from app.schemas.user import UserRead, UserUpdate
+from app.schemas.user import RoleChange, UserRead, UserUpdate
+from app.services import auth as auth_service
 from app.services import notifications as notification_service
 from app.services import orders as order_service
 from app.tickets.pdf import render_ticket_pdf
@@ -34,6 +36,22 @@ async def update_me(data: UserUpdate, user: CurrentUser, session: SessionDep) ->
             setattr(user, field, value)
     await session.commit()
     return user
+
+
+@router.put(
+    "/role",
+    response_model=UserRead,
+    responses=error_responses(409),
+    summary="Switch between attendee and organizer",
+    description=(
+        "Becoming an organizer creates an organizer profile, or reuses the one from before. "
+        "Switching to attendee keeps the profile and events, and returns 409 "
+        "`organizer_has_active_events` while any event is published or unpublished. "
+        "Platform admins get 403 `role_change_not_allowed`."
+    ),
+)
+async def change_my_role(data: RoleChange, user: CurrentUser, session: SessionDep) -> User:
+    return await auth_service.change_role(session, user, UserRole(data.role))
 
 
 @router.get("/orders", response_model=list[OrderRead], summary="Your orders, newest first")

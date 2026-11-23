@@ -89,15 +89,15 @@ async def test_register_cannot_self_assign_privileged_roles(
     assert await session.scalar(select(func.count()).select_from(User)) == 0
 
 
-async def test_register_existing_email_looks_identical_and_sends_nothing(
+async def test_register_existing_email_says_taken_and_sends_nothing(
     client: httpx.AsyncClient, session: AsyncSession, mail: list[OutgoingEmail]
 ) -> None:
     await make_user(session, email="taken@example.com")
     await session.commit()
 
     response = await _register(client, email="TAKEN@example.com")
-    assert response.status_code == 202
-    assert response.json() == {"status": "accepted"}
+    assert response.status_code == 409
+    assert response.json()["error"]["code"] == "email_taken"
     assert mail == []
     assert await session.scalar(select(func.count()).select_from(User)) == 1
 

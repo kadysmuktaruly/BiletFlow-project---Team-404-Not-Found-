@@ -61,8 +61,12 @@ def _session_response(user: User, response: Response, x_client: str | None) -> T
     "/register",
     response_model=AcceptedResponse,
     status_code=status.HTTP_202_ACCEPTED,
+    responses=error_responses(409),
     summary="Create an account and send a verification email",
-    description="Responds identically whether or not the email is already registered.",
+    description=(
+        "A taken email (compared case-insensitively) returns 409 `email_taken` and sends "
+        "nothing. Login and forgot-password still don't reveal whether an email is registered."
+    ),
 )
 async def register(
     data: RegisterRequest, session: SessionDep, background: BackgroundTasks, request: Request

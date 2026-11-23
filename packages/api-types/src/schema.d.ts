@@ -380,7 +380,7 @@ export interface paths {
         put?: never;
         /**
          * Create an account and send a verification email
-         * @description Responds identically whether or not the email is already registered.
+         * @description A taken email (compared case-insensitively) returns 409 `email_taken` and sends nothing. Login and forgot-password still don't reveal whether an email is registered.
          */
         post: operations["register_api_v1_auth_register_post"];
         delete?: never;
@@ -779,6 +779,26 @@ export interface paths {
         /** Your orders, newest first */
         get: operations["my_orders_api_v1_me_orders_get"];
         put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/role": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Switch between attendee and organizer
+         * @description Becoming an organizer creates an organizer profile, or reuses the one from before. Switching to attendee keeps the profile and events, and returns 409 `organizer_has_active_events` while any event is published or unpublished. Platform admins get 403 `role_change_not_allowed`.
+         */
+        put: operations["change_my_role_api_v1_me_role_put"];
         post?: never;
         delete?: never;
         options?: never;
@@ -3329,6 +3349,18 @@ export interface components {
             /** Tickets Sold */
             tickets_sold: number;
         };
+        /**
+         * RoleChange
+         * @description Self-service roles only: platform admins are appointed, and event admins come from
+         *     StaffAssignment.
+         */
+        RoleChange: {
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "attendee" | "organizer";
+        };
         /** ScanRequest */
         ScanRequest: {
             /**
@@ -3719,7 +3751,8 @@ export interface components {
         UserRole: "attendee" | "organizer" | "event_admin" | "platform_admin";
         /**
          * UserUpdate
-         * @description Fields a user may change about themselves. Role and email are not among them.
+         * @description Fields a user may change about themselves. Email is not among them, and the role
+         *     changes only through `PUT /me/role`.
          */
         UserUpdate: {
             /** Full Name */
@@ -3883,6 +3916,7 @@ export type SchemaReportCreated = components['schemas']['ReportCreated'];
 export type SchemaReportReview = components['schemas']['ReportReview'];
 export type SchemaResetPasswordRequest = components['schemas']['ResetPasswordRequest'];
 export type SchemaRevenueFigures = components['schemas']['RevenueFigures'];
+export type SchemaRoleChange = components['schemas']['RoleChange'];
 export type SchemaScanRequest = components['schemas']['ScanRequest'];
 export type SchemaScanResult = components['schemas']['ScanResult'];
 export type SchemaSeatingMode = components['schemas']['SeatingMode'];
@@ -5050,6 +5084,15 @@ export interface operations {
                     "application/json": components["schemas"]["AcceptedResponse"];
                 };
             };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Validation error */
             422: {
                 headers: {
@@ -6134,6 +6177,66 @@ export interface operations {
             };
             /** @description Forbidden */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    change_my_role_api_v1_me_role_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RoleChange"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserRead"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

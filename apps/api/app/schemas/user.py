@@ -2,6 +2,7 @@
 
 import uuid
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -23,8 +24,16 @@ class UserRead(BaseModel):
 
 
 class UserUpdate(BaseModel):
-    """Fields a user may change about themselves. Role and email are not among them."""
+    """Fields a user may change about themselves. Email is not among them, and the role
+    changes only through `PUT /me/role`."""
 
     full_name: str | None = Field(default=None, min_length=1, max_length=200)
     phone: str | None = Field(default=None, max_length=32)
     locale: Locale | None = None
+
+
+class RoleChange(BaseModel):
+    """Self-service roles only: platform admins are appointed, and event admins come from
+    StaffAssignment."""
+
+    role: Literal["attendee", "organizer"]

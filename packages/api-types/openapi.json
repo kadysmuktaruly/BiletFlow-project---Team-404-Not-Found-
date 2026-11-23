@@ -4956,6 +4956,24 @@
         "title": "RevenueFigures",
         "type": "object"
       },
+      "RoleChange": {
+        "description": "Self-service roles only: platform admins are appointed, and event admins come from\nStaffAssignment.",
+        "properties": {
+          "role": {
+            "enum": [
+              "attendee",
+              "organizer"
+            ],
+            "title": "Role",
+            "type": "string"
+          }
+        },
+        "required": [
+          "role"
+        ],
+        "title": "RoleChange",
+        "type": "object"
+      },
       "ScanRequest": {
         "properties": {
           "device_label": {
@@ -5964,7 +5982,7 @@
         "type": "string"
       },
       "UserUpdate": {
-        "description": "Fields a user may change about themselves. Role and email are not among them.",
+        "description": "Fields a user may change about themselves. Email is not among them, and the role\nchanges only through `PUT /me/role`.",
         "properties": {
           "full_name": {
             "anyOf": [
@@ -7881,7 +7899,7 @@
     },
     "/api/v1/auth/register": {
       "post": {
-        "description": "Responds identically whether or not the email is already registered.",
+        "description": "A taken email (compared case-insensitively) returns 409 `email_taken` and sends nothing. Login and forgot-password still don't reveal whether an email is registered.",
         "operationId": "register_api_v1_auth_register_post",
         "requestBody": {
           "content": {
@@ -7903,6 +7921,16 @@
               }
             },
             "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
           },
           "422": {
             "content": {
@@ -9504,6 +9532,83 @@
           }
         ],
         "summary": "Your orders, newest first",
+        "tags": [
+          "me"
+        ]
+      }
+    },
+    "/api/v1/me/role": {
+      "put": {
+        "description": "Becoming an organizer creates an organizer profile, or reuses the one from before. Switching to attendee keeps the profile and events, and returns 409 `organizer_has_active_events` while any event is published or unpublished. Platform admins get 403 `role_change_not_allowed`.",
+        "operationId": "change_my_role_api_v1_me_role_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RoleChange"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Switch between attendee and organizer",
         "tags": [
           "me"
         ]
