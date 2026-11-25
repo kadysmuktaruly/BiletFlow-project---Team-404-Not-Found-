@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { KeyboardAvoidingView, Platform } from "react-native";
 
-import { Banner, Body, Button, Field, Screen, Title } from "@/components/ui";
+import { Banner, Body, Button, Field, PasswordField, Screen, Title } from "@/components/ui";
 import { errorKey } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 
@@ -29,7 +29,7 @@ export default function LoginScreen() {
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-      <Screen>
+      <Screen safeArea>
         <Title>{t("login.title")}</Title>
         <Body>{t("login.lead")}</Body>
         {error ? <Banner kind="error">{error}</Banner> : null}
@@ -42,11 +42,12 @@ export default function LoginScreen() {
           keyboardType="email-address"
           textContentType="username"
         />
-        <Field
+        <PasswordField
           label={t("login.password")}
+          showLabel={t("login.showPassword")}
+          hideLabel={t("login.hidePassword")}
           value={password}
           onChangeText={setPassword}
-          secureTextEntry
           autoComplete="password"
           textContentType="password"
           onSubmitEditing={submit}

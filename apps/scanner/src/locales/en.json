@@ -11,6 +11,8 @@
     "lead": "Sign in with the BiletFlow account the organizer assigned to the event.",
     "email": "Email",
     "password": "Password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
     "submit": "Sign in"
   },
   "home": {
