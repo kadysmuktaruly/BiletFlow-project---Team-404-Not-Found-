@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -7,6 +8,7 @@ import {
   View,
   type TextInputProps,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export const colors = {
   ink: "#111827",
@@ -20,8 +22,15 @@ export const colors = {
   successBg: "#f0fdf4",
 };
 
-export function Screen({ children }: { children: React.ReactNode }) {
-  return <View style={styles.screen}>{children}</View>;
+/** Pass `safeArea` on screens that hide the navigation header (sign-in): there is no
+ * header to keep the content clear of the status bar, notch and home indicator. */
+export function Screen({ children, safeArea }: { children: React.ReactNode; safeArea?: boolean }) {
+  if (!safeArea) return <View style={styles.screen}>{children}</View>;
+  return (
+    <SafeAreaView edges={["top", "bottom"]} style={styles.screen}>
+      {children}
+    </SafeAreaView>
+  );
 }
 
 export function Title({ children }: { children: React.ReactNode }) {
@@ -36,16 +45,58 @@ export function Body({ children }: { children: React.ReactNode }) {
   return <Text style={styles.body}>{children}</Text>;
 }
 
+// iOS autocorrect and smart punctuation silently rewrite what was typed, which breaks
+// emails, ticket numbers and passwords. Callers can turn them back on per field.
 export function Field({ label, ...input }: TextInputProps & { label: string }) {
   return (
     <View style={styles.field}>
       <Text style={styles.label}>{label}</Text>
       <TextInput
         accessibilityLabel={label}
+        autoCorrect={false}
+        spellCheck={false}
+        smartInsertDelete={false}
         placeholderTextColor={colors.muted}
         style={styles.input}
         {...input}
       />
+    </View>
+  );
+}
+
+/** A password input with a Show / Hide button, so staff can check what the keyboard
+ * actually typed (e.g. Cyrillic letters from a ru/kk layout, or an autofilled password). */
+export function PasswordField({
+  label,
+  showLabel,
+  hideLabel,
+  ...input
+}: TextInputProps & { label: string; showLabel: string; hideLabel: string }) {
+  const [visible, setVisible] = useState(false);
+  return (
+    <View style={styles.field}>
+      <Text style={styles.label}>{label}</Text>
+      <View style={styles.passwordRow}>
+        <TextInput
+          accessibilityLabel={label}
+          autoCapitalize="none"
+          autoCorrect={false}
+          spellCheck={false}
+          smartInsertDelete={false}
+          secureTextEntry={!visible}
+          placeholderTextColor={colors.muted}
+          style={[styles.input, styles.passwordInput]}
+          {...input}
+        />
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => setVisible((v) => !v)}
+          hitSlop={8}
+          style={styles.passwordToggle}
+        >
+          <Text style={styles.passwordToggleText}>{visible ? hideLabel : showLabel}</Text>
+        </Pressable>
+      </View>
     </View>
   );
 }
@@ -101,6 +152,10 @@ const styles = StyleSheet.create({
   title: { fontSize: 26, fontWeight: "700", color: colors.ink },
   body: { fontSize: 16, lineHeight: 22, color: colors.muted },
   field: { gap: 6 },
+  passwordRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+  passwordInput: { flex: 1 },
+  passwordToggle: { minHeight: 48, minWidth: 48, justifyContent: "center", paddingHorizontal: 8 },
+  passwordToggleText: { fontSize: 16, fontWeight: "600", color: colors.ink },
   label: { fontSize: 15, fontWeight: "600", color: colors.ink },
   input: {
     backgroundColor: colors.surface,

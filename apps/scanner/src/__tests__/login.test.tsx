@@ -33,3 +33,18 @@ it("shows a translated error for wrong credentials", async () => {
   expect(await screen.findByText("Неверная почта или пароль.")).toBeTruthy();
   expect(mockReplace).not.toHaveBeenCalled();
 });
+
+it("lets staff show the password and turns off autocorrect on both fields", async () => {
+  await render(<LoginScreen />);
+  const email = screen.getByLabelText("Email");
+  const password = screen.getByLabelText("Password");
+  expect(email.props.autoCorrect).toBe(false);
+  expect(password.props.autoCorrect).toBe(false);
+  expect(password.props.autoCapitalize).toBe("none");
+  expect(password.props.secureTextEntry).toBe(true);
+
+  await fireEvent.press(screen.getByRole("button", { name: "Show password" }));
+  expect(screen.getByLabelText("Password").props.secureTextEntry).toBe(false);
+  await fireEvent.press(screen.getByRole("button", { name: "Hide password" }));
+  expect(screen.getByLabelText("Password").props.secureTextEntry).toBe(true);
+});
