@@ -11,9 +11,9 @@ import { expect, test, type APIRequestContext, type Page } from "@playwright/tes
 
 const API = process.env.E2E_API_URL ?? "http://localhost:8000";
 const PASSWORD = "Demo-pass-2026";
-const ORGANIZER = "organizer@demo.biletflow.kz";
-const ATTENDEE = "timur@demo.biletflow.kz";
-const STAFF = "staff@demo.biletflow.kz";
+const ORGANIZER = "organizer@biletflow.demo";
+const ATTENDEE = "timur@biletflow.demo";
+const STAFF = "staff@biletflow.demo";
 const JAZZ = "almaty-jazz-night-demo";
 
 async function signIn(page: Page, email: string) {

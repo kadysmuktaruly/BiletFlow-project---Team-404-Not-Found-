@@ -33,3 +33,6 @@ playwright-report/
 
 # Redesign before/after screenshots (apps/web/e2e/smoke.spec.ts with SHOTS_DIR)
 .screenshots/
+
+# Local demo credentials (never commit)
+DEMO_CREDENTIALS.md

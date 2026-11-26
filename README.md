@@ -90,9 +90,23 @@ The API applies migrations and loads demo data on start (`SEED_DEMO_DATA=true`).
 covers a free student meetup, a paid KZT jazz night with a 15% campaign (code `JAZZ15`), a
 promo purchase, a refunded order, a check-in, a support case, and a past event for the history
 views. The accounts are organizer, three attendees (`attendee@`, `aliya@`, `timur@`), an Event
-Admin (`staff@`) and a Platform Admin (`admin@`), all at `demo.biletflow.kz`, all with the
+Admin (`staff@`) and a Platform Admin (`admin@`), all at `biletflow.demo`, all with the
 password `Demo-pass-2026`. See [`apps/api/app/seed.py`](apps/api/app/seed.py) and the
 walkthrough in [`docs/demo-report-3.md`](docs/demo-report-3.md).
+
+To (re)load the demo data by hand, for example before a live demo:
+
+```bash
+docker compose exec api python -m app.seed                          # safe to run again
+docker compose exec api python -m app.seed --with-backup-campaign   # also adds STUDENT20 (20%)
+```
+
+Running it again creates nothing new. It makes sure the four demo accounts (organizer,
+attendee, staff, admin) can sign in with the demo password and keeps "Almaty Jazz Night"
+at least a week in the future. `--with-backup-campaign` is a fallback for the live demo,
+where the organizer normally creates STUDENT20 on stage. The seed refuses to run unless
+`ENVIRONMENT` is `development` or `test` and the database host is `localhost`, `127.0.0.1`
+or `db`. Write local credentials to `DEMO_CREDENTIALS.md` (it is git-ignored).
 
 To run the API on the host instead:
 

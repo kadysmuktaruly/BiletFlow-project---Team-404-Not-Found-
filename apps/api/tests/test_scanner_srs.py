@@ -17,7 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.enums import TicketStatus
 from app.main import API_PREFIX
 from app.models import Event, StaffAssignment, Ticket, User
-from app.seed import JAZZ_SLUG, PASSWORD, seed
+from app.seed import JAZZ_SLUG, PASSWORD, STAFF_EMAIL, seed
 from app.services.mail import OutgoingEmail
 from tests.factories import bearer
 from tests.test_checkin import make_door, scan
@@ -106,7 +106,7 @@ async def test_checkin_under_2s_on_seeded_demo_data(
     seed as the seeded Event Admin, signed in through the real login, and times every door
     request the app makes. In-process, so it measures the server, not the venue network."""
     await seed()
-    staff = await session.scalar(select(User).where(User.email == "staff@demo.biletflow.kz"))
+    staff = await session.scalar(select(User).where(User.email == STAFF_EMAIL))
     jazz = await session.scalar(select(Event).where(Event.slug == JAZZ_SLUG))
     assert staff is not None and jazz is not None
     assert await session.scalar(
