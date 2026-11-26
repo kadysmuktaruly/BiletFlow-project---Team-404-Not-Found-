@@ -19,9 +19,9 @@ const JAZZ = "almaty-jazz-night-demo";
 
 type Role = "anonymous" | "attendee" | "organizer" | "admin";
 const EMAIL: Record<Exclude<Role, "anonymous">, string> = {
-  attendee: "aliya@demo.biletflow.kz",
-  organizer: "organizer@demo.biletflow.kz",
-  admin: "admin@demo.biletflow.kz",
+  attendee: "aliya@biletflow.demo",
+  organizer: "organizer@biletflow.demo",
+  admin: "admin@biletflow.demo",
 };
 
 type Ids = { eventId: string; orderId: string; pendingOrderId: string; caseId: string };

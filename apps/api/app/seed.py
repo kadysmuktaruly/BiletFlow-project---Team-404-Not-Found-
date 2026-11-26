@@ -1,32 +1,46 @@
 """Demo data for local runs and the course demo. Idempotent: running it twice changes nothing.
 
-    uv run python -m app.seed            # from apps/api
+    uv run python -m app.seed                          # from apps/api
     docker compose exec api python -m app.seed
+    docker compose exec api python -m app.seed --with-backup-campaign
 
 Docker Compose runs it on start when SEED_DEMO_DATA=true (the default there). It refuses to
-run when ENVIRONMENT=production. Every account uses the same password, printed at the end.
+run unless ENVIRONMENT is development or test and the database is on this machine or in
+Compose (`localhost`, `127.0.0.1`, `db`). Every account uses the same password, printed at
+the end. Re-running it makes sure the four demo accounts can sign in: verified, not
+suspended, and with that password.
 
 What it creates:
 
-* organizer@demo.biletflow.kz: an organizer with a verified email and a simulated payout
-  account, owning two published events:
+* organizer@biletflow.demo (Alisher): an organizer with a verified email and a simulated
+  payout account, owning two published events:
     - "Student Tech Meetup" (free, public)
-    - "Almaty Jazz Night" (paid, public, paid sales activated through the DEMO fee payment)
-* attendee@demo.biletflow.kz: an attendee with one free registration and one DEMO-paid order.
-* staff@demo.biletflow.kz: an Event Admin assigned to both events (for the scanner app).
-* admin@demo.biletflow.kz: a Platform Admin (never self-assignable, so it only comes from here).
+    - "Almaty Jazz Night" (paid, public, paid sales activated through the DEMO fee payment;
+      Standard 8,000 KZT x 100 and VIP 20,000 KZT x 20; kept at least a week in the future)
+* attendee@biletflow.demo (Sanzhar): an attendee with one free registration and one
+  DEMO-paid order.
+* staff@biletflow.demo (Nurali): an Event Admin assigned to both events (for the scanner
+  app). The platform role stays `attendee`; the assignment is what grants check-in.
+* admin@biletflow.demo: a Platform Admin (never self-assignable, so it only comes from here).
 * Fixtures for the scanner's five result screens: one cancelled and one refunded ticket.
-* Reports 4-6: a campaign on the jazz night (code JAZZ15, 15%), aliya@demo.biletflow.kz's
-  promo purchase with one ticket checked in and a support case, timur@demo.biletflow.kz's VIP
+* Reports 4-6: a campaign on the jazz night (code JAZZ15, 15%), aliya@biletflow.demo's
+  promo purchase with one ticket checked in and a support case, timur@biletflow.demo's VIP
   order refunded by the organizer, and a past "Nauryz Spring Fair" for event history.
+* With --with-backup-campaign: the live demo's STUDENT20 campaign (20%) on the jazz night,
+  in case it can't be created on stage. Leave it off when the organizer creates it live.
+
+Databases seeded before the switch to `@biletflow.demo` have the same accounts at
+`@demo.biletflow.kz`; they are renamed in place, so nothing is duplicated.
 """
 
+import argparse
 import asyncio
 import uuid
 from datetime import UTC, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
-from sqlalchemy import select
+from sqlalchemy import func, select
+from sqlalchemy.engine import make_url
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
@@ -51,13 +65,37 @@ from app.models import (
     Venue,
 )
 from app.schemas.order import AttendeeInput, OrderCreate, OrderItemInput
-from app.security import hash_password
+from app.security import hash_password, verify_password
 from app.services import activation, orders, payments
 
 PASSWORD = "Demo-pass-2026"
 ALMATY = ZoneInfo("Asia/Almaty")
 MEETUP_SLUG = "student-tech-meetup-demo"
 JAZZ_SLUG = "almaty-jazz-night-demo"
+
+DOMAIN = "biletflow.demo"
+LEGACY_DOMAIN = "demo.biletflow.kz"
+ORGANIZER_EMAIL = f"organizer@{DOMAIN}"
+ATTENDEE_EMAIL = f"attendee@{DOMAIN}"
+STAFF_EMAIL = f"staff@{DOMAIN}"
+ADMIN_EMAIL = f"admin@{DOMAIN}"
+BACKUP_CAMPAIGN_CODE = "STUDENT20"
+
+_SAFE_ENVIRONMENTS = frozenset({"development", "test"})
+_LOCAL_DB_HOSTS = frozenset({"localhost", "127.0.0.1", "::1", "db"})
+
+
+def _refuse_unsafe_target() -> None:
+    """Demo accounts share a published password, so never seed anything but a local DB."""
+    settings = get_settings()
+    if settings.environment not in _SAFE_ENVIRONMENTS:
+        raise SystemExit(f"Refusing to seed demo data with ENVIRONMENT={settings.environment!r}.")
+    host = make_url(settings.database_url).host or ""
+    if host not in _LOCAL_DB_HOSTS:
+        raise SystemExit(
+            f"Refusing to seed demo data into a database at {host!r}: "
+            "only a local or Docker Compose database is allowed."
+        )
 
 
 def _evening(days_ahead: int, hour: int) -> datetime:
@@ -68,8 +106,25 @@ def _evening(days_ahead: int, hour: int) -> datetime:
 async def _user(
     session: AsyncSession, email: str, name: str, role: UserRole, locale: str = "ru"
 ) -> User:
-    user = await session.scalar(select(User).where(User.email == email))
+    user = await session.scalar(select(User).where(func.lower(User.email) == email))
     if user is None:
+        legacy = email.replace(f"@{DOMAIN}", f"@{LEGACY_DOMAIN}")
+        user = await session.scalar(select(User).where(func.lower(User.email) == legacy))
+        if user is not None:
+            user.email = email
+            user.full_name = name
+    if user is not None:
+        # Whatever a rehearsal did to the account, make sure it can sign in again.
+        user.role = role
+        if not user.is_email_verified:
+            user.is_email_verified = True
+            user.email_verified_at = datetime.now(UTC)
+        user.is_suspended = False
+        user.suspended_at = None
+        if not await verify_password(PASSWORD, user.hashed_password):
+            user.hashed_password = await hash_password(PASSWORD)
+        await session.flush()
+    else:
         user = User(
             email=email,
             hashed_password=await hash_password(PASSWORD),
@@ -138,23 +193,20 @@ async def _assign(
         )
 
 
-async def seed() -> None:
-    if get_settings().environment == "production":
-        raise SystemExit("Refusing to seed demo data with ENVIRONMENT=production.")
+async def seed(*, with_backup_campaign: bool = False) -> None:
+    _refuse_unsafe_target()
 
     async with SessionLocal() as session:
         organizer_user = await _user(
-            session, "organizer@demo.biletflow.kz", "Aruzhan Seitkali", UserRole.ORGANIZER
+            session, ORGANIZER_EMAIL, "Alisher (Demo Organizer)", UserRole.ORGANIZER, "en"
         )
         attendee = await _user(
-            session, "attendee@demo.biletflow.kz", "Daniyar Kassymov", UserRole.ATTENDEE, "kk"
+            session, ATTENDEE_EMAIL, "Sanzhar (Demo Attendee)", UserRole.ATTENDEE, "en"
         )
         staff = await _user(
-            session, "staff@demo.biletflow.kz", "Madina Ospanova", UserRole.ATTENDEE
+            session, STAFF_EMAIL, "Nurali (Demo Door Staff)", UserRole.ATTENDEE, "en"
         )
-        await _user(
-            session, "admin@demo.biletflow.kz", "BiletFlow Admin", UserRole.PLATFORM_ADMIN, "en"
-        )
+        await _user(session, ADMIN_EMAIL, "Demo Admin", UserRole.PLATFORM_ADMIN, "en")
 
         organizer = await session.scalar(
             select(OrganizerProfile).where(OrganizerProfile.user_id == organizer_user.id)
@@ -163,7 +215,7 @@ async def seed() -> None:
             organizer = OrganizerProfile(
                 user_id=organizer_user.id,
                 display_name="Almaty Events Collective",
-                contact_email="hello@demo.biletflow.kz",
+                contact_email=f"hello@{DOMAIN}",
                 contact_phone="+7 700 000 00 00",
                 description="Student meetups and live music in Almaty.",
             )
@@ -178,7 +230,7 @@ async def seed() -> None:
             session.add(
                 PayoutAccount(
                     organizer_profile_id=organizer.id,
-                    account_holder_name="Aruzhan Seitkali",
+                    account_holder_name="Alisher (Demo Organizer)",
                     bank_name="Demo Bank",
                     account_last4="4321",
                     status=PayoutAccountStatus.VERIFIED,
@@ -241,6 +293,12 @@ async def seed() -> None:
                     ),
                 ]
             )
+        # The seeded date is relative to the first run, so an old database can hold a jazz
+        # night that has already happened. Keep it at least a week ahead for the live demo.
+        if jazz.starts_at < datetime.now(UTC) + timedelta(days=7):
+            length = jazz.ends_at - jazz.starts_at
+            jazz.starts_at = _evening(21, 19)
+            jazz.ends_at = jazz.starts_at + length
         await session.flush()
 
         await _assign(session, meetup, staff, organizer_user, StaffRole.EVENT_ADMIN)
@@ -314,17 +372,52 @@ async def seed() -> None:
             await session.commit()
 
         await _report_6_data(session, organizer, organizer_user, staff, jazz)
+        backup_url = (
+            await _backup_campaign(session, organizer_user, jazz) if with_backup_campaign else None
+        )
 
     print("Demo data ready. Password for every account:", PASSWORD)
     for email in (
-        "organizer@demo.biletflow.kz",
-        "attendee@demo.biletflow.kz",
-        "aliya@demo.biletflow.kz",
-        "timur@demo.biletflow.kz",
-        "staff@demo.biletflow.kz",
-        "admin@demo.biletflow.kz",
+        ORGANIZER_EMAIL,
+        ATTENDEE_EMAIL,
+        f"aliya@{DOMAIN}",
+        f"timur@{DOMAIN}",
+        STAFF_EMAIL,
+        ADMIN_EMAIL,
     ):
         print("  ", email)
+    if backup_url:
+        print(f"Backup campaign {BACKUP_CAMPAIGN_CODE} (20%):", backup_url)
+
+
+async def _backup_campaign(session: AsyncSession, organizer_user: User, jazz: Event) -> str:
+    """The live demo's STUDENT20 campaign, through the same service the organizer's
+    Campaigns page uses. Returns the campaign link (the Campaign QR's target)."""
+    from app.enums import DiscountType
+    from app.models import PromoCode, PromotionalCampaign
+    from app.schemas.promo import CampaignCreate
+    from app.services import promotions
+
+    code = await session.scalar(
+        select(PromoCode).where(func.lower(PromoCode.code) == BACKUP_CAMPAIGN_CODE.lower())
+    )
+    if code is None:
+        campaign = await promotions.create(
+            session,
+            jazz,
+            organizer_user,
+            CampaignCreate(
+                name="Students 20%",
+                discount_type=DiscountType.PERCENTAGE,
+                discount_percent=20,
+                code=BACKUP_CAMPAIGN_CODE,
+            ),
+        )
+    else:
+        found = await session.get(PromotionalCampaign, code.campaign_id)
+        assert found is not None
+        campaign = found
+    return promotions.campaign_url(campaign)
 
 
 async def _report_6_data(
@@ -344,7 +437,10 @@ async def _report_6_data(
     from app.schemas.support import CaseCreate, MessageCreate
     from app.services import checkin, promotions, refunds, support
 
+    aliya = await _user(session, f"aliya@{DOMAIN}", "Aliya Bekova", UserRole.ATTENDEE, "ru")
+    timur = await _user(session, f"timur@{DOMAIN}", "Timur Akhmetov", UserRole.ATTENDEE, "en")
     if await session.scalar(select(PromoCode).where(PromoCode.code == "JAZZ15")) is not None:
+        await session.commit()
         return
     await promotions.create(
         session,
@@ -357,10 +453,6 @@ async def _report_6_data(
             code="JAZZ15",
             max_redemptions=50,
         ),
-    )
-    aliya = await _user(session, "aliya@demo.biletflow.kz", "Aliya Bekova", UserRole.ATTENDEE, "ru")
-    timur = await _user(
-        session, "timur@demo.biletflow.kz", "Timur Akhmetov", UserRole.ATTENDEE, "en"
     )
     standard = await session.scalar(
         select(TicketType).where(TicketType.event_id == jazz.id, TicketType.name == "Standard")
@@ -438,5 +530,18 @@ async def _report_6_data(
     await session.commit()
 
 
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        prog="python -m app.seed", description="Load BiletFlow demo data (local only)."
+    )
+    parser.add_argument(
+        "--with-backup-campaign",
+        action="store_true",
+        help=f"also create the live demo's {BACKUP_CAMPAIGN_CODE} campaign (20%%) as a fallback",
+    )
+    args = parser.parse_args()
+    asyncio.run(seed(with_backup_campaign=args.with_backup_campaign))
+
+
 if __name__ == "__main__":
-    asyncio.run(seed())
+    main()

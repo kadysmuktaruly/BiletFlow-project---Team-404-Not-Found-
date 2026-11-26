@@ -33,10 +33,10 @@ docker compose logs api | grep -A4 "Demo data ready"
 
 | Account | Password | Role |
 |---|---|---|
-| `organizer@demo.biletflow.kz` | `Demo-pass-2026` | Organizer of both demo events |
-| `attendee@demo.biletflow.kz` | `Demo-pass-2026` | Attendee with existing tickets |
-| `staff@demo.biletflow.kz` | `Demo-pass-2026` | Event Admin on both events (scanner) |
-| `admin@demo.biletflow.kz` | `Demo-pass-2026` | Platform Admin |
+| `organizer@biletflow.demo` | `Demo-pass-2026` | Organizer of both demo events |
+| `attendee@biletflow.demo` | `Demo-pass-2026` | Attendee with existing tickets |
+| `staff@biletflow.demo` | `Demo-pass-2026` | Event Admin on both events (scanner) |
+| `admin@biletflow.demo` | `Demo-pass-2026` | Platform Admin |
 
 Demo events: **Student Tech Meetup** (free) and **Almaty Jazz Night** (paid: Standard
 8,000 KZT, VIP 20,000 KZT; paid sales already activated through the DEMO checklist).
@@ -93,12 +93,12 @@ under My tickets.
 
 ## 7. Optional: the organizer side
 
-Sign in as `organizer@demo.biletflow.kz` → **My events** → **Almaty Jazz Night** → **Edit**:
+Sign in as `organizer@biletflow.demo` → **My events** → **Almaty Jazz Night** → **Edit**:
 
 - **Tickets**: live counts (available, reserved, sold, refunded, checked in), including the
   purchases you just made.
 - **Paid sales**: the DEMO activation checklist, all five steps done, status **Active**.
-- **Staff**: Madina Ospanova assigned as Event Admin (she signs in to the scanner app).
+- **Staff**: Nurali (Demo Door Staff) assigned as Event Admin (signs in to the scanner app).
 - **Preview**: the public page as attendees see it.
 
 To see the paid-sales gate, create a new event, add a paid ticket type and publish it. The
