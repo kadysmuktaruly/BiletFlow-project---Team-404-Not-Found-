@@ -48,6 +48,10 @@ class User(Base, TimestampMixin):
     # SRS 4.12: Platform Admins can suspend users.
     is_suspended: Mapped[bool] = mapped_column(nullable=False, default=False)
     suspended_at: Mapped[datetime | None] = mapped_column()
+    # Set when the owner deletes the account (`app.services.account`). The row stays,
+    # scrubbed of personal data, because orders, tickets, refunds and audit entries
+    # reference it with ON DELETE RESTRICT (SRS 4.16 keeps that history).
+    deleted_at: Mapped[datetime | None] = mapped_column()
 
     organizer_profile: Mapped[OrganizerProfile | None] = relationship(
         back_populates="user", uselist=False

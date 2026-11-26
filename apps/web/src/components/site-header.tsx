@@ -47,6 +47,7 @@ function HeaderLinks({ user, pathname }: { user: User | null; pathname: string |
           <Link {...navLink("/orders")}>{t("myOrders")}</Link>
           <Link {...navLink("/support")}>{t("support")}</Link>
           <NotificationLink className={navLink("/notifications").className} />
+          <Link {...navLink("/account")}>{t("account")}</Link>
         </>
       )}
       {user?.role === "platform_admin" && <Link {...navLink("/admin")}>{t("admin")}</Link>}

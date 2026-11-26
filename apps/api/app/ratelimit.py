@@ -33,6 +33,9 @@ RULES: dict[str, Rule] = {
     "register:ip": Rule(5, 600),
     "account-email:ip": Rule(5, 900),
     "account-email:email": Rule(3, 900),
+    # Password guesses through a signed-in session.
+    "delete-account:ip": Rule(10, 900),
+    "delete-account:email": Rule(5, 900),
 }
 
 _hits: dict[tuple[str, str], deque[float]] = {}

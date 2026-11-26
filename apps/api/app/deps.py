@@ -39,7 +39,8 @@ async def get_current_user(
         raise unauthorized
     claims = decode_token(credentials.credentials, TokenType.ACCESS)
     user = await session.get(User, uuid.UUID(claims["sub"]))
-    if user is None:
+    # A deleted account's access tokens stop working at once, not when they expire.
+    if user is None or user.deleted_at is not None:
         raise unauthorized
     if user.is_suspended:
         raise AppError(403, "account_suspended", "This account has been suspended.")

@@ -170,6 +170,19 @@ const ROUTES: Route[] = [
     },
   },
   {
+    name: "account",
+    role: "attendee",
+    path: () => "/account",
+    check: async (page) => {
+      await expect(heading(page, en.account.title)).toBeVisible();
+      // Open the delete step and back out: the seeded attendee is shared by other checks.
+      await page.getByRole("button", { name: en.account.delete.start }).click();
+      await expect(page.getByLabel(en.account.delete.password)).toBeFocused();
+      await page.getByRole("button", { name: en.account.delete.cancel }).click();
+      await expect(page.getByRole("button", { name: en.account.delete.start })).toBeFocused();
+    },
+  },
+  {
     name: "support-list",
     role: "attendee",
     path: () => "/support",

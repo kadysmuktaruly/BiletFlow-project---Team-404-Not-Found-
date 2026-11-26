@@ -28,3 +28,9 @@ class UserUpdate(BaseModel):
     full_name: str | None = Field(default=None, min_length=1, max_length=200)
     phone: str | None = Field(default=None, max_length=32)
     locale: Locale | None = None
+
+
+class AccountDeleteRequest(BaseModel):
+    """The current password, so a borrowed or stolen session can't delete the account."""
+
+    password: str = Field(min_length=1, max_length=128)
