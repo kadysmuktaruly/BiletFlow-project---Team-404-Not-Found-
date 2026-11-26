@@ -117,6 +117,7 @@ async def user_from_refresh_token(session: AsyncSession, token: str) -> User:
     user = await session.get(User, uuid.UUID(claims["sub"]))
     if (
         user is None
+        or user.deleted_at is not None
         or user.is_suspended
         or not user.is_email_verified
         or claims.get("pwd") != password_fingerprint(user.hashed_password)

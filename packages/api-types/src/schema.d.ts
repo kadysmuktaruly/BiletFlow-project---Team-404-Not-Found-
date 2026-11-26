@@ -691,7 +691,11 @@ export interface paths {
         get: operations["read_me_api_v1_me_get"];
         put?: never;
         post?: never;
-        delete?: never;
+        /**
+         * Delete your account
+         * @description Needs the current password. The account is anonymised rather than removed: name, email, phone and password are replaced, every session ends, and the email can be registered again. Orders and tickets stay as the record of sales. Platform Admins can't delete their account here (409 `cannot_delete_admin`), and organizers must first cancel or finish their published events (409 `organizer_has_live_events`). A wrong password is 400 `invalid_password`.
+         */
+        delete: operations["delete_me_api_v1_me_delete"];
         options?: never;
         head?: never;
         /** Update your name, phone or language */
@@ -1546,6 +1550,14 @@ export interface components {
              * @constant
              */
             status: "accepted";
+        };
+        /**
+         * AccountDeleteRequest
+         * @description The current password, so a borrowed or stolen session can't delete the account.
+         */
+        AccountDeleteRequest: {
+            /** Password */
+            password: string;
         };
         /**
          * ActivationRead
@@ -3784,6 +3796,7 @@ export interface components {
     pathItems: never;
 }
 export type SchemaAcceptedResponse = components['schemas']['AcceptedResponse'];
+export type SchemaAccountDeleteRequest = components['schemas']['AccountDeleteRequest'];
 export type SchemaActivationRead = components['schemas']['ActivationRead'];
 export type SchemaActivationStatus = components['schemas']['ActivationStatus'];
 export type SchemaAdminActivation = components['schemas']['AdminActivation'];
@@ -5845,6 +5858,82 @@ export interface operations {
             };
             /** @description Validation error */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    delete_me_api_v1_me_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AccountDeleteRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };

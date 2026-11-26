@@ -4,16 +4,19 @@ import uuid
 from datetime import UTC, datetime
 from typing import Annotated
 
-from fastapi import APIRouter, Query, status
+from fastapi import APIRouter, Query, Request, status
 from fastapi.responses import Response
 
+from app import ratelimit
 from app.deps import CurrentUser, SessionDep
 from app.errors import error_responses
 from app.i18n import normalize_locale
 from app.models import User
+from app.routers.auth import clear_refresh_cookie
 from app.schemas.notification import NotificationList, NotificationRead, UnreadCount
 from app.schemas.order import MyTicketRead, OrderRead
-from app.schemas.user import UserRead, UserUpdate
+from app.schemas.user import AccountDeleteRequest, UserRead, UserUpdate
+from app.services import account as account_service
 from app.services import notifications as notification_service
 from app.services import orders as order_service
 from app.tickets.pdf import render_ticket_pdf
@@ -34,6 +37,32 @@ async def update_me(data: UserUpdate, user: CurrentUser, session: SessionDep) ->
             setattr(user, field, value)
     await session.commit()
     return user
+
+
+@router.delete(
+    "",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses=error_responses(400, 409, 429),
+    summary="Delete your account",
+    description=(
+        "Needs the current password. The account is anonymised rather than removed: name, "
+        "email, phone and password are replaced, every session ends, and the email can be "
+        "registered again. Orders and tickets stay as the record of sales. "
+        "Platform Admins can't delete their account here (409 `cannot_delete_admin`), and "
+        "organizers must first cancel or finish their published events "
+        "(409 `organizer_has_live_events`). A wrong password is 400 `invalid_password`."
+    ),
+)
+async def delete_me(
+    data: AccountDeleteRequest,
+    user: CurrentUser,
+    session: SessionDep,
+    request: Request,
+    response: Response,
+) -> None:
+    ratelimit.enforce(request, "delete-account", user.email)
+    await account_service.delete_account(session, user, data.password)
+    clear_refresh_cookie(response)
 
 
 @router.get("/orders", response_model=list[OrderRead], summary="Your orders, newest first")

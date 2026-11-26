@@ -151,8 +151,7 @@ async def refresh(
     return _session_response(user, response, x_client)
 
 
-@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT, summary="Sign out")
-async def logout(response: Response) -> None:
+def clear_refresh_cookie(response: Response) -> None:
     settings = get_settings()
     response.delete_cookie(
         REFRESH_COOKIE,
@@ -161,6 +160,11 @@ async def logout(response: Response) -> None:
         secure=settings.cookie_secure,
         samesite="lax",
     )
+
+
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT, summary="Sign out")
+async def logout(response: Response) -> None:
+    clear_refresh_cookie(response)
 
 
 @router.post(

@@ -498,7 +498,10 @@
     "report_already_reviewed": "This report has already been reviewed.",
     "report_not_found": "Report not found.",
     "invalid_date_range": "Pick a range of at most a year, with the end after the start.",
-    "rate_limited": "Too many attempts. Please wait a minute and try again."
+    "rate_limited": "Too many attempts. Please wait a minute and try again.",
+    "invalid_password": "The password is incorrect.",
+    "cannot_delete_admin": "Platform Admin accounts can't be deleted here.",
+    "organizer_has_live_events": "Cancel or finish your published events before deleting your account."
   },
   "events": {
     "title": "Upcoming events",
@@ -865,6 +868,28 @@
       "support_case": "Support",
       "staff": "Staff",
       "admin": "Platform admin"
+    }
+  },
+  "account": {
+    "title": "Your account",
+    "name": "Name",
+    "email": "Email",
+    "organizerProfile": "Edit your organizer profile",
+    "delete": {
+      "title": "Delete account",
+      "lead": "Deleting your account signs you out everywhere and removes your name, email and phone number. This can't be undone.",
+      "keeps": "Your orders are kept as the record of sales, but you won't be able to open them here any more. Tickets you've downloaded or received by email still work at the entrance.",
+      "organizer": "Cancel or finish your published events first.",
+      "adminBlocked": "Platform Admin accounts can't be deleted here.",
+      "start": "Delete my account",
+      "confirmTitle": "Delete your account for good?",
+      "confirmText": "Enter your password to confirm.",
+      "password": "Current password",
+      "confirm": "Delete account",
+      "deleting": "Deleting…",
+      "cancel": "Keep my account",
+      "done": "Your account has been deleted.",
+      "home": "Go to the home page"
     }
   }
 }

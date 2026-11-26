@@ -256,6 +256,7 @@ clients translate.
 | `POST /auth/refresh`, `POST /auth/logout` | Rotate the session, or clear the cookie. |
 | `POST /auth/forgot-password`, `POST /auth/reset-password` | Email a single-use reset link, then set a new password. Resetting signs out every other session. |
 | `GET /me`, `PATCH /me` | The signed-in user. Name, phone and language can be changed; role and email cannot. |
+| `DELETE /me` | Delete your account with your current password (web: `/account`). Not an SRS requirement. The row is anonymised, not removed, because orders, tickets and the audit trail reference it: name, email, phone and password are replaced, every session ends, and the email can register again. Platform Admins can't (409 `cannot_delete_admin`); organizers must first cancel or finish published events (409 `organizer_has_live_events`). |
 
 Register, resend-verification, forgot-password and login never reveal whether an email is
 registered. Passwords are hashed with Argon2. In development every email lands in Mailpit at

@@ -14,6 +14,22 @@
         "title": "AcceptedResponse",
         "type": "object"
       },
+      "AccountDeleteRequest": {
+        "description": "The current password, so a borrowed or stolen session can't delete the account.",
+        "properties": {
+          "password": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Password",
+            "type": "string"
+          }
+        },
+        "required": [
+          "password"
+        ],
+        "title": "AccountDeleteRequest",
+        "type": "object"
+      },
       "ActivationRead": {
         "description": "SRS 3.2 / 4.5: the paid-sales checklist for one event.",
         "properties": {
@@ -9066,6 +9082,94 @@
       }
     },
     "/api/v1/me": {
+      "delete": {
+        "description": "Needs the current password. The account is anonymised rather than removed: name, email, phone and password are replaced, every session ends, and the email can be registered again. Orders and tickets stay as the record of sales. Platform Admins can't delete their account here (409 `cannot_delete_admin`), and organizers must first cancel or finish their published events (409 `organizer_has_live_events`). A wrong password is 400 `invalid_password`.",
+        "operationId": "delete_me_api_v1_me_delete",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccountDeleteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete your account",
+        "tags": [
+          "me"
+        ]
+      },
       "get": {
         "operationId": "read_me_api_v1_me_get",
         "responses": {
